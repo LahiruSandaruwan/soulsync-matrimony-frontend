@@ -1,0 +1,85 @@
+<div class="space-y-8">
+  <!-- Welcome Section -->
+  <div class="text-center">
+    <h1 class="text-4xl font-romantic text-gradient mb-4">
+      Welcome back, {{ currentUser?.first_name }}! 💕
+    </h1>
+    <p class="text-gray-600 text-lg">
+      Ready to find your perfect match?
+    </p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="card-romantic text-center">
+      <div class="text-3xl mb-2">❤️</div>
+      <h3 class="text-xl font-semibold text-gray-900 mb-2">New Matches</h3>
+      <p class="text-3xl font-bold text-primary-600">{{ newMatches }}</p>
+    </div>
+    
+    <div class="card-romantic text-center">
+      <div class="text-3xl mb-2">💬</div>
+      <h3 class="text-xl font-semibold text-gray-900 mb-2">Unread Messages</h3>
+      <p class="text-3xl font-bold text-primary-600">{{ unreadMessages }}</p>
+    </div>
+    
+    <div class="card-romantic text-center">
+      <div class="text-3xl mb-2">👀</div>
+      <h3 class="text-xl font-semibold text-gray-900 mb-2">Profile Views</h3>
+      <p class="text-3xl font-bold text-primary-600">{{ profileViews }}</p>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="card-romantic">
+    <h2 class="text-2xl font-romantic text-gray-900 mb-6">Quick Actions</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <button 
+        routerLink="/matches"
+        class="p-4 text-center bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors duration-200"
+      >
+        <div class="text-2xl mb-2">❤️</div>
+        <span class="font-medium text-gray-900">View Matches</span>
+      </button>
+      
+      <button 
+        routerLink="/search"
+        class="p-4 text-center bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors duration-200"
+      >
+        <div class="text-2xl mb-2">🔍</div>
+        <span class="font-medium text-gray-900">Search</span>
+      </button>
+      
+      <button 
+        routerLink="/chat"
+        class="p-4 text-center bg-lavender-50 hover:bg-lavender-100 rounded-lg transition-colors duration-200"
+      >
+        <div class="text-2xl mb-2">💬</div>
+        <span class="font-medium text-gray-900">Messages</span>
+      </button>
+      
+      <button 
+        routerLink="/profile/edit"
+        class="p-4 text-center bg-beige-50 hover:bg-beige-100 rounded-lg transition-colors duration-200"
+      >
+        <div class="text-2xl mb-2">👤</div>
+        <span class="font-medium text-gray-900">Edit Profile</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Recent Activity -->
+  <div class="card-romantic">
+    <h2 class="text-2xl font-romantic text-gray-900 mb-6">Recent Activity</h2>
+    <div class="space-y-4">
+      <div *ngFor="let activity of recentActivities" class="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+        <div class="text-2xl">{{ activity.icon }}</div>
+        <div class="flex-1">
+          <p class="font-medium text-gray-900">{{ activity.title }}</p>
+          <p class="text-sm text-gray-600">{{ activity.description }}</p>
+        </div>
+        <span class="text-sm text-gray-500">{{ activity.time }}</span>
+      </div>
+    </div>
+  </div>
+</div>

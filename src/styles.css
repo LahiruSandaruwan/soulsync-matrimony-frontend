@@ -1,0 +1,200 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+/* Custom Base Styles */
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  body {
+    @apply bg-beige-50 text-gray-900;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+/* Custom Component Styles */
+@layer components {
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 shadow-romantic;
+  }
+  
+  .btn-secondary {
+    @apply bg-rose-500 hover:bg-rose-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 shadow-soft;
+  }
+  
+  .btn-outline {
+    @apply border-2 border-primary-600 text-primary-600 hover:bg-primary-600 hover:text-white font-medium py-2 px-4 rounded-lg transition-all duration-200;
+  }
+  
+  .card {
+    @apply bg-white rounded-xl shadow-soft border border-gray-100 p-6;
+  }
+  
+  .card-romantic {
+    @apply bg-white rounded-xl shadow-romantic border border-primary-100 p-6;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200;
+  }
+  
+  .form-label {
+    @apply block text-sm font-medium text-gray-700 mb-2;
+  }
+  
+  .nav-link {
+    @apply text-gray-600 hover:text-primary-600 transition-colors duration-200;
+  }
+  
+  .nav-link-active {
+    @apply text-primary-600 font-medium;
+  }
+  
+  .loading-spinner {
+    @apply animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600;
+  }
+  
+  .toast-success {
+    @apply bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg;
+  }
+  
+  .toast-error {
+    @apply bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg;
+  }
+  
+  .toast-warning {
+    @apply bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg;
+  }
+  
+  .toast-info {
+    @apply bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg;
+  }
+  
+  .avatar {
+    @apply rounded-full object-cover;
+  }
+  
+  .avatar-sm {
+    @apply w-8 h-8;
+  }
+  
+  .avatar-md {
+    @apply w-12 h-12;
+  }
+  
+  .avatar-lg {
+    @apply w-16 h-16;
+  }
+  
+  .avatar-xl {
+    @apply w-24 h-24;
+  }
+  
+  .heart-icon {
+    @apply text-rose-500;
+  }
+  
+  .chat-bubble {
+    @apply bg-primary-100 text-gray-800 rounded-lg p-3 max-w-xs;
+  }
+  
+  .chat-bubble-own {
+    @apply bg-primary-600 text-white rounded-lg p-3 max-w-xs ml-auto;
+  }
+  
+  .match-card {
+    @apply bg-white rounded-xl shadow-romantic border border-primary-100 p-6 hover:shadow-lg transition-shadow duration-200;
+  }
+  
+  .profile-card {
+    @apply bg-white rounded-xl shadow-soft border border-gray-100 p-6 hover:shadow-romantic transition-all duration-200;
+  }
+}
+
+/* Custom Utilities */
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary-600 to-rose-600 bg-clip-text text-transparent;
+  }
+  
+  .bg-gradient-romantic {
+    @apply bg-gradient-to-br from-primary-50 via-rose-50 to-lavender-50;
+  }
+  
+  .border-gradient {
+    @apply border-2 border-transparent bg-gradient-to-r from-primary-600 to-rose-600 bg-clip-border;
+  }
+  
+  .shadow-heart {
+    box-shadow: 0 4px 20px rgba(236, 72, 153, 0.2);
+  }
+  
+  .animate-heartbeat {
+    animation: heartbeat 1.5s ease-in-out infinite;
+  }
+}
+
+/* Custom Animations */
+@keyframes heartbeat {
+  0% {
+    transform: scale(1);
+  }
+  14% {
+    transform: scale(1.1);
+  }
+  28% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.1);
+  }
+  70% {
+    transform: scale(1);
+  }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary-300 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary-400;
+}
+
+/* Focus Styles */
+*:focus {
+  @apply outline-none ring-2 ring-primary-500 ring-offset-2;
+}
+
+/* Selection Styles */
+::selection {
+  @apply bg-primary-200 text-primary-900;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .card {
+    @apply p-4;
+  }
+  
+  .btn-primary, .btn-secondary, .btn-outline {
+    @apply py-3 px-6 text-base;
+  }
+}
