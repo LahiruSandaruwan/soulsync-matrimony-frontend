@@ -1,0 +1,121 @@
+.notification-item {
+  transition: all 0.2s ease;
+  
+  &.unread {
+    background-color: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    
+    &:hover {
+      background-color: #fde68a;
+    }
+  }
+
+  &:hover {
+    transform: translateX(2px);
+  }
+
+  .notification-icon {
+    transition: transform 0.2s ease;
+  }
+
+  &:hover .notification-icon {
+    transform: scale(1.1);
+  }
+
+  .action-buttons {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  &:hover .action-buttons {
+    opacity: 1;
+  }
+
+  .quick-actions {
+    button {
+      transition: all 0.2s ease;
+      
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+    }
+  }
+
+  .unread-indicator {
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 6px rgba(59, 130, 246, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+    }
+  }
+
+  // Type-specific styles
+  &.match-notification {
+    .notification-icon {
+      background: linear-gradient(135deg, #ec4899, #be185d);
+    }
+  }
+
+  &.message-notification {
+    .notification-icon {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    }
+  }
+
+  &.like-notification {
+    .notification-icon {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+  }
+
+  &.super-like-notification {
+    .notification-icon {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+  }
+
+  &.profile-view-notification {
+    .notification-icon {
+      background: linear-gradient(135deg, #10b981, #059669);
+    }
+  }
+
+  &.subscription-notification {
+    .notification-icon {
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+  }
+
+  &.system-notification {
+    .notification-icon {
+      background: linear-gradient(135deg, #6b7280, #4b5563);
+    }
+  }
+
+  // Responsive design
+  @media (max-width: 640px) {
+    padding: 0.75rem;
+    
+    .action-buttons {
+      opacity: 1;
+    }
+    
+    .quick-actions {
+      flex-direction: column;
+      gap: 0.5rem;
+      
+      button {
+        width: 100%;
+      }
+    }
+  }
+} 

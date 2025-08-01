@@ -3,10 +3,10 @@ import { RenderMode, ServerRoute } from '@angular/ssr';
 export const serverRoutes: ServerRoute[] = [
   {
     path: 'chat/:conversationId',
-    renderMode: RenderMode.Dynamic
+    renderMode: RenderMode.Client
   },
   {
     path: '**',
-    renderMode: RenderMode.Prerender
+    renderMode: RenderMode.Client
   }
 ];

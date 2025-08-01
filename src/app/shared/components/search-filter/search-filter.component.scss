@@ -1,0 +1,156 @@
+.search-filter {
+  transition: all 0.3s ease;
+  
+  .filter-header {
+    .active-filters-badge {
+      animation: pulse 2s infinite;
+    }
+  }
+
+  .filter-section {
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background-color: #f9fafb;
+    }
+  }
+
+  .range-inputs {
+    input {
+      transition: border-color 0.2s ease;
+      
+      &:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      }
+    }
+  }
+
+  .language-tags {
+    button {
+      transition: all 0.2s ease;
+      
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      
+      &.selected {
+        animation: bounce 0.6s ease;
+      }
+    }
+  }
+
+  .checkbox-group {
+    input[type="checkbox"] {
+      transition: all 0.2s ease;
+      
+      &:checked {
+        animation: checkmark 0.2s ease;
+      }
+    }
+  }
+
+  .action-buttons {
+    button {
+      transition: all 0.2s ease;
+      
+      &:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+      
+      &:active:not(:disabled) {
+        transform: translateY(0);
+      }
+    }
+  }
+
+  // Animations
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 6px rgba(59, 130, 246, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+    }
+  }
+
+  @keyframes bounce {
+    0%, 20%, 53%, 80%, 100% {
+      transform: translate3d(0, 0, 0);
+    }
+    40%, 43% {
+      transform: translate3d(0, -8px, 0);
+    }
+    70% {
+      transform: translate3d(0, -4px, 0);
+    }
+    90% {
+      transform: translate3d(0, -2px, 0);
+    }
+  }
+
+  @keyframes checkmark {
+    0% {
+      transform: scale(0.8);
+    }
+    50% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  // Responsive design
+  @media (max-width: 768px) {
+    padding: 1rem;
+    
+    .filter-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .language-tags {
+      button {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+      }
+    }
+  }
+
+  @media (max-width: 640px) {
+    .action-buttons {
+      flex-direction: column;
+      gap: 0.5rem;
+      
+      button {
+        width: 100%;
+      }
+    }
+  }
+
+  // Custom scrollbar for select dropdowns
+  select {
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 3px;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 3px;
+      
+      &:hover {
+        background: #a8a8a8;
+      }
+    }
+  }
+} 

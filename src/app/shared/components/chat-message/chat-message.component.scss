@@ -1,0 +1,130 @@
+.chat-message {
+  margin-bottom: 1rem;
+  
+  &.own-message {
+    .message-container {
+      flex-direction: row-reverse;
+    }
+    
+    .message-content {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+      border-radius: 18px 18px 4px 18px;
+    }
+  }
+
+  .message-container {
+    display: flex;
+    align-items: flex-end;
+  }
+
+  .message-content {
+    max-width: 70%;
+    background: #f3f4f6;
+    padding: 0.75rem 1rem;
+    border-radius: 18px 18px 18px 4px;
+    position: relative;
+    
+    &.own {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+    }
+  }
+
+  .message-text {
+    margin: 0;
+    line-height: 1.4;
+    word-wrap: break-word;
+  }
+
+  .message-image {
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+    transition: transform 0.2s ease;
+    
+    &:hover {
+      transform: scale(1.02);
+    }
+  }
+
+  .voice-player {
+    min-width: 200px;
+    
+    .play-button {
+      transition: transform 0.2s ease;
+      
+      &:hover {
+        transform: scale(1.1);
+      }
+    }
+    
+    .voice-waveform {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  .file-attachment {
+    transition: background-color 0.2s ease;
+    
+    &:hover {
+      background-color: #e5e7eb;
+    }
+  }
+
+  .message-time {
+    margin-top: 0.25rem;
+    text-align: right;
+  }
+
+  .read-status {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .message-reactions {
+    .reaction-buttons {
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+  }
+
+  &:hover {
+    .reaction-buttons {
+      opacity: 1;
+    }
+  }
+
+  .reaction-btn {
+    transition: all 0.2s ease;
+    
+    &:hover {
+      transform: scale(1.2);
+    }
+  }
+
+  // Responsive design
+  @media (max-width: 768px) {
+    .message-content {
+      max-width: 85%;
+    }
+    
+    .voice-player {
+      min-width: 150px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .message-content {
+      max-width: 90%;
+      padding: 0.5rem 0.75rem;
+    }
+    
+    .avatar img {
+      width: 2rem;
+      height: 2rem;
+    }
+  }
+} 

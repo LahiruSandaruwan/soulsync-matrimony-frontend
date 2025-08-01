@@ -1,271 +1,139 @@
-<div class="p-8">
-  <div class="text-center mb-8">
-    <h2 class="text-3xl font-romantic text-gray-900 mb-2">
-      Join SoulSync! 💕
-    </h2>
-    <p class="text-gray-600">
-      Start your journey to find your perfect match
-    </p>
+<div class="register-container">
+  <div class="register-card">
+    <h2>Join SoulSync</h2>
+    <p class="subtitle">Create your account and find your perfect match</p>
+    
+    <form (ngSubmit)="onSubmit()" #form="ngForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="first_name">First Name</label>
+          <input 
+            type="text" 
+            id="first_name" 
+            name="first_name" 
+            [(ngModel)]="registerForm.first_name" 
+            required 
+            class="form-control"
+            placeholder="First name">
+        </div>
+        
+        <div class="form-group">
+          <label for="last_name">Last Name</label>
+          <input 
+            type="text" 
+            id="last_name" 
+            name="last_name" 
+            [(ngModel)]="registerForm.last_name" 
+            required 
+            class="form-control"
+            placeholder="Last name">
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input 
+          type="email" 
+          id="email" 
+          name="email" 
+          [(ngModel)]="registerForm.email" 
+          required 
+          class="form-control"
+          placeholder="Enter your email">
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="date_of_birth">Date of Birth</label>
+          <input 
+            type="date" 
+            id="date_of_birth" 
+            name="date_of_birth" 
+            [(ngModel)]="registerForm.date_of_birth" 
+            required 
+            class="form-control">
+        </div>
+        
+        <div class="form-group">
+          <label for="gender">Gender</label>
+          <select 
+            id="gender" 
+            name="gender" 
+            [(ngModel)]="registerForm.gender" 
+            required 
+            class="form-control">
+            <option value="">Select gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input 
+          type="password" 
+          id="password" 
+          name="password" 
+          [(ngModel)]="registerForm.password" 
+          required 
+          class="form-control"
+          placeholder="Create a password">
+      </div>
+      
+      <div class="form-group">
+        <label for="password_confirmation">Confirm Password</label>
+        <input 
+          type="password" 
+          id="password_confirmation" 
+          name="password_confirmation" 
+          [(ngModel)]="registerForm.password_confirmation" 
+          required 
+          class="form-control"
+          placeholder="Confirm your password">
+      </div>
+      
+      <div class="form-group checkbox-group">
+        <label class="checkbox-label">
+          <input 
+            type="checkbox" 
+            name="terms_accepted" 
+            [(ngModel)]="registerForm.terms_accepted" 
+            required>
+          <span class="checkmark"></span>
+          I agree to the <a href="#" target="_blank">Terms and Conditions</a>
+        </label>
+      </div>
+      
+      <div class="form-group checkbox-group">
+        <label class="checkbox-label">
+          <input 
+            type="checkbox" 
+            name="privacy_accepted" 
+            [(ngModel)]="registerForm.privacy_accepted" 
+            required>
+          <span class="checkmark"></span>
+          I agree to the <a href="#" target="_blank">Privacy Policy</a>
+        </label>
+      </div>
+      
+      <div class="error-message" *ngIf="error">
+        {{ error }}
+      </div>
+      
+      <button 
+        type="submit" 
+        class="btn-primary" 
+        [disabled]="loading || !form.form.valid">
+        <span *ngIf="loading">Creating account...</span>
+        <span *ngIf="!loading">Create Account</span>
+      </button>
+    </form>
+    
+    <div class="links">
+      <span>Already have an account?</span>
+      <a routerLink="/auth/login">Sign in</a>
+    </div>
   </div>
-
-  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-6">
-    <!-- Basic Information -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <!-- First Name -->
-      <div>
-        <label for="first_name" class="form-label">
-          First Name *
-        </label>
-        <input
-          id="first_name"
-          type="text"
-          formControlName="first_name"
-          class="input-field"
-          placeholder="Enter your first name"
-          [class.border-red-500]="isFieldInvalid('first_name')"
-        >
-        <div *ngIf="isFieldInvalid('first_name')" class="mt-1 text-red-600 text-sm">
-          <span *ngIf="registerForm.get('first_name')?.errors?.['required']">
-            First name is required
-          </span>
-        </div>
-      </div>
-
-      <!-- Last Name -->
-      <div>
-        <label for="last_name" class="form-label">
-          Last Name *
-        </label>
-        <input
-          id="last_name"
-          type="text"
-          formControlName="last_name"
-          class="input-field"
-          placeholder="Enter your last name"
-          [class.border-red-500]="isFieldInvalid('last_name')"
-        >
-        <div *ngIf="isFieldInvalid('last_name')" class="mt-1 text-red-600 text-sm">
-          <span *ngIf="registerForm.get('last_name')?.errors?.['required']">
-            Last name is required
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Email -->
-    <div>
-      <label for="email" class="form-label">
-        Email Address *
-      </label>
-      <input
-        id="email"
-        type="email"
-        formControlName="email"
-        class="input-field"
-        placeholder="Enter your email address"
-        [class.border-red-500]="isFieldInvalid('email')"
-      >
-      <div *ngIf="isFieldInvalid('email')" class="mt-1 text-red-600 text-sm">
-        <span *ngIf="registerForm.get('email')?.errors?.['required']">
-          Email is required
-        </span>
-        <span *ngIf="registerForm.get('email')?.errors?.['email']">
-          Please enter a valid email address
-        </span>
-      </div>
-    </div>
-
-    <!-- Date of Birth and Gender -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <!-- Date of Birth -->
-      <div>
-        <label for="date_of_birth" class="form-label">
-          Date of Birth *
-        </label>
-        <input
-          id="date_of_birth"
-          type="date"
-          formControlName="date_of_birth"
-          class="input-field"
-          [class.border-red-500]="isFieldInvalid('date_of_birth')"
-        >
-        <div *ngIf="isFieldInvalid('date_of_birth')" class="mt-1 text-red-600 text-sm">
-          <span *ngIf="registerForm.get('date_of_birth')?.errors?.['required']">
-            Date of birth is required
-          </span>
-        </div>
-      </div>
-
-      <!-- Gender -->
-      <div>
-        <label for="gender" class="form-label">
-          Gender *
-        </label>
-        <select
-          id="gender"
-          formControlName="gender"
-          class="input-field"
-          [class.border-red-500]="isFieldInvalid('gender')"
-        >
-          <option value="">Select your gender</option>
-          <option value="male">Male</option>
-          <option value="female">Female</option>
-          <option value="other">Other</option>
-        </select>
-        <div *ngIf="isFieldInvalid('gender')" class="mt-1 text-red-600 text-sm">
-          <span *ngIf="registerForm.get('gender')?.errors?.['required']">
-            Gender is required
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Country -->
-    <div>
-      <label for="country_code" class="form-label">
-        Country *
-      </label>
-      <select
-        id="country_code"
-        formControlName="country_code"
-        class="input-field"
-        [class.border-red-500]="isFieldInvalid('country_code')"
-      >
-        <option value="">Select your country</option>
-        <option value="LK">Sri Lanka</option>
-        <option value="IN">India</option>
-        <option value="US">United States</option>
-        <option value="UK">United Kingdom</option>
-        <option value="CA">Canada</option>
-        <option value="AU">Australia</option>
-        <!-- Add more countries as needed -->
-      </select>
-      <div *ngIf="isFieldInvalid('country_code')" class="mt-1 text-red-600 text-sm">
-        <span *ngIf="registerForm.get('country_code')?.errors?.['required']">
-          Country is required
-        </span>
-      </div>
-    </div>
-
-    <!-- Password -->
-    <div>
-      <label for="password" class="form-label">
-        Password *
-      </label>
-      <div class="relative">
-        <input
-          id="password"
-          [type]="showPassword ? 'text' : 'password'"
-          formControlName="password"
-          class="input-field pr-10"
-          placeholder="Create a strong password"
-          [class.border-red-500]="isFieldInvalid('password')"
-        >
-        <button
-          type="button"
-          (click)="togglePassword()"
-          class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-        >
-          <span *ngIf="showPassword">🙈</span>
-          <span *ngIf="!showPassword">👁️</span>
-        </button>
-      </div>
-      <div *ngIf="isFieldInvalid('password')" class="mt-1 text-red-600 text-sm">
-        <span *ngIf="registerForm.get('password')?.errors?.['required']">
-          Password is required
-        </span>
-        <span *ngIf="registerForm.get('password')?.errors?.['minlength']">
-          Password must be at least 8 characters
-        </span>
-      </div>
-    </div>
-
-    <!-- Confirm Password -->
-    <div>
-      <label for="password_confirmation" class="form-label">
-        Confirm Password *
-      </label>
-      <input
-        id="password_confirmation"
-        type="password"
-        formControlName="password_confirmation"
-        class="input-field"
-        placeholder="Confirm your password"
-        [class.border-red-500]="isFieldInvalid('password_confirmation')"
-      >
-      <div *ngIf="isFieldInvalid('password_confirmation')" class="mt-1 text-red-600 text-sm">
-        <span *ngIf="registerForm.get('password_confirmation')?.errors?.['required']">
-          Please confirm your password
-        </span>
-        <span *ngIf="registerForm.get('password_confirmation')?.errors?.['passwordMismatch']">
-          Passwords do not match
-        </span>
-      </div>
-    </div>
-
-    <!-- Terms and Privacy -->
-    <div class="space-y-3">
-      <div class="flex items-start">
-        <input
-          id="terms_accepted"
-          type="checkbox"
-          formControlName="terms_accepted"
-          class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded mt-1"
-        >
-        <label for="terms_accepted" class="ml-2 block text-sm text-gray-700">
-          I agree to the 
-          <a href="#" class="text-primary-600 hover:text-primary-500">Terms of Service</a>
-          *
-        </label>
-      </div>
-      <div *ngIf="isFieldInvalid('terms_accepted')" class="text-red-600 text-sm">
-        You must accept the terms of service
-      </div>
-
-      <div class="flex items-start">
-        <input
-          id="privacy_accepted"
-          type="checkbox"
-          formControlName="privacy_accepted"
-          class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded mt-1"
-        >
-        <label for="privacy_accepted" class="ml-2 block text-sm text-gray-700">
-          I agree to the 
-          <a href="#" class="text-primary-600 hover:text-primary-500">Privacy Policy</a>
-          *
-        </label>
-      </div>
-      <div *ngIf="isFieldInvalid('privacy_accepted')" class="text-red-600 text-sm">
-        You must accept the privacy policy
-      </div>
-    </div>
-
-    <!-- Submit Button -->
-    <button
-      type="submit"
-      [disabled]="registerForm.invalid || isLoading"
-      class="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      <span *ngIf="isLoading" class="loading-spinner mr-2"></span>
-      {{ isLoading ? 'Creating Account...' : 'Create Account ❤️' }}
-    </button>
-
-    <!-- Error Message -->
-    <div *ngIf="errorMessage" class="text-red-600 text-center text-sm bg-red-50 p-3 rounded-lg">
-      {{ errorMessage }}
-    </div>
-
-    <!-- Sign In Link -->
-    <div class="text-center">
-      <p class="text-gray-600">
-        Already have an account?
-        <a
-          routerLink="/auth/login"
-          class="text-primary-600 hover:text-primary-500 font-medium transition-colors duration-200"
-        >
-          Sign in here
-        </a>
-      </p>
-    </div>
-  </form>
-</div>
+</div> 

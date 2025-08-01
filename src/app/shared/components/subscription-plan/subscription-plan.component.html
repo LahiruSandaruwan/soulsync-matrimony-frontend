@@ -1,0 +1,98 @@
+<div 
+  class="subscription-plan relative bg-white rounded-lg shadow-lg border-2 transition-all duration-300 hover:shadow-xl"
+  [class.selected]="isSelected()"
+  [class.popular]="isPopularPlan()"
+  [class.current]="isCurrentPlan()"
+>
+  <!-- Popular Badge -->
+  <div *ngIf="isPopularPlan()" class="absolute -top-3 left-1/2 transform -translate-x-1/2">
+    <span class="bg-gradient-to-r from-pink-500 to-purple-600 text-white text-xs font-bold px-4 py-1 rounded-full">
+      MOST POPULAR
+    </span>
+  </div>
+
+  <!-- Current Plan Badge -->
+  <div *ngIf="isCurrentPlan()" class="absolute -top-3 left-1/2 transform -translate-x-1/2">
+    <span class="bg-green-500 text-white text-xs font-bold px-4 py-1 rounded-full">
+      CURRENT PLAN
+    </span>
+  </div>
+
+  <div class="p-6">
+    <!-- Plan Header -->
+    <div class="text-center mb-6">
+      <h3 class="text-2xl font-bold text-gray-900 mb-2">{{ plan.name }}</h3>
+      <p class="text-gray-600 mb-4">{{ plan.description }}</p>
+      
+      <!-- Price -->
+      <div class="mb-4">
+        <div class="flex items-center justify-center">
+          <span class="text-4xl font-bold text-gray-900">{{ getFormattedPrice() }}</span>
+          <span class="text-lg text-gray-600 ml-1">{{ getBillingCycleText() }}</span>
+        </div>
+        
+        <!-- Original Price (if discounted) -->
+        <div *ngIf="plan.original_price" class="flex items-center justify-center mt-2">
+          <span class="text-lg text-gray-400 line-through mr-2">
+            {{ plan.currency }}{{ plan.original_price }}{{ getBillingCycleText() }}
+          </span>
+          <span class="text-sm text-green-600 font-medium">{{ getSavingsText() }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Features List -->
+    <div class="mb-6">
+      <ul class="space-y-3">
+        <li *ngFor="let feature of plan.features" class="flex items-start">
+          <span class="text-green-500 mr-3 mt-1">{{ getFeatureIcon(feature) }}</span>
+          <span class="text-gray-700">{{ getFeatureText(feature) }}</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Action Buttons -->
+    <div *ngIf="showActions" class="space-y-3">
+      <button 
+        *ngIf="!isCurrentPlan()"
+        (click)="onSubscribe()"
+        class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      >
+        {{ isSelected() ? 'Subscribe Now' : 'Choose Plan' }}
+      </button>
+      
+      <button 
+        *ngIf="isCurrentPlan()"
+        disabled
+        class="w-full bg-gray-300 text-gray-500 font-semibold py-3 px-4 rounded-lg cursor-not-allowed"
+      >
+        Current Plan
+      </button>
+      
+      <button 
+        *ngIf="!isCurrentPlan() && !isSelected()"
+        (click)="onSelectPlan()"
+        class="w-full border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
+      >
+        Select Plan
+      </button>
+    </div>
+
+    <!-- Additional Info -->
+    <div class="mt-4 text-center">
+      <p class="text-xs text-gray-500">
+        * All plans include a 7-day free trial
+      </p>
+      <p class="text-xs text-gray-500">
+        * Cancel anytime, no commitment
+      </p>
+    </div>
+  </div>
+
+  <!-- Plan Comparison Highlights -->
+  <div *ngIf="isPopularPlan()" class="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
+    <div class="bg-gradient-to-r from-pink-500 to-purple-600 text-white text-xs px-3 py-1 rounded-full">
+      Best Value
+    </div>
+  </div>
+</div> 

@@ -1,90 +1,58 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
-import { Router, ActivatedRoute, RouterModule } from '@angular/router';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../services/auth.service';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
+import { ResetPasswordRequest } from '../../core/models/user.model';
 
 @Component({
   selector: 'app-reset-password',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './reset-password.component.html',
-  styleUrl: './reset-password.component.css'
+  styleUrls: ['./reset-password.component.scss']
 })
-export class ResetPasswordComponent implements OnInit {
-  resetPasswordForm: FormGroup;
-  isLoading = false;
-  errorMessage = '';
-  successMessage = '';
-  token = '';
-  email = '';
+export class ResetPasswordComponent {
+  resetForm: ResetPasswordRequest = {
+    token: '',
+    email: '',
+    password: '',
+    password_confirmation: ''
+  };
+  loading = false;
+  error = '';
+  success = false;
 
   constructor(
-    private formBuilder: FormBuilder,
     private authService: AuthService,
-    private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {
-    this.resetPasswordForm = this.formBuilder.group({
-      password: ['', [Validators.required, Validators.minLength(8)]],
-      password_confirmation: ['', [Validators.required]]
-    }, { validators: this.passwordMatchValidator });
-  }
-
-  ngOnInit(): void {
-    // Get token and email from route parameters
-    this.token = this.route.snapshot.queryParams['token'] || '';
-    this.email = this.route.snapshot.queryParams['email'] || '';
-    
-    if (!this.token || !this.email) {
-      this.errorMessage = 'Invalid reset link. Please request a new password reset.';
-    }
-  }
-
-  passwordMatchValidator(control: AbstractControl): { [key: string]: boolean } | null {
-    const password = control.get('password');
-    const confirmPassword = control.get('password_confirmation');
-    
-    if (password && confirmPassword && password.value !== confirmPassword.value) {
-      return { 'passwordMismatch': true };
-    }
-    
-    return null;
+    this.resetForm.token = this.route.snapshot.queryParams['token'] || '';
+    this.resetForm.email = this.route.snapshot.queryParams['email'] || '';
   }
 
   onSubmit(): void {
-    if (this.resetPasswordForm.invalid || !this.token || !this.email) {
+    if (this.resetForm.password !== this.resetForm.password_confirmation) {
+      this.error = 'Passwords do not match';
       return;
     }
 
-    this.isLoading = true;
-    this.errorMessage = '';
-    this.successMessage = '';
-
-    const request = {
-      token: this.token,
-      email: this.email,
-      password: this.resetPasswordForm.value.password,
-      password_confirmation: this.resetPasswordForm.value.password_confirmation
-    };
-
-    this.authService.resetPassword(request).subscribe({
-      next: (response) => {
-        this.isLoading = false;
-        this.successMessage = 'Password reset successfully! Redirecting to login...';
+    this.loading = true;
+    this.error = '';
+    
+    this.authService.resetPassword(this.resetForm).subscribe({
+      next: () => {
+        this.success = true;
+        this.loading = false;
         setTimeout(() => {
           this.router.navigate(['/auth/login']);
-        }, 2000);
+        }, 3000);
       },
-      error: (error) => {
-        this.isLoading = false;
-        this.errorMessage = error.message || 'Failed to reset password. Please try again.';
+      error: (error: any) => {
+        this.error = error.message || 'Failed to reset password';
+        this.loading = false;
       }
     });
   }
-
-  isFieldInvalid(fieldName: string): boolean {
-    const field = this.resetPasswordForm.get(fieldName);
-    return !!(field && field.invalid && (field.dirty || field.touched));
-  }
-}
+} 

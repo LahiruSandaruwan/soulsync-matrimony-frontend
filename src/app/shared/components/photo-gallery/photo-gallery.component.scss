@@ -1,0 +1,69 @@
+.photo-gallery {
+  .photo-item {
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: scale(1.02);
+    }
+
+    img {
+      transition: transform 0.3s ease;
+    }
+
+    .action-overlay {
+      transition: opacity 0.3s ease;
+    }
+  }
+
+  // Status badges
+  .status-badge {
+    &.approved {
+      background: linear-gradient(135deg, #10b981, #059669);
+    }
+    
+    &.pending {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+    
+    &.rejected {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+    }
+  }
+
+  // Modal styles
+  .photo-modal {
+    backdrop-filter: blur(4px);
+    
+    .modal-content {
+      animation: modalFadeIn 0.3s ease;
+    }
+  }
+
+  @keyframes modalFadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  // Responsive design
+  @media (max-width: 768px) {
+    .photo-item {
+      img {
+        height: 8rem;
+      }
+    }
+  }
+
+  @media (max-width: 640px) {
+    .photo-item {
+      img {
+        height: 6rem;
+      }
+    }
+  }
+} 

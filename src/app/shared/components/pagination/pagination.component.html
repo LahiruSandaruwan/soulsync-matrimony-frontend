@@ -1,0 +1,86 @@
+<div class="pagination-container">
+  <!-- Page Info -->
+  <div *ngIf="showInfo && pagination" class="pagination-info mb-4 text-center text-sm text-gray-600">
+    <p>{{ getPageInfoText() }}</p>
+    <p class="mt-1">{{ getPageRangeText() }}</p>
+  </div>
+
+  <!-- Pagination Controls -->
+  <div *ngIf="totalPages > 1" class="flex items-center justify-center space-x-1">
+    <!-- First Page Button -->
+    <button 
+      *ngIf="showFirstPage"
+      (click)="onFirstPage()"
+      class="pagination-button px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      title="Go to first page"
+    >
+      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M15.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L11.414 9H17a1 1 0 110 2h-5.586l4.293 4.293a1 1 0 010 1.414zM6 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+      </svg>
+    </button>
+
+    <!-- Previous Page Button -->
+    <button 
+      (click)="onPreviousPage()"
+      [disabled]="!hasPreviousPage"
+      class="pagination-button px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+      [class.rounded-l-md]="!showFirstPage"
+      title="Go to previous page"
+    >
+      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+      </svg>
+    </button>
+
+    <!-- Left Ellipsis -->
+    <span *ngIf="showLeftEllipsis" class="px-3 py-2 text-sm text-gray-500">
+      ...
+    </span>
+
+    <!-- Page Numbers -->
+    <button 
+      *ngFor="let page of visiblePages"
+      (click)="onPageChange(page)"
+      class="pagination-button px-3 py-2 text-sm font-medium border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+      [class]="page === currentPage ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 hover:bg-gray-50'"
+      [title]="'Go to page ' + page"
+    >
+      {{ page }}
+    </button>
+
+    <!-- Right Ellipsis -->
+    <span *ngIf="showRightEllipsis" class="px-3 py-2 text-sm text-gray-500">
+      ...
+    </span>
+
+    <!-- Next Page Button -->
+    <button 
+      (click)="onNextPage()"
+      [disabled]="!hasNextPage"
+      class="pagination-button px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+      [class.rounded-r-md]="!showLastPage"
+      title="Go to next page"
+    >
+      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+      </svg>
+    </button>
+
+    <!-- Last Page Button -->
+    <button 
+      *ngIf="showLastPage"
+      (click)="onLastPage()"
+      class="pagination-button px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+      title="Go to last page"
+    >
+      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414zM14 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1z" clip-rule="evenodd"></path>
+      </svg>
+    </button>
+  </div>
+
+  <!-- No Results Message -->
+  <div *ngIf="totalPages === 0" class="text-center py-8 text-gray-500">
+    <p>No results found</p>
+  </div>
+</div> 

@@ -1,59 +1,38 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../services/auth.service';
+import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../core/services/auth.service';
+import { ForgotPasswordRequest } from '../../core/models/user.model';
 
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './forgot-password.component.html',
-  styleUrl: './forgot-password.component.css'
+  styleUrls: ['./forgot-password.component.scss']
 })
 export class ForgotPasswordComponent {
-  forgotPasswordForm: FormGroup;
-  isLoading = false;
-  errorMessage = '';
-  successMessage = '';
+  email = '';
+  loading = false;
+  error = '';
+  success = false;
 
-  constructor(
-    private formBuilder: FormBuilder,
-    private authService: AuthService,
-    private router: Router
-  ) {
-    this.forgotPasswordForm = this.formBuilder.group({
-      email: ['', [Validators.required, Validators.email]]
-    });
-  }
+  constructor(private authService: AuthService) {}
 
   onSubmit(): void {
-    if (this.forgotPasswordForm.invalid) {
-      return;
-    }
-
-    this.isLoading = true;
-    this.errorMessage = '';
-    this.successMessage = '';
-
-    const request = {
-      email: this.forgotPasswordForm.value.email
-    };
-
+    this.loading = true;
+    this.error = '';
+    
+    const request: ForgotPasswordRequest = { email: this.email };
     this.authService.forgotPassword(request).subscribe({
-      next: (response) => {
-        this.isLoading = false;
-        this.successMessage = 'Password reset link sent to your email!';
+      next: () => {
+        this.success = true;
+        this.loading = false;
       },
-      error: (error) => {
-        this.isLoading = false;
-        this.errorMessage = error.message || 'Failed to send reset link. Please try again.';
+      error: (error: any) => {
+        this.error = error.message || 'Failed to send reset email';
+        this.loading = false;
       }
     });
   }
-
-  isFieldInvalid(fieldName: string): boolean {
-    const field = this.forgotPasswordForm.get(fieldName);
-    return !!(field && field.invalid && (field.dirty || field.touched));
-  }
-}
+} 

@@ -1,0 +1,35 @@
+<div 
+  *ngIf="isOpen"
+  [class]="getBackdropClasses()"
+  (click)="onBackdropClick($event)"
+  class="modal-backdrop"
+>
+  <div 
+    [class]="getModalClasses()"
+    class="modal-content"
+    [class]="getContentClasses()"
+  >
+    <!-- Modal Header -->
+    <div *ngIf="title || showCloseButton" class="modal-header flex items-center justify-between p-6 border-b border-gray-200">
+      <h3 *ngIf="title" class="text-lg font-semibold text-gray-900">
+        {{ title }}
+      </h3>
+      
+      <button 
+        *ngIf="showCloseButton"
+        (click)="onCloseClick()"
+        class="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+        type="button"
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body p-6">
+      <ng-content></ng-content>
+    </div>
+  </div>
+</div> 

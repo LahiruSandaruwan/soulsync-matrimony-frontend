@@ -1,0 +1,20 @@
+<div class="profile-view">
+  <div class="profile-header">
+    <h1>{{ profile.firstName }} {{ profile.lastName }}</h1>
+    <p class="profile-subtitle">{{ profile.age }} years old • {{ profile.location }}</p>
+  </div>
+  
+  <div class="profile-content">
+    <div class="profile-section">
+      <h2>About Me</h2>
+      <p>{{ profile.bio }}</p>
+    </div>
+    
+    <div class="profile-section">
+      <h2>Photos</h2>
+      <div class="photos-grid">
+        <p class="empty-state">No photos uploaded yet</p>
+      </div>
+    </div>
+  </div>
+</div> 

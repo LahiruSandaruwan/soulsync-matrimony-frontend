@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
-import { AuthGuard } from './guards/auth.guard';
-import { RoleGuard } from './guards/role.guard';
+import { AuthGuard } from './core/guards/auth.guard';
+import { RoleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
   // Auth Routes
@@ -56,7 +56,7 @@ export const routes: Routes = [
       },
       {
         path: 'matches',
-        loadComponent: () => import('./matches/match-suggestions/match-suggestions.component').then(m => m.MatchSuggestionsComponent)
+        loadComponent: () => import('./match/match-suggestions/match-suggestions.component').then(m => m.MatchSuggestionsComponent)
       },
       {
         path: 'chat',
@@ -128,11 +128,11 @@ export const routes: Routes = [
   // Error Pages
   {
     path: 'unauthorized',
-    loadComponent: () => import('./errors/unauthorized/unauthorized.component').then(m => m.UnauthorizedComponent)
+    loadComponent: () => import('./error/unauthorized/unauthorized.component').then(m => m.UnauthorizedComponent)
   },
   {
     path: 'not-found',
-    loadComponent: () => import('./errors/page-not-found/page-not-found.component').then(m => m.PageNotFoundComponent)
+    loadComponent: () => import('./error/page-not-found/page-not-found.component').then(m => m.PageNotFoundComponent)
   },
 
   // Catch all route

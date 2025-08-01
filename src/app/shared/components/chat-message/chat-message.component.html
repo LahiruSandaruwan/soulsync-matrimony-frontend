@@ -1,0 +1,110 @@
+<div class="chat-message" [class.own-message]="isOwnMessage()">
+  <!-- Sender Info (for group chats) -->
+  <div *ngIf="showSenderInfo && !isOwnMessage()" class="sender-info mb-1">
+    <span class="text-xs text-gray-500 font-medium">
+      {{ message.sender.first_name }} {{ message.sender.last_name }}
+    </span>
+  </div>
+
+  <div class="message-container">
+    <!-- Avatar (for other users' messages) -->
+    <div *ngIf="!isOwnMessage()" class="avatar mr-2">
+      <img 
+        [src]="message.sender.profile_photo || 'assets/images/default-avatar.png'"
+        [alt]="message.sender.first_name"
+        class="w-8 h-8 rounded-full object-cover"
+      >
+    </div>
+
+    <!-- Message Content -->
+    <div class="message-content" [class.own]="isOwnMessage()">
+      <!-- Text Message -->
+      <div *ngIf="message.message_type === 'text'" class="text-message">
+        <p class="message-text">{{ message.message }}</p>
+      </div>
+
+      <!-- Image Message -->
+      <div *ngIf="isImageMessage()" class="image-message">
+        <img 
+          [src]="message.file_path" 
+          [alt]="message.file_name || 'Image'"
+          class="message-image rounded-lg cursor-pointer"
+          (click)="onMessageClick()"
+        >
+        <p *ngIf="message.message" class="image-caption mt-2">{{ message.message }}</p>
+      </div>
+
+      <!-- Voice Message -->
+      <div *ngIf="isVoiceMessage()" class="voice-message">
+        <div class="voice-player bg-gray-100 rounded-lg p-3 flex items-center">
+          <button class="play-button mr-3">
+            <svg class="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path>
+            </svg>
+          </button>
+          <div class="voice-waveform flex-1">
+            <div class="waveform-bar bg-blue-300 rounded-full mx-1" style="height: 20px; width: 3px;"></div>
+            <div class="waveform-bar bg-blue-400 rounded-full mx-1" style="height: 30px; width: 3px;"></div>
+            <div class="waveform-bar bg-blue-500 rounded-full mx-1" style="height: 25px; width: 3px;"></div>
+            <div class="waveform-bar bg-blue-400 rounded-full mx-1" style="height: 35px; width: 3px;"></div>
+            <div class="waveform-bar bg-blue-300 rounded-full mx-1" style="height: 15px; width: 3px;"></div>
+          </div>
+          <span class="voice-duration text-sm text-gray-600 ml-2">0:30</span>
+        </div>
+        <p *ngIf="message.message" class="voice-caption mt-2">{{ message.message }}</p>
+      </div>
+
+      <!-- File Message -->
+      <div *ngIf="isFileMessage()" class="file-message">
+        <div class="file-attachment bg-gray-50 rounded-lg p-3 border cursor-pointer" (click)="onMessageClick()">
+          <div class="flex items-center">
+            <span class="file-icon text-2xl mr-3">{{ getFileIcon() }}</span>
+            <div class="file-info flex-1">
+              <p class="file-name font-medium text-gray-800">{{ message.file_name || 'File' }}</p>
+              <p class="file-size text-sm text-gray-500">{{ getFileSize() }}</p>
+            </div>
+            <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+            </svg>
+          </div>
+        </div>
+        <p *ngIf="message.message" class="file-caption mt-2">{{ message.message }}</p>
+      </div>
+
+      <!-- Message Time -->
+      <div class="message-time">
+        <span class="text-xs text-gray-400">{{ getMessageTime() }}</span>
+        <span *ngIf="isOwnMessage()" class="read-status ml-1">
+          <svg *ngIf="message.is_read" class="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+          </svg>
+          <svg *ngIf="!message.is_read" class="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd"></path>
+          </svg>
+        </span>
+      </div>
+    </div>
+
+    <!-- Avatar (for own messages) -->
+    <div *ngIf="isOwnMessage()" class="avatar ml-2">
+      <img 
+        [src]="message.sender.profile_photo || 'assets/images/default-avatar.png'"
+        [alt]="message.sender.first_name"
+        class="w-8 h-8 rounded-full object-cover"
+      >
+    </div>
+  </div>
+
+  <!-- Message Reactions -->
+  <div class="message-reactions mt-1">
+    <div class="reaction-buttons flex space-x-1">
+      <button 
+        *ngFor="let reaction of ['👍', '❤️', '😊', '😮', '😢', '😡']"
+        (click)="onReaction(reaction)"
+        class="reaction-btn text-sm hover:bg-gray-100 rounded-full p-1 transition-colors duration-200"
+      >
+        {{ reaction }}
+      </button>
+    </div>
+  </div>
+</div> 

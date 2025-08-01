@@ -1,251 +1,245 @@
-# SoulSync Matrimony - Angular Frontend
+# SoulSync Matrimony Frontend
 
-A modern, responsive Angular application for the SoulSync Matrimony platform, designed to help users find their perfect match with a beautiful, romantic interface.
+A modern Angular application for the SoulSync Matrimony platform, featuring a clean, scalable, and modular architecture.
 
-## 🚀 Features
+## 🏗️ Project Structure
 
-- **Modern Angular 19** with standalone components
-- **Romantic UI/UX** with soft pink, rose gold, and lavender color scheme
-- **Responsive Design** optimized for mobile and desktop
-- **Real-time Features** with WebSocket integration
-- **Authentication System** with JWT tokens
-- **Role-based Access Control** for admin features
-- **Progressive Web App** capabilities
-- **Tailwind CSS** for styling
-
-## 🛠 Tech Stack
-
-- **Framework**: Angular 19
-- **Styling**: Tailwind CSS
-- **State Management**: RxJS Observables
-- **HTTP Client**: Angular HttpClient with interceptors
-- **Routing**: Angular Router with lazy loading
-- **Forms**: Angular Reactive Forms
-- **Authentication**: JWT with HTTP interceptors
-- **Real-time**: WebSocket integration
-- **Icons**: Emoji-based icons for romantic feel
-
-## 📦 Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd matrimony-frontend
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Configure environment**
-   - Copy `src/environments/environment.ts` and update API URLs
-   - Set your backend API endpoint
-   - Configure WebSocket URL
-
-4. **Start development server**
-   ```bash
-   npm start
-   ```
-
-5. **Build for production**
-   ```bash
-   npm run build
-   ```
-
-## 🏗 Project Structure
+The project follows a feature-based architecture with clear separation of concerns:
 
 ```
-src/
-├── app/
-│   ├── auth/                    # Authentication components
-│   │   ├── login/
-│   │   ├── register/
-│   │   └── forgot-password/
-│   ├── dashboard/               # Dashboard components
-│   ├── profile/                 # Profile management
-│   ├── matches/                 # Matching system
-│   ├── chat/                    # Messaging system
-│   ├── search/                  # User search
-│   ├── subscription/            # Payment & subscriptions
-│   ├── notifications/           # Notification system
-│   ├── settings/                # User settings
-│   ├── admin/                   # Admin panel
-│   ├── errors/                  # Error pages
-│   ├── layouts/                 # Layout components
-│   ├── guards/                  # Route guards
-│   ├── interceptors/            # HTTP interceptors
-│   ├── models/                  # TypeScript interfaces
-│   └── services/                # API services
-├── environments/                # Environment configuration
-└── styles.css                   # Global styles
+src/app/
+├── core/                           # Core application functionality
+│   ├── services/                   # Application services
+│   │   ├── auth.service.ts
+│   │   ├── chat.service.ts
+│   │   ├── match.service.ts
+│   │   ├── notification.service.ts
+│   │   ├── payment.service.ts
+│   │   ├── profile.service.ts
+│   │   └── websocket.service.ts
+│   ├── guards/                     # Route guards
+│   │   ├── auth.guard.ts
+│   │   └── role.guard.ts
+│   ├── interceptors/               # HTTP interceptors
+│   │   └── auth.interceptor.ts
+│   └── models/                     # Data models
+│       ├── chat.model.ts
+│       ├── match.model.ts
+│       ├── notification.model.ts
+│       └── user.model.ts
+├── shared/                         # Shared components and utilities
+│   ├── components/                 # Reusable UI components
+│   │   ├── chat-message/
+│   │   ├── loading-spinner/
+│   │   ├── modal/
+│   │   ├── notification-item/
+│   │   ├── pagination/
+│   │   ├── photo-gallery/
+│   │   ├── search-filter/
+│   │   ├── subscription-plan/
+│   │   ├── toast/
+│   │   └── user-card/
+│   ├── directives/                 # Custom directives
+│   ├── pipes/                      # Custom pipes
+│   └── ui/                         # UI utilities and styles
+├── auth/                           # Authentication feature
+│   ├── login/
+│   ├── register/
+│   ├── forgot-password/
+│   └── reset-password/
+├── dashboard/                      # User dashboard
+│   └── user-dashboard/
+├── profile/                        # User profile management
+│   ├── profile-view/
+│   ├── profile-edit/
+│   └── photo-upload/
+├── match/                          # Match management
+│   └── match-suggestions/
+├── chat/                           # Chat functionality
+│   ├── chat-box/
+│   └── chat-list/
+├── search/                         # User search
+│   └── search-users/
+├── notifications/                  # Notification management
+│   └── notification/
+├── subscription/                   # Subscription management
+│   └── subscription-plans/
+├── settings/                       # User settings
+│   └── account-settings/
+├── admin/                          # Admin panel
+│   ├── admin-dashboard/
+│   ├── user-management/
+│   ├── report-management/
+│   ├── content-management/
+│   └── settings/
+├── layouts/                        # Layout components
+│   ├── auth-layout/
+│   └── main-layout/
+├── error/                          # Error pages
+│   ├── unauthorized/
+│   └── page-not-found/
+├── app.component.ts                # Root component
+├── app.component.html
+├── app.component.css
+├── app.config.ts                   # Application configuration
+├── app.routes.ts                   # Application routes
+└── app.routes.server.ts
 ```
 
-## 🎨 Design System
+## 🚀 Getting Started
 
-### Color Palette
-- **Primary**: Soft pink (#ec4899)
-- **Rose**: Rose gold (#f43f5e)
-- **Lavender**: Purple (#a855f7)
-- **Beige**: Warm beige (#e5d9cc)
-- **Gold**: Accent gold (#f59e0b)
+### Prerequisites
 
-### Typography
-- **Headings**: Playfair Display (romantic serif)
-- **Body**: Inter (clean sans-serif)
+- Node.js (v18 or higher)
+- npm or yarn
+- Angular CLI (v17 or higher)
 
-### Components
-- **Cards**: Soft shadows with rounded corners
-- **Buttons**: Gradient backgrounds with hover effects
-- **Forms**: Clean inputs with focus states
-- **Icons**: Emoji-based for romantic feel
+### Installation
 
-## 🔐 Authentication
-
-The app uses JWT tokens for authentication with automatic token refresh:
-
-```typescript
-// Login
-this.authService.login(credentials).subscribe(response => {
-  // Token automatically stored
-  this.router.navigate(['/dashboard']);
-});
-
-// Protected routes
-canActivate: [AuthGuard]
-```
-
-## 📱 Responsive Design
-
-- **Mobile-first** approach
-- **Breakpoints**: sm (640px), md (768px), lg (1024px), xl (1280px)
-- **Touch-friendly** interface
-- **Progressive enhancement**
-
-## 🔄 State Management
-
-Uses RxJS Observables for reactive state management:
-
-```typescript
-// User state
-this.authService.currentUser$.subscribe(user => {
-  this.currentUser = user;
-});
-
-// Real-time updates
-this.websocketService.messages$.subscribe(message => {
-  // Handle new messages
-});
-```
-
-## 🚀 Deployment
-
-### Development
+1. Clone the repository:
 ```bash
-npm start
+git clone <repository-url>
+cd matrimony-frontend
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Start the development server:
+```bash
+ng serve
+```
+
+4. Open your browser and navigate to `http://localhost:4200`
+
+## 🏛️ Architecture Principles
+
+### 1. Feature-Based Organization
+- Each feature has its own directory with related components, services, and models
+- Features are self-contained and can be easily moved or removed
+- Clear separation between user-facing features and admin features
+
+### 2. Core Module
+- Contains application-wide services, guards, interceptors, and models
+- No feature-specific logic should be in the core module
+- Provides the foundation for all features
+
+### 3. Shared Module
+- Reusable components, directives, and pipes
+- UI components that are used across multiple features
+- Consistent styling and behavior across the application
+
+### 4. Standalone Components
+- All components are standalone for better tree-shaking
+- No NgModules required
+- Easier testing and maintenance
+
+## 📁 Directory Structure Details
+
+### Core (`/core`)
+Contains the fundamental building blocks of the application:
+
+- **Services**: Business logic and API communication
+- **Guards**: Route protection and authorization
+- **Interceptors**: HTTP request/response processing
+- **Models**: TypeScript interfaces and data structures
+
+### Shared (`/shared`)
+Reusable components and utilities:
+
+- **Components**: UI components used across features
+- **Directives**: Custom Angular directives
+- **Pipes**: Data transformation utilities
+- **UI**: Global styles and design system
+
+### Features
+Each feature directory contains:
+
+- Feature-specific components
+- Feature-specific services (if needed)
+- Feature-specific models (if needed)
+- Feature-specific routing (if needed)
+
+## 🛠️ Development Guidelines
+
+### Component Structure
+Each component follows the standard Angular structure:
+```
+component-name/
+├── component-name.component.ts
+├── component-name.component.html
+└── component-name.component.scss
+```
+
+### Naming Conventions
+- **Files**: kebab-case (e.g., `user-profile.component.ts`)
+- **Classes**: PascalCase (e.g., `UserProfileComponent`)
+- **Selectors**: kebab-case with app prefix (e.g., `app-user-profile`)
+- **Directories**: kebab-case (e.g., `user-profile/`)
+
+### Service Organization
+- Core services in `/core/services`
+- Feature-specific services in feature directories
+- Services are singleton by default
+- Use dependency injection for service communication
+
+### Routing
+- Main routes in `app.routes.ts`
+- Feature-specific routes can be lazy-loaded
+- Use route guards for protection
+- Implement proper error handling
+
+## 🧪 Testing
+
+### Unit Tests
+```bash
+ng test
+```
+
+### E2E Tests
+```bash
+ng e2e
+```
+
+## 📦 Building
+
+### Development Build
+```bash
+ng build
 ```
 
 ### Production Build
 ```bash
-npm run build
+ng build --configuration production
 ```
-
-### Docker Deployment
-```dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY . .
-RUN npm run build
-EXPOSE 80
-CMD ["npm", "start"]
-```
-
-## 🧪 Testing
-
-```bash
-# Unit tests
-npm test
-
-# E2E tests
-npm run e2e
-
-# Coverage
-npm run test:coverage
-```
-
-## 📊 Performance
-
-- **Lazy loading** for all feature modules
-- **Code splitting** for optimal bundle sizes
-- **Image optimization** with WebP support
-- **Service Worker** for caching
-- **Tree shaking** for unused code elimination
 
 ## 🔧 Configuration
 
-### Environment Variables
+### Environment Files
+- `src/environments/environment.ts` - Development configuration
+- `src/environments/environment.prod.ts` - Production configuration
 
-```typescript
-// environment.ts
-export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:8000/api/v1',
-  wsUrl: 'ws://localhost:6001',
-  // ... other config
-};
-```
+### Angular Configuration
+- `angular.json` - Angular CLI configuration
+- `tsconfig.json` - TypeScript configuration
+- `tailwind.config.js` - Tailwind CSS configuration
 
-### API Integration
+## 📚 Additional Resources
 
-The frontend integrates with the Laravel backend API:
-
-- **Base URL**: `/api/v1`
-- **Authentication**: Bearer token
-- **Real-time**: WebSocket connections
-- **File uploads**: Multipart form data
-
-## 🎯 Key Features
-
-### User Features
-- ✅ User registration and login
-- ✅ Profile creation and editing
-- ✅ Photo upload and management
-- ✅ Match discovery and suggestions
-- ✅ Real-time messaging
-- ✅ User search and filtering
-- ✅ Subscription management
-- ✅ Notification system
-
-### Admin Features
-- ✅ User management
-- ✅ Content moderation
-- ✅ Report handling
-- ✅ Analytics dashboard
-- ✅ System settings
+- [Angular Documentation](https://angular.io/docs)
+- [Angular Style Guide](https://angular.io/guide/styleguide)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
+1. Follow the established folder structure
+2. Use the provided naming conventions
+3. Write unit tests for new components and services
+4. Update documentation as needed
+5. Follow the Angular style guide
 
 ## 📄 License
 
 This project is licensed under the MIT License.
-
-## 🆘 Support
-
-For support and questions:
-- 📧 Email: support@soulsync.com
-- 📖 Documentation: [API Docs](../matrimony-backend/API_DOCUMENTATION_COMPLETE.md)
-- 🐛 Issues: GitHub Issues
-
-## 🎉 Acknowledgments
-
-- Built with ❤️ for connecting hearts
-- Powered by Angular and Laravel
-- Designed for modern web experiences

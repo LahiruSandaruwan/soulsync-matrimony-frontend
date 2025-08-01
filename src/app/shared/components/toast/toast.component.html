@@ -1,0 +1,50 @@
+<div 
+  [class]="getToastClasses()"
+  class="toast-container relative"
+  [style.width]="'400px'"
+  [style.max-width]="'90vw'"
+>
+  <!-- Toast Icon -->
+  <div class="flex-shrink-0 mr-3">
+    <svg [class]="getIconClasses()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="getToastIcon()"></path>
+    </svg>
+  </div>
+
+  <!-- Toast Content -->
+  <div class="flex-1 min-w-0">
+    <div class="flex items-start justify-between">
+      <div class="flex-1">
+        <h4 *ngIf="toast.title" class="text-sm font-medium mb-1">
+          {{ toast.title }}
+        </h4>
+        <p class="text-sm">
+          {{ toast.message }}
+        </p>
+      </div>
+      
+      <!-- Close Button -->
+      <button 
+        *ngIf="toast.showCloseButton !== false"
+        (click)="onClose()"
+        class="flex-shrink-0 ml-3 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+        type="button"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Progress Bar -->
+  <div 
+    *ngIf="toast.showProgress !== false && (toast.duration || 0) > 0"
+    class="absolute bottom-0 left-0 w-full h-1 bg-gray-200 rounded-b-lg overflow-hidden"
+  >
+    <div 
+      [class]="getProgressClasses()"
+      [style.width.%]="progress"
+    ></div>
+  </div>
+</div> 
