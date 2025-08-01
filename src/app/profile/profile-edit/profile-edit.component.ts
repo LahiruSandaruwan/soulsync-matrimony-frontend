@@ -1,278 +1,566 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { RouterModule, Router } from '@angular/router';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
+import { Subject, takeUntil, combineLatest } from 'rxjs';
+import { ProfileService, ProfileUpdateRequest } from '../../services/profile.service';
+import { AuthService } from '../../services/auth.service';
+import { User, UserProfile, UserPreference } from '../../models/user.model';
 
 @Component({
   selector: 'app-profile-edit',
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule],
   template: `
-    <div class="min-h-screen bg-gradient-romantic">
+    <div class="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
       <div class="container mx-auto px-4 py-8">
         <!-- Header -->
         <div class="mb-8">
-          <h1 class="text-3xl font-romantic text-gradient mb-2">✏️ Edit Profile</h1>
-          <p class="text-gray-600">Update your profile information to find better matches</p>
+          <div class="flex items-center justify-between">
+            <div>
+              <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">✏️ Edit Profile</h1>
+              <p class="text-gray-600">Update your profile information to find better matches</p>
+            </div>
+            <button 
+              (click)="goBack()"
+              class="bg-white border-2 border-pink-500 text-pink-600 px-4 py-2 rounded-lg font-semibold hover:bg-pink-50 transition-colors">
+              ← Back
+            </button>
+          </div>
         </div>
 
-        <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="space-y-8">
-          <!-- Basic Information -->
-          <div class="card">
-            <h2 class="text-2xl font-romantic text-gradient mb-6">💝 Basic Information</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="form-label">Full Name *</label>
-                <input 
-                  type="text" 
-                  formControlName="name"
-                  class="input-field"
-                  placeholder="Enter your full name"
-                >
-                <div *ngIf="profileForm.get('name')?.invalid && profileForm.get('name')?.touched" class="text-red-500 text-sm mt-1">
-                  Name is required
-                </div>
-              </div>
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="flex justify-center items-center min-h-64">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
+        </div>
 
-              <div>
-                <label class="form-label">Date of Birth *</label>
-                <input 
-                  type="date" 
-                  formControlName="dateOfBirth"
-                  class="input-field"
-                >
-                <div *ngIf="profileForm.get('dateOfBirth')?.invalid && profileForm.get('dateOfBirth')?.touched" class="text-red-500 text-sm mt-1">
-                  Date of birth is required
-                </div>
-              </div>
-
-              <div>
-                <label class="form-label">Location *</label>
-                <input 
-                  type="text" 
-                  formControlName="location"
-                  class="input-field"
-                  placeholder="City, Country"
-                >
-                <div *ngIf="profileForm.get('location')?.invalid && profileForm.get('location')?.touched" class="text-red-500 text-sm mt-1">
-                  Location is required
-                </div>
-              </div>
-
-              <div>
-                <label class="form-label">Occupation *</label>
-                <input 
-                  type="text" 
-                  formControlName="occupation"
-                  class="input-field"
-                  placeholder="Your profession"
-                >
-                <div *ngIf="profileForm.get('occupation')?.invalid && profileForm.get('occupation')?.touched" class="text-red-500 text-sm mt-1">
-                  Occupation is required
-                </div>
-              </div>
-
-              <div>
-                <label class="form-label">Education</label>
-                <select formControlName="education" class="input-field">
-                  <option value="">Select education level</option>
-                  <option value="high-school">High School</option>
-                  <option value="bachelors">Bachelor's Degree</option>
-                  <option value="masters">Master's Degree</option>
-                  <option value="phd">PhD</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-
-              <div>
-                <label class="form-label">Religion</label>
-                <select formControlName="religion" class="input-field">
-                  <option value="">Select religion</option>
-                  <option value="buddhist">Buddhist</option>
-                  <option value="christian">Christian</option>
-                  <option value="hindu">Hindu</option>
-                  <option value="muslim">Muslim</option>
-                  <option value="other">Other</option>
-                </select>
+        <!-- Profile Edit Form -->
+        <div *ngIf="!isLoading" class="space-y-8">
+          <!-- Progress Indicator -->
+          <div class="bg-white rounded-2xl shadow-lg p-6 border border-pink-100">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-gray-800">Profile Completion</h3>
+              <span class="text-pink-600 font-bold">{{ completionPercentage }}%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3">
+              <div 
+                class="bg-gradient-to-r from-pink-500 to-purple-600 h-3 rounded-full transition-all duration-500"
+                [style.width.%]="completionPercentage">
               </div>
             </div>
           </div>
 
-          <!-- About Me -->
-          <div class="card">
-            <h2 class="text-2xl font-romantic text-gradient mb-6">💭 About Me</h2>
-            <div>
-              <label class="form-label">Tell us about yourself *</label>
-              <textarea 
-                formControlName="about"
-                rows="6"
-                class="input-field resize-none"
-                placeholder="Share your interests, hobbies, values, and what you're looking for in a partner..."
-              ></textarea>
-              <div *ngIf="profileForm.get('about')?.invalid && profileForm.get('about')?.touched" class="text-red-500 text-sm mt-1">
-                About section is required (minimum 50 characters)
-              </div>
-            </div>
-          </div>
-
-          <!-- Preferences -->
-          <div class="card">
-            <h2 class="text-2xl font-romantic text-gradient mb-6">💕 Partner Preferences</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="form-label">Preferred Age Range</label>
-                <div class="flex space-x-2">
+          <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="space-y-8">
+            <!-- Basic Information -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 border border-pink-100">
+              <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                <span class="text-2xl mr-3">💝</span>
+                Basic Information
+              </h2>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Height (cm)</label>
                   <input 
                     type="number" 
-                    formControlName="preferredAgeMin"
-                    class="input-field"
-                    placeholder="Min"
-                    min="18"
-                    max="80"
+                    formControlName="height_cm"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    placeholder="e.g., 165"
+                    min="100"
+                    max="250"
                   >
-                  <span class="self-center text-gray-500">to</span>
+                  <div *ngIf="isFieldInvalid('height_cm')" class="text-red-500 text-sm mt-1">
+                    Please enter a valid height
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Weight (kg)</label>
                   <input 
                     type="number" 
-                    formControlName="preferredAgeMax"
-                    class="input-field"
-                    placeholder="Max"
-                    min="18"
-                    max="80"
+                    formControlName="weight_kg"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    placeholder="e.g., 60"
+                    min="30"
+                    max="200"
+                  >
+                  <div *ngIf="isFieldInvalid('weight_kg')" class="text-red-500 text-sm mt-1">
+                    Please enter a valid weight
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Body Type</label>
+                  <select formControlName="body_type" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                    <option value="">Select body type</option>
+                    <option value="slim">Slim</option>
+                    <option value="average">Average</option>
+                    <option value="athletic">Athletic</option>
+                    <option value="heavy">Heavy</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Complexion</label>
+                  <select formControlName="complexion" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                    <option value="">Select complexion</option>
+                    <option value="very_fair">Very Fair</option>
+                    <option value="fair">Fair</option>
+                    <option value="wheatish">Wheatish</option>
+                    <option value="brown">Brown</option>
+                    <option value="dark">Dark</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Blood Group</label>
+                  <select formControlName="blood_group" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                    <option value="">Select blood group</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Marital Status</label>
+                  <select formControlName="marital_status" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                    <option value="">Select marital status</option>
+                    <option value="never_married">Never Married</option>
+                    <option value="divorced">Divorced</option>
+                    <option value="widowed">Widowed</option>
+                    <option value="separated">Separated</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Location Information -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 border border-pink-100">
+              <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                <span class="text-2xl mr-3">📍</span>
+                Location Information
+              </h2>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Current City</label>
+                  <input 
+                    type="text" 
+                    formControlName="current_city"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    placeholder="e.g., Colombo"
+                  >
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Current State</label>
+                  <input 
+                    type="text" 
+                    formControlName="current_state"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    placeholder="e.g., Western Province"
+                  >
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Current Country</label>
+                  <input 
+                    type="text" 
+                    formControlName="current_country"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    placeholder="e.g., Sri Lanka"
                   >
                 </div>
               </div>
-
-              <div>
-                <label class="form-label">Preferred Location</label>
-                <input 
-                  type="text" 
-                  formControlName="preferredLocation"
-                  class="input-field"
-                  placeholder="Preferred partner location"
-                >
-              </div>
-
-              <div>
-                <label class="form-label">Marital Status</label>
-                <select formControlName="maritalStatus" class="input-field">
-                  <option value="">Select marital status</option>
-                  <option value="never-married">Never Married</option>
-                  <option value="divorced">Divorced</option>
-                  <option value="widowed">Widowed</option>
-                </select>
-              </div>
-
-              <div>
-                <label class="form-label">Looking for</label>
-                <select formControlName="lookingFor" class="input-field">
-                  <option value="">Select gender preference</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                </select>
-              </div>
             </div>
-          </div>
 
-          <!-- Photos -->
-          <div class="card">
-            <h2 class="text-2xl font-romantic text-gradient mb-6">📸 Photos</h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div class="aspect-square bg-gray-200 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-primary-400 transition-colors cursor-pointer">
-                <div class="text-center">
-                  <span class="text-4xl mb-2 block">📷</span>
-                  <span class="text-sm text-gray-500">Add Photo</span>
+            <!-- Education & Career -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 border border-pink-100">
+              <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                <span class="text-2xl mr-3">🎓</span>
+                Education & Career
+              </h2>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Education Level</label>
+                  <select formControlName="education_level" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                    <option value="">Select education level</option>
+                    <option value="high_school">High School</option>
+                    <option value="diploma">Diploma</option>
+                    <option value="bachelors">Bachelor's Degree</option>
+                    <option value="masters">Master's Degree</option>
+                    <option value="phd">PhD</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Occupation</label>
+                  <input 
+                    type="text" 
+                    formControlName="occupation"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    placeholder="e.g., Software Engineer"
+                  >
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Company</label>
+                  <input 
+                    type="text" 
+                    formControlName="company"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    placeholder="e.g., Tech Company"
+                  >
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Job Title</label>
+                  <input 
+                    type="text" 
+                    formControlName="job_title"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    placeholder="e.g., Senior Developer"
+                  >
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Annual Income (USD)</label>
+                  <input 
+                    type="number" 
+                    formControlName="annual_income_usd"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    placeholder="e.g., 50000"
+                    min="0"
+                  >
                 </div>
               </div>
-              <div class="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
-                <span class="text-gray-500">📷</span>
-              </div>
-              <div class="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
-                <span class="text-gray-500">📷</span>
-              </div>
-              <div class="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
-                <span class="text-gray-500">📷</span>
+            </div>
+
+            <!-- Personal Information -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 border border-pink-100">
+              <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                <span class="text-2xl mr-3">👤</span>
+                Personal Information
+              </h2>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Religion</label>
+                  <input 
+                    type="text" 
+                    formControlName="religion"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    placeholder="e.g., Buddhist"
+                  >
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Caste</label>
+                  <input 
+                    type="text" 
+                    formControlName="caste"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    placeholder="e.g., Sinhalese"
+                  >
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Mother Tongue</label>
+                  <input 
+                    type="text" 
+                    formControlName="mother_tongue"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    placeholder="e.g., Sinhala"
+                  >
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Languages Known</label>
+                  <input 
+                    type="text" 
+                    formControlName="languages_known"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    placeholder="e.g., Sinhala, English, Tamil"
+                  >
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Diet</label>
+                  <select formControlName="diet" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                    <option value="">Select diet preference</option>
+                    <option value="vegetarian">Vegetarian</option>
+                    <option value="non_vegetarian">Non-Vegetarian</option>
+                    <option value="vegan">Vegan</option>
+                    <option value="jain">Jain</option>
+                    <option value="occasionally_non_veg">Occasionally Non-Veg</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Smoking</label>
+                  <select formControlName="smoking" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                    <option value="">Select smoking preference</option>
+                    <option value="never">Never</option>
+                    <option value="occasionally">Occasionally</option>
+                    <option value="regularly">Regularly</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Drinking</label>
+                  <select formControlName="drinking" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                    <option value="">Select drinking preference</option>
+                    <option value="never">Never</option>
+                    <option value="occasionally">Occasionally</option>
+                    <option value="socially">Socially</option>
+                    <option value="regularly">Regularly</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Hobbies</label>
+                  <input 
+                    type="text" 
+                    formControlName="hobbies"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    placeholder="e.g., Reading, Traveling, Cooking"
+                  >
+                </div>
               </div>
             </div>
-            <p class="text-sm text-gray-600 mt-4">Add up to 6 photos to showcase your personality</p>
-          </div>
 
-          <!-- Action Buttons -->
-          <div class="flex justify-end space-x-4">
-            <button type="button" class="btn-outline">
-              💾 Save Draft
-            </button>
-            <button type="submit" [disabled]="profileForm.invalid || isSubmitting" class="btn-primary">
-              <span *ngIf="isSubmitting" class="loading-spinner mr-2"></span>
-              {{ isSubmitting ? 'Saving...' : '💝 Save Profile' }}
-            </button>
-          </div>
-        </form>
+            <!-- About Me -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 border border-pink-100">
+              <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                <span class="text-2xl mr-3">💭</span>
+                About Me
+              </h2>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Tell us about yourself</label>
+                <textarea 
+                  formControlName="about_me"
+                  rows="6"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-none"
+                  placeholder="Share your interests, hobbies, values, and what you're looking for in a partner..."
+                ></textarea>
+                <div *ngIf="isFieldInvalid('about_me')" class="text-red-500 text-sm mt-1">
+                  About section is required (minimum 50 characters)
+                </div>
+                <div class="text-sm text-gray-500 mt-1">
+                  {{ profileForm.get('about_me')?.value?.length || 0 }}/500 characters
+                </div>
+              </div>
+            </div>
+
+            <!-- Looking For -->
+            <div class="bg-white rounded-2xl shadow-lg p-6 border border-pink-100">
+              <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                <span class="text-2xl mr-3">💕</span>
+                What I'm Looking For
+              </h2>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Describe your ideal partner</label>
+                <textarea 
+                  formControlName="looking_for"
+                  rows="4"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent resize-none"
+                  placeholder="Describe the qualities you're looking for in a partner..."
+                ></textarea>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row justify-end gap-4">
+              <button 
+                type="button" 
+                (click)="saveDraft()"
+                [disabled]="isSubmitting"
+                class="bg-white border-2 border-pink-500 text-pink-600 px-8 py-3 rounded-xl font-semibold hover:bg-pink-50 transition-all duration-200">
+                💾 Save Draft
+              </button>
+              <button 
+                type="submit" 
+                [disabled]="profileForm.invalid || isSubmitting"
+                class="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed">
+                <span *ngIf="isSubmitting" class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                {{ isSubmitting ? 'Saving...' : '💝 Save Profile' }}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   `,
-  styles: []
+  styles: [`
+    .bg-gradient-romantic {
+      background: linear-gradient(135deg, #fdf2f8 0%, #f3e8ff 100%);
+    }
+    
+    .text-gradient {
+      background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+  `]
 })
-export class ProfileEditComponent implements OnInit {
+export class ProfileEditComponent implements OnInit, OnDestroy {
   profileForm: FormGroup;
   isSubmitting = false;
+  isLoading = true;
+  completionPercentage = 0;
+  currentProfile: UserProfile | null = null;
+  
+  private destroy$ = new Subject<void>();
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private profileService: ProfileService,
+    private authService: AuthService,
+    private router: Router
+  ) {
     this.profileForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2)]],
-      dateOfBirth: ['', Validators.required],
-      location: ['', Validators.required],
-      occupation: ['', Validators.required],
-      education: [''],
+      // Basic Information
+      height_cm: ['', [Validators.min(100), Validators.max(250)]],
+      weight_kg: ['', [Validators.min(30), Validators.max(200)]],
+      body_type: [''],
+      complexion: [''],
+      blood_group: [''],
+      marital_status: [''],
+      
+      // Location
+      current_city: [''],
+      current_state: [''],
+      current_country: [''],
+      
+      // Education & Career
+      education_level: [''],
+      occupation: [''],
+      company: [''],
+      job_title: [''],
+      annual_income_usd: ['', [Validators.min(0)]],
+      
+      // Personal Information
       religion: [''],
-      about: ['', [Validators.required, Validators.minLength(50)]],
-      preferredAgeMin: [18, [Validators.min(18), Validators.max(80)]],
-      preferredAgeMax: [35, [Validators.min(18), Validators.max(80)]],
-      preferredLocation: [''],
-      maritalStatus: [''],
-      lookingFor: ['', Validators.required]
+      caste: [''],
+      mother_tongue: [''],
+      languages_known: [''],
+      diet: [''],
+      smoking: [''],
+      drinking: [''],
+      hobbies: [''],
+      
+      // About
+      about_me: ['', [Validators.required, Validators.minLength(50), Validators.maxLength(500)]],
+      looking_for: ['', [Validators.maxLength(500)]]
     });
   }
 
   ngOnInit(): void {
-    this.loadUserProfile();
+    this.loadProfileData();
   }
 
-  loadUserProfile(): void {
-    // TODO: Load existing profile data from API
-    const mockData = {
-      name: 'Sarah Johnson',
-      dateOfBirth: '1995-06-15',
-      location: 'Colombo, Sri Lanka',
-      occupation: 'Software Engineer',
-      education: 'bachelors',
-      religion: 'buddhist',
-      about: 'I am a passionate individual looking for a meaningful relationship. I enjoy reading, traveling, and spending time with family and friends.',
-      preferredAgeMin: 25,
-      preferredAgeMax: 35,
-      preferredLocation: 'Colombo, Sri Lanka',
-      maritalStatus: 'never-married',
-      lookingFor: 'male'
-    };
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
-    this.profileForm.patchValue(mockData);
+  private loadProfileData(): void {
+    this.isLoading = true;
+
+    combineLatest([
+      this.profileService.getProfile(),
+      this.profileService.getProfileCompletion()
+    ]).pipe(takeUntil(this.destroy$)).subscribe({
+      next: ([profile, completion]) => {
+        this.currentProfile = profile;
+        this.completionPercentage = completion.completion_percentage;
+        this.populateForm(profile);
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading profile data:', error);
+        this.isLoading = false;
+      }
+    });
+  }
+
+  private populateForm(profile: UserProfile): void {
+    this.profileForm.patchValue({
+      height_cm: profile.height_cm || '',
+      weight_kg: profile.weight_kg || '',
+      body_type: profile.body_type || '',
+      complexion: profile.complexion || '',
+      blood_group: profile.blood_group || '',
+      marital_status: profile.marital_status || '',
+      current_city: profile.current_city || '',
+      current_state: profile.current_state || '',
+      current_country: profile.current_country || '',
+      education_level: profile.education_level || '',
+      occupation: profile.occupation || '',
+      company: profile.company || '',
+      job_title: profile.job_title || '',
+      annual_income_usd: profile.annual_income_usd || '',
+      religion: profile.religion || '',
+      caste: profile.caste || '',
+      mother_tongue: profile.mother_tongue || '',
+      languages_known: profile.languages_known?.join(', ') || '',
+      diet: profile.diet || '',
+      smoking: profile.smoking || '',
+      drinking: profile.drinking || '',
+      hobbies: profile.hobbies?.join(', ') || '',
+      about_me: profile.about_me || '',
+      looking_for: profile.looking_for || ''
+    });
   }
 
   onSubmit(): void {
     if (this.profileForm.valid) {
       this.isSubmitting = true;
       
-      // TODO: Implement API call to save profile
-      console.log('Saving profile:', this.profileForm.value);
-      
-      // Simulate API call
-      setTimeout(() => {
-        this.isSubmitting = false;
-        // TODO: Show success message and navigate
-        console.log('Profile saved successfully!');
-      }, 2000);
+      const formValue = this.profileForm.value;
+      const updateRequest: ProfileUpdateRequest = {
+        ...formValue,
+        languages_known: formValue.languages_known ? formValue.languages_known.split(',').map((lang: string) => lang.trim()) : [],
+        hobbies: formValue.hobbies ? formValue.hobbies.split(',').map((hobby: string) => hobby.trim()) : []
+      };
+
+      this.profileService.updateProfile(updateRequest).pipe(takeUntil(this.destroy$)).subscribe({
+        next: (updatedProfile) => {
+          this.currentProfile = updatedProfile;
+          this.isSubmitting = false;
+          this.showSuccessMessage();
+          this.router.navigate(['/profile']);
+        },
+        error: (error) => {
+          console.error('Error updating profile:', error);
+          this.isSubmitting = false;
+          this.showErrorMessage('Failed to update profile. Please try again.');
+        }
+      });
     } else {
       this.markFormGroupTouched();
     }
+  }
+
+  saveDraft(): void {
+    // Save current form state to localStorage
+    const formData = this.profileForm.value;
+    localStorage.setItem('profile_draft', JSON.stringify(formData));
+    this.showSuccessMessage('Draft saved successfully!');
+  }
+
+  goBack(): void {
+    this.router.navigate(['/profile']);
+  }
+
+  isFieldInvalid(fieldName: string): boolean {
+    const field = this.profileForm.get(fieldName);
+    return !!(field && field.invalid && (field.dirty || field.touched));
   }
 
   markFormGroupTouched(): void {
@@ -280,5 +568,15 @@ export class ProfileEditComponent implements OnInit {
       const control = this.profileForm.get(key);
       control?.markAsTouched();
     });
+  }
+
+  private showSuccessMessage(message: string = 'Profile updated successfully!'): void {
+    // You can implement a toast notification service here
+    console.log('Success:', message);
+  }
+
+  private showErrorMessage(message: string): void {
+    // You can implement a toast notification service here
+    console.error('Error:', message);
   }
 } 

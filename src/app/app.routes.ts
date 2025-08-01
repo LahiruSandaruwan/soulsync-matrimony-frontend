@@ -51,6 +51,10 @@ export const routes: Routes = [
         loadComponent: () => import('./profile/profile-edit/profile-edit.component').then(m => m.ProfileEditComponent)
       },
       {
+        path: 'profile/photos',
+        loadComponent: () => import('./profile/photo-upload/photo-upload.component').then(m => m.PhotoUploadComponent)
+      },
+      {
         path: 'matches',
         loadComponent: () => import('./matches/match-suggestions/match-suggestions.component').then(m => m.MatchSuggestionsComponent)
       },
