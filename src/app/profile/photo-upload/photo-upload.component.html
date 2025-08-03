@@ -100,7 +100,7 @@
             class="btn-upload" 
             (click)="onUploadPhotos()"
             [disabled]="uploading">
-            <app-loading-spinner *ngIf="uploading" [size]="'sm'"></app-loading-spinner>
+            <app-loading-spinner *ngIf="uploading" [size]="20"></app-loading-spinner>
             <span *ngIf="!uploading">Upload {{ selectedFiles.length }} Photo{{ selectedFiles.length > 1 ? 's' : '' }}</span>
           </button>
         </div>

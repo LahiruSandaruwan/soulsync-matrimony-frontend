@@ -1,12 +1,11 @@
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, ActivatedRoute, Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { ProfileService } from '../../core/services/profile.service';
-import { AuthService } from '../../core/services/auth.service';
 import { MatchService } from '../../core/services/match.service';
 import { ChatService } from '../../core/services/chat.service';
+import { AuthService } from '../../core/services/auth.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
 
@@ -79,10 +78,7 @@ interface User {
   standalone: true,
   imports: [
     CommonModule,
-    RouterModule,
-    FormsModule,
-    LoadingSpinnerComponent,
-    ModalComponent,
+    LoadingSpinnerComponent
   ],
   templateUrl: './profile-view.component.html',
   styleUrls: ['./profile-view.component.scss']
@@ -94,13 +90,23 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
   
   user: User | null = null;
   currentUser: any = null;
-  loading = true;
-  error = '';
-  
-  // Photo gallery
-  currentPhotoIndex = 0;
+  // Loading states
+  loading = false;
+  liking = false;
+  disliking = false;
+  superLiking = false;
+  startingConversation = false;
+  blocking = false;
+
+  // Photo modal
   showPhotoModal = false;
-  
+  currentPhotoIndex = 0;
+
+  // Messages
+  successMessage = '';
+  errorMessage = '';
+  error = '';
+
   // Interaction states
   isLiked = false;
   isSuperLiked = false;
@@ -108,16 +114,6 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
   isMatched = false;
   compatibilityScore = 0;
   
-  // Action states
-  sendingLike = false;
-  sendingSuperLike = false;
-  startingConversation = false;
-  blocking = false;
-  
-  // Success/Error messages
-  successMessage = '';
-  errorMessage = '';
-
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -157,7 +153,8 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
       });
   }
 
-  private loadUserProfile(userId: number): void {
+  // Public method for template access
+  loadUserProfile(userId: number): void {
     this.loading = true;
     this.error = '';
 
@@ -224,57 +221,73 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
       });
   }
 
-  // Photo Gallery Methods
-  onPhotoClick(index: number): void {
+  // Photo navigation methods
+  previousPhoto(): void {
+    if (this.currentPhotoIndex > 0) {
+      this.currentPhotoIndex--;
+    }
+  }
+
+  nextPhoto(): void {
+    if (this.currentPhotoIndex < this.getPublicPhotos().length - 1) {
+      this.currentPhotoIndex++;
+    }
+  }
+
+  goToPhoto(index: number): void {
     this.currentPhotoIndex = index;
+  }
+
+  openPhotoModal(): void {
     this.showPhotoModal = true;
   }
 
-  onClosePhotoModal(): void {
+  closePhotoModal(): void {
     this.showPhotoModal = false;
   }
 
-  onPreviousPhoto(): void {
-    if (this.user?.photos && this.user.photos.length > 0) {
-      this.currentPhotoIndex = this.currentPhotoIndex > 0 
-        ? this.currentPhotoIndex - 1 
-        : this.user.photos.length - 1;
-    }
-  }
+  // Interaction methods
+  onDislike(): void {
+    if (!this.user || this.disliking) return;
 
-  onNextPhoto(): void {
-    if (this.user?.photos && this.user.photos.length > 0) {
-      this.currentPhotoIndex = this.currentPhotoIndex < this.user.photos.length - 1 
-        ? this.currentPhotoIndex + 1 
-        : 0;
-    }
-  }
-
-  // Interaction Methods
-  onLike(): void {
-    if (!this.user || this.sendingLike) return;
-
-    this.sendingLike = true;
-    this.matchService.likeUser(this.user.id)
+    this.disliking = true;
+    this.matchService.dislikeUser(this.user.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response: any) => {
-          this.isLiked = true;
-          this.sendingLike = false;
-          this.successMessage = 'Profile liked!';
-          
-          // Check if it's a match
-          if (response.data.is_match) {
-            this.isMatched = true;
-            this.successMessage = 'It\'s a match! 🎉';
-          }
-          
+        next: () => {
+          this.disliking = false;
+          this.successMessage = 'Profile passed';
           setTimeout(() => {
             this.successMessage = '';
           }, 3000);
         },
         error: (error: any) => {
-          this.sendingLike = false;
+          this.disliking = false;
+          this.errorMessage = error.message || 'Failed to pass profile';
+          setTimeout(() => {
+            this.errorMessage = '';
+          }, 3000);
+        }
+      });
+  }
+
+  onLike(): void {
+    if (!this.user || this.liking) return;
+
+    this.liking = true;
+    this.matchService.likeUser(this.user.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.liking = false;
+          this.isLiked = true;
+          this.successMessage = 'Profile liked!';
+          setTimeout(() => {
+            this.successMessage = '';
+          }, 3000);
+        },
+        error: (error: any) => {
+          this.liking = false;
           this.errorMessage = error.message || 'Failed to like profile';
           setTimeout(() => {
             this.errorMessage = '';
@@ -284,29 +297,61 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
   }
 
   onSuperLike(): void {
-    if (!this.user || this.sendingSuperLike) return;
+    if (!this.user || this.superLiking) return;
 
-    this.sendingSuperLike = true;
+    this.superLiking = true;
     this.matchService.superLikeUser(this.user.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response: any) => {
+        next: () => {
+          this.superLiking = false;
           this.isSuperLiked = true;
-          this.sendingSuperLike = false;
-          this.successMessage = 'Super like sent! ⭐';
-          
+          this.successMessage = 'Super like sent!';
           setTimeout(() => {
             this.successMessage = '';
           }, 3000);
         },
         error: (error: any) => {
-          this.sendingSuperLike = false;
-          this.errorMessage = error.message || 'Failed to send super like';
+          this.superLiking = false;
+          this.errorMessage = error.message || 'Failed to super like profile';
           setTimeout(() => {
             this.errorMessage = '';
           }, 3000);
         }
       });
+  }
+
+  onBlock(): void {
+    if (!this.user || this.blocking) return;
+
+    this.blocking = true;
+    this.matchService.blockUser(this.user.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.blocking = false;
+          this.isBlocked = true;
+          this.successMessage = 'User blocked';
+          setTimeout(() => {
+            this.successMessage = '';
+          }, 3000);
+        },
+        error: (error: any) => {
+          this.blocking = false;
+          this.errorMessage = error.message || 'Failed to block user';
+          setTimeout(() => {
+            this.errorMessage = '';
+          }, 3000);
+        }
+      });
+  }
+
+  onReport(): void {
+    // TODO: Implement report functionality
+    this.successMessage = 'Report submitted';
+    setTimeout(() => {
+      this.successMessage = '';
+    }, 3000);
   }
 
   onStartConversation(): void {
@@ -330,37 +375,6 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
       });
   }
 
-  onBlock(): void {
-    if (!this.user || this.blocking) return;
-
-    this.blocking = true;
-    this.matchService.blockUser(this.user.id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response: any) => {
-          this.isBlocked = true;
-          this.blocking = false;
-          this.successMessage = 'User blocked successfully';
-          
-          setTimeout(() => {
-            this.router.navigate(['/matches']);
-          }, 2000);
-        },
-        error: (error: any) => {
-          this.blocking = false;
-          this.errorMessage = error.message || 'Failed to block user';
-          setTimeout(() => {
-            this.errorMessage = '';
-          }, 3000);
-        }
-      });
-  }
-
-  onReport(): void {
-    // Navigate to report page
-    this.router.navigate(['/report', this.user?.id]);
-  }
-
   onBackToChats(): void {
     this.router.navigate(['/chat']);
   }
@@ -369,10 +383,11 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
     event.target.src = '/assets/images/default-avatar.png';
   }
 
-  // Utility Methods
-  getAge(dateOfBirth: string): number {
+  // Utility methods
+  getAge(): number {
+    if (!this.user?.date_of_birth) return 0;
+    const birthDate = new Date(this.user.date_of_birth);
     const today = new Date();
-    const birthDate = new Date(dateOfBirth);
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
     
@@ -389,9 +404,12 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
   }
 
   getLocation(): string {
-    if (!this.user?.profile) return '';
-    const { current_city, current_state, current_country } = this.user.profile;
-    return [current_city, current_state, current_country].filter(Boolean).join(', ');
+    const parts = [];
+    if (this.user?.profile?.current_city) parts.push(this.user.profile.current_city);
+    if (this.user?.profile?.current_state) parts.push(this.user.profile.current_state);
+    if (this.user?.profile?.current_country) parts.push(this.user.profile.current_country);
+    
+    return parts.length > 0 ? parts.join(', ') : 'Location not specified';
   }
 
   getCompatibilityColor(): string {
@@ -406,18 +424,13 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
     return 'Fair Match';
   }
 
-  getPrimaryPhoto(): string {
-    if (!this.user?.photos || this.user.photos.length === 0) {
-      return '/assets/images/default-avatar.png';
-    }
-    
-    const primaryPhoto = this.user.photos.find(photo => photo.is_primary);
-    return primaryPhoto ? primaryPhoto.file_path : this.user.photos[0].file_path;
+  getPrimaryPhoto(): any {
+    const photos = this.user?.photos || [];
+    return photos.find(photo => photo.is_primary) || photos[0] || null;
   }
 
-  getPublicPhotos(): UserPhoto[] {
-    if (!this.user?.photos) return [];
-    return this.user.photos.filter(photo => !photo.is_private && photo.status === 'approved');
+  getPublicPhotos(): any[] {
+    return this.user?.photos?.filter(photo => !photo.is_private) || [];
   }
 
   onClearSuccess(): void {

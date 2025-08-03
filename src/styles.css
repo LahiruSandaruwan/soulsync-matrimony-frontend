@@ -8,77 +8,162 @@
 @layer base {
   html {
     font-family: 'Inter', system-ui, sans-serif;
+    scroll-behavior: smooth;
   }
   
   body {
-    @apply bg-beige-50 text-gray-900;
+    @apply bg-beige-50 text-gray-900 antialiased;
+    line-height: 1.6;
   }
   
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Playfair Display', serif;
+    line-height: 1.2;
+  }
+
+  /* Focus styles for accessibility */
+  *:focus {
+    @apply outline-none ring-2 ring-primary-500 ring-offset-2 ring-offset-white;
+  }
+
+  /* Selection styles */
+  ::selection {
+    @apply bg-primary-100 text-primary-900;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full hover:bg-gray-400 transition-colors;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-500;
+  }
+
+  /* Dark mode scrollbar */
+  @media (prefers-color-scheme: dark) {
+    ::-webkit-scrollbar-track {
+      @apply bg-gray-800;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      @apply bg-gray-600 hover:bg-gray-500;
+    }
   }
 }
 
 /* Custom Component Styles */
 @layer components {
+  /* Button Styles */
   .btn-primary {
-    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 shadow-romantic;
+    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 shadow-romantic focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   
   .btn-secondary {
-    @apply bg-rose-500 hover:bg-rose-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 shadow-soft;
+    @apply bg-rose-500 hover:bg-rose-600 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 shadow-soft focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   
   .btn-outline {
-    @apply border-2 border-primary-600 text-primary-600 hover:bg-primary-600 hover:text-white font-medium py-2 px-4 rounded-lg transition-all duration-200;
+    @apply border-2 border-primary-600 text-primary-600 hover:bg-primary-600 hover:text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply text-gray-600 hover:text-primary-600 hover:bg-primary-50 font-medium py-2 px-4 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  }
+
+  .btn-sm {
+    @apply py-2 px-4 text-sm;
+  }
+
+  .btn-lg {
+    @apply py-4 px-8 text-lg;
   }
   
+  /* Card Styles */
   .card {
-    @apply bg-white rounded-xl shadow-soft border border-gray-100 p-6;
+    @apply bg-white rounded-xl shadow-soft border border-gray-100 p-6 transition-all duration-200 hover:shadow-md;
   }
   
   .card-romantic {
-    @apply bg-white rounded-xl shadow-romantic border border-primary-100 p-6;
+    @apply bg-white rounded-xl shadow-romantic border border-primary-100 p-6 transition-all duration-200 hover:shadow-lg;
+  }
+
+  .card-interactive {
+    @apply bg-white rounded-xl shadow-soft border border-gray-100 p-6 transition-all duration-200 hover:shadow-md hover:border-primary-200 cursor-pointer;
   }
   
+  /* Form Styles */
   .input-field {
-    @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200;
+    @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white placeholder-gray-400;
+  }
+
+  .input-field:disabled {
+    @apply bg-gray-50 cursor-not-allowed;
+  }
+
+  .input-field.error {
+    @apply border-red-300 focus:ring-red-500 focus:border-red-300;
+  }
+
+  .input-field.success {
+    @apply border-green-300 focus:ring-green-500 focus:border-green-300;
   }
   
   .form-label {
     @apply block text-sm font-medium text-gray-700 mb-2;
   }
+
+  .form-error {
+    @apply text-sm text-red-600 mt-1;
+  }
+
+  .form-help {
+    @apply text-sm text-gray-500 mt-1;
+  }
   
+  /* Navigation Styles */
   .nav-link {
-    @apply text-gray-600 hover:text-primary-600 transition-colors duration-200;
+    @apply text-gray-600 hover:text-primary-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg px-3 py-2;
   }
   
   .nav-link-active {
-    @apply text-primary-600 font-medium;
+    @apply text-primary-600 font-medium bg-primary-50;
   }
-  
+
+  /* Loading Spinner */
   .loading-spinner {
     @apply animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600;
   }
-  
+
+  /* Toast Styles */
   .toast-success {
-    @apply bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg;
+    @apply bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg border-l-4 border-green-600;
   }
   
   .toast-error {
-    @apply bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg;
+    @apply bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg border-l-4 border-red-600;
   }
   
   .toast-warning {
-    @apply bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg;
+    @apply bg-yellow-500 text-white px-4 py-3 rounded-lg shadow-lg border-l-4 border-yellow-600;
   }
   
   .toast-info {
-    @apply bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg;
+    @apply bg-blue-500 text-white px-4 py-3 rounded-lg shadow-lg border-l-4 border-blue-600;
   }
   
+  /* Avatar Styles */
   .avatar {
-    @apply rounded-full object-cover;
+    @apply rounded-full object-cover bg-gray-200;
   }
   
   .avatar-sm {
@@ -96,95 +181,159 @@
   .avatar-xl {
     @apply w-24 h-24;
   }
-  
-  .heart-icon {
-    @apply text-rose-500;
+
+  .avatar-2xl {
+    @apply w-32 h-32;
   }
   
+  /* Heart Icon Animation */
+  .heart-icon {
+    @apply text-red-500 transition-all duration-200;
+  }
+
+  .heart-icon:hover {
+    @apply text-red-600 scale-110;
+  }
+
+  .heart-icon.liked {
+    @apply text-red-600 animate-heartbeat;
+  }
+  
+  /* Chat Styles */
   .chat-bubble {
-    @apply bg-primary-100 text-gray-800 rounded-lg p-3 max-w-xs;
+    @apply bg-gray-100 rounded-lg px-4 py-2 max-w-xs lg:max-w-md;
   }
   
   .chat-bubble-own {
-    @apply bg-primary-600 text-white rounded-lg p-3 max-w-xs ml-auto;
+    @apply bg-primary-600 text-white rounded-lg px-4 py-2 max-w-xs lg:max-w-md ml-auto;
   }
   
+  /* Match Card Styles */
   .match-card {
-    @apply bg-white rounded-xl shadow-romantic border border-primary-100 p-6 hover:shadow-lg transition-shadow duration-200;
+    @apply bg-white rounded-xl shadow-soft border border-gray-100 p-6 hover:shadow-md transition-all duration-200 cursor-pointer;
   }
   
+  /* Profile Card Styles */
   .profile-card {
-    @apply bg-white rounded-xl shadow-soft border border-gray-100 p-6 hover:shadow-romantic transition-all duration-200;
+    @apply bg-white rounded-xl shadow-soft border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-200;
   }
-}
 
-/* Custom Utilities */
-@layer utilities {
+  /* Text Gradients */
   .text-gradient {
     @apply bg-gradient-to-r from-primary-600 to-rose-600 bg-clip-text text-transparent;
   }
   
+  /* Background Gradients */
   .bg-gradient-romantic {
-    @apply bg-gradient-to-br from-primary-50 via-rose-50 to-lavender-50;
+    @apply bg-gradient-to-br from-primary-50 via-rose-50 to-pink-50;
+  }
+
+  .bg-gradient-hero {
+    @apply bg-gradient-to-br from-primary-600 via-rose-600 to-pink-600;
   }
   
+  /* Border Gradients */
   .border-gradient {
     @apply border-2 border-transparent bg-gradient-to-r from-primary-600 to-rose-600 bg-clip-border;
   }
   
+  /* Shadow Styles */
   .shadow-heart {
-    box-shadow: 0 4px 20px rgba(236, 72, 153, 0.2);
+    box-shadow: 0 4px 14px 0 rgba(236, 72, 153, 0.3);
   }
-  
+
+  .shadow-romantic {
+    box-shadow: 0 10px 25px -3px rgba(236, 72, 153, 0.1), 0 4px 6px -2px rgba(236, 72, 153, 0.05);
+  }
+
+  .shadow-soft {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  }
+
+  /* Animations */
   .animate-heartbeat {
     animation: heartbeat 1.5s ease-in-out infinite;
   }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  .animate-bounce-in {
+    animation: bounceIn 0.6s ease-out;
+  }
+
+  /* Utility Classes */
+  .glass-effect {
+    @apply bg-white bg-opacity-80 backdrop-blur-sm border border-white border-opacity-20;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .aspect-square {
+    aspect-ratio: 1 / 1;
+  }
+
+  .aspect-video {
+    aspect-ratio: 16 / 9;
+  }
+
+  .aspect-photo {
+    aspect-ratio: 4 / 3;
+  }
 }
 
-/* Custom Animations */
+/* Animation Keyframes */
 @keyframes heartbeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes bounceIn {
   0% {
-    transform: scale(1);
+    transform: scale(0.3);
+    opacity: 0;
   }
-  14% {
-    transform: scale(1.1);
-  }
-  28% {
-    transform: scale(1);
-  }
-  42% {
-    transform: scale(1.1);
+  50% {
+    transform: scale(1.05);
   }
   70% {
-    transform: scale(1);
+    transform: scale(0.9);
   }
-}
-
-/* Scrollbar Styling */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-gray-100;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-primary-300 rounded-full;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-primary-400;
-}
-
-/* Focus Styles */
-*:focus {
-  @apply outline-none ring-2 ring-primary-500 ring-offset-2;
-}
-
-/* Selection Styles */
-::selection {
-  @apply bg-primary-200 text-primary-900;
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Responsive Design */
@@ -194,6 +343,111 @@
   }
   
   .btn-primary, .btn-secondary, .btn-outline {
-    @apply py-3 px-6 text-base;
+    @apply py-2.5 px-4 text-sm;
+  }
+
+  .avatar-xl {
+    @apply w-20 h-20;
+  }
+
+  .avatar-2xl {
+    @apply w-24 h-24;
+  }
+}
+
+@media (max-width: 640px) {
+  .card {
+    @apply p-3;
+  }
+  
+  .btn-primary, .btn-secondary, .btn-outline {
+    @apply py-2 px-3 text-sm w-full;
+  }
+
+  .chat-bubble, .chat-bubble-own {
+    @apply max-w-full;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  body {
+    @apply bg-gray-900 text-gray-100;
+  }
+
+  .card, .card-romantic, .card-interactive {
+    @apply bg-gray-800 border-gray-700;
+  }
+
+  .input-field {
+    @apply bg-gray-800 border-gray-600 text-gray-100 placeholder-gray-400;
+  }
+
+  .nav-link {
+    @apply text-gray-300 hover:text-primary-400;
+  }
+
+  .nav-link-active {
+    @apply text-primary-400 bg-primary-900;
+  }
+
+  .glass-effect {
+    @apply bg-gray-800 bg-opacity-80 border-gray-700 border-opacity-20;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .animate-heartbeat,
+  .animate-fade-in,
+  .animate-slide-up,
+  .animate-bounce-in {
+    animation: none;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .btn-primary {
+    @apply border-2 border-primary-600;
+  }
+
+  .btn-secondary {
+    @apply border-2 border-rose-600;
+  }
+
+  .btn-outline {
+    @apply border-2 border-primary-600;
+  }
+
+  .card {
+    @apply border-2 border-gray-300;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .btn-primary,
+  .btn-secondary,
+  .btn-outline,
+  .nav-link {
+    @apply border border-gray-300 text-gray-900 bg-white;
+  }
+
+  .card {
+    @apply border border-gray-300 shadow-none;
+  }
+
+  .animate-heartbeat,
+  .animate-fade-in,
+  .animate-slide-up,
+  .animate-bounce-in {
+    animation: none;
   }
 }

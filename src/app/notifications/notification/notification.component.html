@@ -145,7 +145,7 @@
           class="btn-load-more" 
           (click)="onLoadMore()"
           [disabled]="loadingMore">
-          <app-loading-spinner *ngIf="loadingMore" [size]="'sm'"></app-loading-spinner>
+          <app-loading-spinner *ngIf="loadingMore" [size]="20"></app-loading-spinner>
           <span *ngIf="!loadingMore">Load More</span>
         </button>
       </div>

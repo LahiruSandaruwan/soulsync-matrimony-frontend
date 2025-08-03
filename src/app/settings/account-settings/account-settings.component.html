@@ -63,7 +63,7 @@
 
           <div class="form-actions">
             <button type="submit" class="btn-primary" [disabled]="saving || profileForm.invalid">
-              <app-loading-spinner *ngIf="saving" [size]="'sm'"></app-loading-spinner>
+              <app-loading-spinner *ngIf="saving" [size]="20"></app-loading-spinner>
               <span *ngIf="!saving">Save Changes</span>
             </button>
           </div>
@@ -124,7 +124,7 @@
 
           <div class="form-actions">
             <button type="submit" class="btn-primary" [disabled]="saving">
-              <app-loading-spinner *ngIf="saving" [size]="'sm'"></app-loading-spinner>
+              <app-loading-spinner *ngIf="saving" [size]="20"></app-loading-spinner>
               <span *ngIf="!saving">Save Preferences</span>
             </button>
           </div>
@@ -156,7 +156,7 @@
 
           <div class="form-actions">
             <button type="submit" class="btn-primary" [disabled]="saving">
-              <app-loading-spinner *ngIf="saving" [size]="'sm'"></app-loading-spinner>
+              <app-loading-spinner *ngIf="saving" [size]="20"></app-loading-spinner>
               <span *ngIf="!saving">Save Privacy Settings</span>
             </button>
           </div>
