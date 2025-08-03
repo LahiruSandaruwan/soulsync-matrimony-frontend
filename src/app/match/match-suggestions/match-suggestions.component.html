@@ -1,4 +1,235 @@
 <div class="match-suggestions">
-  <h2>Match-suggestions Component</h2>
-  <p>This is the match-suggestions component.</p>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <app-loading-spinner></app-loading-spinner>
+    <p>Finding your perfect matches...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-container">
+    <div class="error-message">
+      <p>{{ error }}</p>
+      <button (click)="onRefreshSuggestions()" class="btn-retry">Try Again</button>
+    </div>
+  </div>
+
+  <!-- Match Suggestions Content -->
+  <div *ngIf="!loading && !error" class="match-content">
+    <!-- Header -->
+    <div class="match-header">
+      <div class="header-info">
+        <h1>Discover Matches</h1>
+        <p>{{ stats.totalSuggestions }} suggestions available</p>
+      </div>
+      
+      <div class="header-actions">
+        <button (click)="showFilters = !showFilters" class="btn-filters">
+          <span class="filter-icon">🔍</span>
+          Filters
+        </button>
+        <button (click)="onViewAllMatches()" class="btn-view-matches">
+          View All Matches
+        </button>
+      </div>
+    </div>
+
+    <!-- Filters Panel -->
+    <div *ngIf="showFilters" class="filters-panel">
+      <div class="filters-content">
+        <h3>Search Filters</h3>
+        
+        <div class="filter-group">
+          <label>Age Range</label>
+          <div class="age-range">
+            <input type="number" [(ngModel)]="filters.age_min" min="18" max="100" placeholder="Min">
+            <span>to</span>
+            <input type="number" [(ngModel)]="filters.age_max" min="18" max="100" placeholder="Max">
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label>Distance</label>
+          <select [(ngModel)]="filters.distance_max">
+            <option value="5">Within 5 km</option>
+            <option value="10">Within 10 km</option>
+            <option value="25">Within 25 km</option>
+            <option value="50">Within 50 km</option>
+            <option value="100">Within 100 km</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Location Preference</label>
+          <select [(ngModel)]="filters.location_preference">
+            <option value="same_city">Same City</option>
+            <option value="same_state">Same State</option>
+            <option value="same_country">Same Country</option>
+            <option value="anywhere">Anywhere</option>
+          </select>
+        </div>
+
+        <div class="filter-actions">
+          <button (click)="onUpdateFilters(filters)" class="btn-apply">Apply Filters</button>
+          <button (click)="showFilters = false" class="btn-cancel">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-label">Viewed Today</span>
+        <span class="stat-value">{{ stats.viewedToday }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Likes Sent</span>
+        <span class="stat-value">{{ stats.likesSent }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Super Likes</span>
+        <span class="stat-value">{{ stats.superLikesSent }}</span>
+      </div>
+    </div>
+
+    <!-- Current Suggestion Card -->
+    <div *ngIf="currentSuggestion" class="suggestion-card">
+      <div class="card-header">
+        <div class="user-info">
+          <h2>{{ currentSuggestion.user.first_name }}, {{ currentSuggestion.user.age }}</h2>
+          <p class="location">{{ currentSuggestion.user.profile?.current_city }}, {{ currentSuggestion.user.profile?.current_country }}</p>
+        </div>
+        
+        <div class="compatibility-score">
+          <span class="score-label">Match</span>
+          <span class="score-value" [class]="getCompatibilityColor(currentSuggestion.compatibility_score)">
+            {{ currentSuggestion.compatibility_score }}%
+          </span>
+        </div>
+      </div>
+
+      <!-- User Photos -->
+      <div class="user-photos">
+        <img [src]="currentSuggestion.user.profile?.primary_photo || 'assets/images/default-avatar.png'" 
+             [alt]="currentSuggestion.user.first_name"
+             class="primary-photo">
+      </div>
+
+      <!-- User Details -->
+      <div class="user-details">
+        <div class="detail-item">
+          <span class="detail-label">Occupation</span>
+          <span class="detail-value">{{ currentSuggestion.user.profile?.occupation || 'Not specified' }}</span>
+        </div>
+        
+        <div class="detail-item">
+          <span class="detail-label">Education</span>
+          <span class="detail-value">{{ currentSuggestion.user.profile?.education_level || 'Not specified' }}</span>
+        </div>
+        
+        <div class="detail-item">
+          <span class="detail-label">Religion</span>
+          <span class="detail-value">{{ currentSuggestion.user.profile?.religion || 'Not specified' }}</span>
+        </div>
+        
+        <div class="detail-item">
+          <span class="detail-label">About</span>
+          <span class="detail-value">{{ currentSuggestion.user.profile?.about_me || 'No description available' }}</span>
+        </div>
+      </div>
+
+      <!-- Matching Factors -->
+      <div *ngIf="currentSuggestion.matching_factors?.length" class="matching-factors">
+        <h4>Why you might match:</h4>
+        <div class="factors-list">
+          <span *ngFor="let factor of currentSuggestion.matching_factors" class="factor-tag">
+            {{ factor }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Mutual Interests -->
+      <div *ngIf="currentSuggestion.mutual_interests?.length" class="mutual-interests">
+        <h4>Shared Interests:</h4>
+        <div class="interests-list">
+          <span *ngFor="let interest of currentSuggestion.mutual_interests" class="interest-tag">
+            {{ interest }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button (click)="onDislike()" class="btn-dislike" title="Dislike">
+          <span class="action-icon">❌</span>
+        </button>
+        
+        <button (click)="onViewProfile(currentSuggestion.user.id)" class="btn-profile" title="View Profile">
+          <span class="action-icon">👤</span>
+        </button>
+        
+        <button (click)="onLike()" class="btn-like" title="Like">
+          <span class="action-icon">💕</span>
+        </button>
+        
+        <button (click)="onSuperLike()" class="btn-super-like" title="Super Like">
+          <span class="action-icon">⭐</span>
+        </button>
+        
+        <button (click)="onBlock()" class="btn-block" title="Block">
+          <span class="action-icon">🚫</span>
+        </button>
+      </div>
+
+      <!-- Progress Indicator -->
+      <div class="progress-indicator">
+        <span class="progress-text">{{ currentIndex + 1 }} of {{ suggestions.length }}</span>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="((currentIndex + 1) / suggestions.length) * 100"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!currentSuggestion && suggestions.length === 0" class="empty-state">
+      <div class="empty-icon">💕</div>
+      <h3>No more suggestions</h3>
+      <p>We're finding more people for you to discover!</p>
+      <button (click)="onRefreshSuggestions()" class="btn-refresh">Refresh Suggestions</button>
+    </div>
+  </div>
+
+  <!-- Match Modal -->
+  <app-modal *ngIf="showMatchModal" (close)="showMatchModal = false">
+    <div class="match-modal">
+      <div class="match-celebration">
+        <div class="celebration-icon">🎉</div>
+        <h2>It's a Match!</h2>
+        <p>You and {{ selectedMatch?.user.first_name }} liked each other!</p>
+      </div>
+      
+      <div class="match-users">
+        <div class="user-avatar">
+          <img [src]="currentUser?.profile?.primary_photo || 'assets/images/default-avatar.png'" 
+               [alt]="currentUser?.first_name">
+        </div>
+        <div class="match-heart">💕</div>
+        <div class="user-avatar">
+          <img [src]="selectedMatch?.user.profile?.primary_photo || 'assets/images/default-avatar.png'" 
+               [alt]="selectedMatch?.user.first_name">
+        </div>
+      </div>
+      
+      <div class="match-actions">
+        <button (click)="onStartConversation()" class="btn-start-chat">
+          Start Conversation
+        </button>
+        <button (click)="showMatchModal = false" class="btn-continue">
+          Continue Browsing
+        </button>
+      </div>
+    </div>
+  </app-modal>
+
+  <!-- Toast Notifications -->
+  <app-toast></app-toast>
 </div>

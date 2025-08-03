@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, Subject, timer } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
 import { ChatService, Message } from './chat.service';
 import { NotificationService, Notification } from './notification.service';

@@ -1,4 +1,289 @@
-<div class="subscription-plans">
-  <h2>Subscription-plans Component</h2>
-  <p>This is the subscription-plans component.</p>
+<div class="subscription-plans-container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <app-loading-spinner></app-loading-spinner>
+    <p>Loading subscription plans...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-container">
+    <div class="error-message">
+      <p>{{ error }}</p>
+      <button (click)="loadSubscriptionPlans()" class="btn-retry">Try Again</button>
+    </div>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="success" class="success-message">
+    <p>{{ success }}</p>
+  </div>
+
+  <!-- Subscription Plans Content -->
+  <div *ngIf="!loading && !error" class="subscription-content">
+    <!-- Header -->
+    <div class="plans-header">
+      <h1>Choose Your Plan</h1>
+      <p>Unlock premium features to find your perfect match</p>
+      
+      <!-- Current Subscription Status -->
+      <div *ngIf="currentSubscription" class="current-subscription">
+        <div class="subscription-status">
+          <span class="status-badge" [class]="currentSubscription.status">
+            {{ getPlanStatusText() }}
+          </span>
+          <span *ngIf="getDaysRemaining() > 0" class="days-remaining">
+            {{ getDaysRemaining() }} days remaining
+          </span>
+        </div>
+        
+        <button 
+          *ngIf="currentSubscription.status === 'active' && currentSubscription.plan_type !== 'free'"
+          (click)="onCancelSubscription()" 
+          class="btn-cancel-subscription">
+          Cancel Subscription
+        </button>
+      </div>
+    </div>
+
+    <!-- Currency Toggle -->
+    <div class="currency-toggle">
+      <span>Currency:</span>
+      <button 
+        (click)="onToggleCurrency()" 
+        class="currency-btn"
+        [class.active]="currency === 'USD'">
+        USD
+      </button>
+      <button 
+        (click)="onToggleCurrency()" 
+        class="currency-btn"
+        [class.active]="currency === 'LKR'">
+        LKR
+      </button>
+    </div>
+
+    <!-- Plans Grid -->
+    <div class="plans-grid">
+      <div 
+        *ngFor="let plan of plans" 
+        class="plan-card"
+        [class.current-plan]="isCurrentPlan(plan)"
+        [class.popular]="plan.popular">
+        
+        <!-- Popular Badge -->
+        <div *ngIf="plan.popular" class="popular-badge">
+          Most Popular
+        </div>
+        
+        <!-- Current Plan Badge -->
+        <div *ngIf="isCurrentPlan(plan)" class="current-badge">
+          Current Plan
+        </div>
+
+        <!-- Plan Header -->
+        <div class="plan-header">
+          <h3 class="plan-name">{{ plan.name }}</h3>
+          <div class="plan-price">
+            <span class="price-amount">
+              {{ getCurrencySymbol() }}{{ getPlanPrice(plan) }}
+            </span>
+            <span class="price-period">/month</span>
+          </div>
+          <p class="plan-description">
+            {{ plan.duration_months }} month{{ plan.duration_months > 1 ? 's' : '' }} subscription
+          </p>
+        </div>
+
+        <!-- Plan Features -->
+        <div class="plan-features">
+          <h4>Features</h4>
+          <ul class="features-list">
+            <li *ngFor="let feature of plan.features" class="feature-item">
+              <span class="feature-icon">✓</span>
+              {{ feature }}
+            </li>
+          </ul>
+        </div>
+
+        <!-- Plan Limits -->
+        <div class="plan-limits">
+          <h4>Limits</h4>
+          <div class="limits-grid">
+            <div class="limit-item">
+              <span class="limit-label">Daily Matches:</span>
+              <span class="limit-value">{{ getLimitText(plan.limits.daily_matches) }}</span>
+            </div>
+            <div class="limit-item">
+              <span class="limit-label">Messages/Day:</span>
+              <span class="limit-value">{{ getLimitText(plan.limits.messages_per_day) }}</span>
+            </div>
+            <div class="limit-item">
+              <span class="limit-label">Photo Uploads:</span>
+              <span class="limit-value">{{ getLimitText(plan.limits.photo_uploads) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Plan Actions -->
+        <div class="plan-actions">
+          <button 
+            *ngIf="!isCurrentPlan(plan)"
+            (click)="onSelectPlan(plan)"
+            class="btn-select-plan"
+            [disabled]="!canUpgradeTo(plan)">
+            <span *ngIf="plan.type === 'free'">Get Started</span>
+            <span *ngIf="plan.type !== 'free'">Choose Plan</span>
+          </button>
+          
+          <button 
+            *ngIf="isCurrentPlan(plan)"
+            class="btn-current-plan"
+            disabled>
+            Current Plan
+          </button>
+          
+          <button 
+            *ngIf="currentSubscription && !isCurrentPlan(plan) && canUpgradeTo(plan)"
+            (click)="onUpgradeSubscription(plan)"
+            class="btn-upgrade-plan">
+            Upgrade
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Plan Comparison -->
+    <div class="plan-comparison">
+      <h2>Plan Comparison</h2>
+      <div class="comparison-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th *ngFor="let plan of plans">{{ plan.name }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Daily Matches</td>
+              <td *ngFor="let plan of plans">{{ getLimitText(plan.limits.daily_matches) }}</td>
+            </tr>
+            <tr>
+              <td>Messages per Day</td>
+              <td *ngFor="let plan of plans">{{ getLimitText(plan.limits.messages_per_day) }}</td>
+            </tr>
+            <tr>
+              <td>Photo Uploads</td>
+              <td *ngFor="let plan of plans">{{ getLimitText(plan.limits.photo_uploads) }}</td>
+            </tr>
+            <tr>
+              <td>Advanced Search</td>
+              <td *ngFor="let plan of plans">
+                <span *ngIf="isFeatureIncluded(plan, 'search')" class="feature-included">✓</span>
+                <span *ngIf="!isFeatureIncluded(plan, 'search')" class="feature-not-included">✗</span>
+              </td>
+            </tr>
+            <tr>
+              <td>Read Receipts</td>
+              <td *ngFor="let plan of plans">
+                <span *ngIf="isFeatureIncluded(plan, 'receipts')" class="feature-included">✓</span>
+                <span *ngIf="!isFeatureIncluded(plan, 'receipts')" class="feature-not-included">✗</span>
+              </td>
+            </tr>
+            <tr>
+              <td>Profile Boost</td>
+              <td *ngFor="let plan of plans">
+                <span *ngIf="isFeatureIncluded(plan, 'boost')" class="feature-included">✓</span>
+                <span *ngIf="!isFeatureIncluded(plan, 'boost')" class="feature-not-included">✗</span>
+              </td>
+            </tr>
+            <tr>
+              <td>See Who Liked You</td>
+              <td *ngFor="let plan of plans">
+                <span *ngIf="isFeatureIncluded(plan, 'liked')" class="feature-included">✓</span>
+                <span *ngIf="!isFeatureIncluded(plan, 'liked')" class="feature-not-included">✗</span>
+              </td>
+            </tr>
+            <tr>
+              <td>Priority Support</td>
+              <td *ngFor="let plan of plans">
+                <span *ngIf="isFeatureIncluded(plan, 'support')" class="feature-included">✓</span>
+                <span *ngIf="!isFeatureIncluded(plan, 'support')" class="feature-not-included">✗</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="faq-section">
+      <h2>Frequently Asked Questions</h2>
+      <div class="faq-list">
+        <div class="faq-item">
+          <h3>Can I cancel my subscription anytime?</h3>
+          <p>Yes, you can cancel your subscription at any time. You'll continue to have access to premium features until the end of your current billing period.</p>
+        </div>
+        <div class="faq-item">
+          <h3>What payment methods do you accept?</h3>
+          <p>We accept all major credit cards, debit cards, and digital wallets including PayPal, Stripe, and local payment methods.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Is there a free trial?</h3>
+          <p>Yes, you can start with our free plan and upgrade anytime to unlock premium features and better matching opportunities.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Can I upgrade or downgrade my plan?</h3>
+          <p>Yes, you can upgrade your plan anytime. Downgrades will take effect at the end of your current billing period.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Modal -->
+  <app-modal 
+    *ngIf="showPaymentModal" 
+    (close)="onClosePaymentModal()"
+    [title]="'Subscribe to ' + (selectedPlan?.name || 'Plan')"
+    [size]="'md'">
+    
+    <div class="payment-modal-content">
+      <div class="selected-plan-summary">
+        <h3>{{ selectedPlan?.name }} Plan</h3>
+        <p class="plan-price">
+          {{ getCurrencySymbol() }}{{ selectedPlan ? getPlanPrice(selectedPlan) : 0 }}/month
+        </p>
+        <ul class="plan-highlights">
+          <li *ngFor="let feature of selectedPlan?.features?.slice(0, 3)">
+            {{ feature }}
+          </li>
+        </ul>
+      </div>
+
+      <div class="payment-methods">
+        <h4>Choose Payment Method</h4>
+        <div class="payment-options">
+          <button 
+            (click)="onProcessPayment('stripe')"
+            [disabled]="processingPayment"
+            class="payment-option">
+            <span class="payment-icon">💳</span>
+            Credit/Debit Card
+          </button>
+          <button 
+            (click)="onProcessPayment('paypal')"
+            [disabled]="processingPayment"
+            class="payment-option">
+            <span class="payment-icon">📱</span>
+            PayPal
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="processingPayment" class="processing-payment">
+        <app-loading-spinner></app-loading-spinner>
+        <p>Processing payment...</p>
+      </div>
+    </div>
+  </app-modal>
 </div>

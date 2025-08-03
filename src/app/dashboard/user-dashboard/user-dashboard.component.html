@@ -1,55 +1,186 @@
 <div class="dashboard">
-  <div class="dashboard-header">
-    <h1>Welcome back!</h1>
-    <p>Here's what's happening with your SoulSync account</p>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <app-loading-spinner></app-loading-spinner>
+    <p>Loading your dashboard...</p>
   </div>
 
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-icon matches-icon">💕</div>
-      <div class="stat-content">
-        <h3>{{ stats.totalMatches }}</h3>
-        <p>Total Matches</p>
-      </div>
-    </div>
-    
-    <div class="stat-card">
-      <div class="stat-icon messages-icon">💬</div>
-      <div class="stat-content">
-        <h3>{{ stats.newMessages }}</h3>
-        <p>New Messages</p>
-      </div>
-    </div>
-    
-    <div class="stat-card">
-      <div class="stat-icon views-icon">👁️</div>
-      <div class="stat-content">
-        <h3>{{ stats.profileViews }}</h3>
-        <p>Profile Views</p>
-      </div>
-    </div>
-    
-    <div class="stat-card">
-      <div class="stat-icon subscription-icon">⭐</div>
-      <div class="stat-content">
-        <h3>{{ stats.activeSubscriptions }}</h3>
-        <p>Active Subscriptions</p>
-      </div>
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-container">
+    <div class="error-message">
+      <p>{{ error }}</p>
+      <button (click)="refreshData()" class="btn-retry">Try Again</button>
     </div>
   </div>
 
-  <div class="dashboard-content">
-    <div class="content-section">
-      <h2>Recent Matches</h2>
-      <div class="matches-list">
-        <p class="empty-state">No recent matches to display</p>
+  <!-- Dashboard Content -->
+  <div *ngIf="!loading && !error" class="dashboard-content">
+    <div class="dashboard-header">
+      <div class="welcome-section">
+        <h1>Welcome back, {{ currentUser?.first_name || 'User' }}! 👋</h1>
+        <p>Here's what's happening with your SoulSync account</p>
+      </div>
+      
+      <!-- Profile Completion Alert -->
+      <div *ngIf="stats.profileCompletion < 80" class="profile-completion-alert">
+        <div class="alert-content">
+          <span class="alert-icon">📝</span>
+          <div class="alert-text">
+            <p>Complete your profile to get more matches!</p>
+            <p class="completion-text">{{ stats.profileCompletion }}% complete</p>
+          </div>
+          <button (click)="onCompleteProfile()" class="btn-complete">Complete Profile</button>
+        </div>
       </div>
     </div>
-    
-    <div class="content-section">
-      <h2>Recent Messages</h2>
-      <div class="messages-list">
-        <p class="empty-state">No recent messages to display</p>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card" (click)="onViewMatches()">
+        <div class="stat-icon matches-icon">💕</div>
+        <div class="stat-content">
+          <h3>{{ stats.totalMatches }}</h3>
+          <p>Total Matches</p>
+          <span class="stat-trend">+{{ stats.totalMatches > 0 ? '2' : '0' }} this week</span>
+        </div>
+      </div>
+      
+      <div class="stat-card" (click)="onViewMessages()">
+        <div class="stat-icon messages-icon">💬</div>
+        <div class="stat-content">
+          <h3>{{ stats.newMessages }}</h3>
+          <p>New Messages</p>
+          <span class="stat-trend" *ngIf="stats.newMessages > 0">Unread</span>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon views-icon">👁️</div>
+        <div class="stat-content">
+          <h3>{{ stats.profileViews }}</h3>
+          <p>Profile Views</p>
+          <span class="stat-trend">+{{ stats.profileViews > 0 ? '5' : '0' }} today</span>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon subscription-icon">⭐</div>
+        <div class="stat-content">
+          <h3>{{ stats.activeSubscriptions }}</h3>
+          <p>Active Subscriptions</p>
+          <span class="stat-trend" *ngIf="stats.activeSubscriptions > 0">Premium</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon notifications-icon">🔔</div>
+        <div class="stat-content">
+          <h3>{{ stats.unreadNotifications }}</h3>
+          <p>Notifications</p>
+          <span class="stat-trend" *ngIf="stats.unreadNotifications > 0">New</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon profile-icon">📊</div>
+        <div class="stat-content">
+          <h3>{{ stats.profileCompletion }}%</h3>
+          <p>Profile Complete</p>
+          <span class="stat-trend">{{ stats.profileCompletion < 80 ? 'Incomplete' : 'Complete' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard Sections -->
+    <div class="dashboard-sections">
+      <!-- Recent Matches Section -->
+      <div class="content-section">
+        <div class="section-header">
+          <h2>Recent Matches</h2>
+          <button (click)="onViewMatches()" class="btn-view-all">View All</button>
+        </div>
+        
+        <div class="matches-list" *ngIf="recentMatches.length > 0">
+          <div class="match-item" *ngFor="let match of recentMatches">
+            <app-user-card 
+              [user]="match.user" 
+              [showActions]="false"
+              [showMatchPercentage]="true"
+              (viewProfile)="onViewProfile($event)">
+            </app-user-card>
+            <div class="match-info">
+              <span class="match-date">{{ match.matched_at | date:'shortDate' }}</span>
+              <span class="compatibility-score">{{ match.compatibility_score }}% match</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="empty-state" *ngIf="recentMatches.length === 0">
+          <div class="empty-icon">💕</div>
+          <p>No matches yet</p>
+          <p class="empty-subtitle">Start exploring to find your perfect match!</p>
+          <button routerLink="/matches" class="btn-primary">Start Matching</button>
+        </div>
+      </div>
+      
+      <!-- Recent Messages Section -->
+      <div class="content-section">
+        <div class="section-header">
+          <h2>Recent Messages</h2>
+          <button (click)="onViewMessages()" class="btn-view-all">View All</button>
+        </div>
+        
+        <div class="messages-list" *ngIf="recentMessages.length > 0">
+          <div class="message-item" 
+               *ngFor="let message of recentMessages"
+               (click)="onViewConversation(message.conversation_id)"
+               [class.unread]="!message.is_read">
+            <div class="message-avatar">
+              <img [src]="message.sender?.profile?.primary_photo || 'assets/images/default-avatar.png'" 
+                   [alt]="message.sender?.first_name">
+            </div>
+            <div class="message-content">
+              <div class="message-header">
+                <span class="sender-name">{{ message.sender?.first_name }} {{ message.sender?.last_name }}</span>
+                <span class="message-time">{{ message.created_at | date:'shortTime' }}</span>
+              </div>
+              <p class="message-text">{{ message.content }}</p>
+            </div>
+            <div class="message-status" *ngIf="!message.is_read">
+              <span class="unread-indicator"></span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="empty-state" *ngIf="recentMessages.length === 0">
+          <div class="empty-icon">💬</div>
+          <p>No messages yet</p>
+          <p class="empty-subtitle">Start a conversation with your matches!</p>
+          <button routerLink="/chat" class="btn-primary">View Conversations</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <h3>Quick Actions</h3>
+      <div class="actions-grid">
+        <button routerLink="/matches" class="action-btn">
+          <span class="action-icon">🔍</span>
+          <span>Find Matches</span>
+        </button>
+        <button routerLink="/profile/edit" class="action-btn">
+          <span class="action-icon">✏️</span>
+          <span>Edit Profile</span>
+        </button>
+        <button routerLink="/search" class="action-btn">
+          <span class="action-icon">🔎</span>
+          <span>Search Users</span>
+        </button>
+        <button routerLink="/subscription" class="action-btn">
+          <span class="action-icon">⭐</span>
+          <span>Upgrade Plan</span>
+        </button>
       </div>
     </div>
   </div>

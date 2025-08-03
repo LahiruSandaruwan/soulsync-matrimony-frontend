@@ -70,4 +70,11 @@ export class UserCardComponent {
     const country = this.user.current_country || '';
     return [city, country].filter(Boolean).join(', ');
   }
+
+  onImageError(event: any): void {
+    const target = event.target as HTMLImageElement;
+    if (target) {
+      target.src = 'assets/images/default-avatar.png';
+    }
+  }
 } 

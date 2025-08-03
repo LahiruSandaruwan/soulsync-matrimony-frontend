@@ -1,4 +1,151 @@
 <div class="chat-list">
-  <h2>Chat-list Component</h2>
-  <p>This is the chat-list component.</p>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <app-loading-spinner></app-loading-spinner>
+    <p>Loading conversations...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-container">
+    <div class="error-message">
+      <p>{{ error }}</p>
+      <button (click)="refreshConversations()" class="btn-retry">Try Again</button>
+    </div>
+  </div>
+
+  <!-- Chat List Content -->
+  <div *ngIf="!loading && !error" class="chat-content">
+    <!-- Header -->
+    <div class="chat-header">
+      <div class="header-info">
+        <h1>Messages</h1>
+        <p>{{ filteredConversations.length }} conversations</p>
+      </div>
+      
+      <div class="header-actions">
+        <button (click)="refreshConversations()" class="btn-refresh" title="Refresh">
+          <span class="refresh-icon">🔄</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-container">
+      <div class="search-input">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="text" 
+          [(ngModel)]="searchQuery"
+          (input)="onSearchConversations()"
+          placeholder="Search conversations..."
+          class="search-field">
+        <button *ngIf="searchQuery" (click)="searchQuery = ''; onSearchConversations()" class="btn-clear">
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <!-- Conversations List -->
+    <div class="conversations-container">
+      <div *ngIf="filteredConversations.length === 0" class="empty-state">
+        <div class="empty-icon">💬</div>
+        <h3>No conversations yet</h3>
+        <p *ngIf="searchQuery">No conversations match your search.</p>
+        <p *ngIf="!searchQuery">Start matching with people to begin conversations!</p>
+        <button routerLink="/matches" class="btn-primary" *ngIf="!searchQuery">
+          Find Matches
+        </button>
+      </div>
+
+      <div class="conversations-list" *ngIf="filteredConversations.length > 0">
+        <div 
+          *ngFor="let conversation of filteredConversations" 
+          class="conversation-item"
+          [class.unread]="conversation.unread_count > 0"
+          (click)="onConversationClick(conversation.id)">
+          
+          <!-- User Avatar -->
+          <div class="user-avatar">
+            <img [src]="getOtherParticipant(conversation).profile?.primary_photo || 'assets/images/default-avatar.png'" 
+                 [alt]="getOtherParticipant(conversation).first_name">
+            <div class="online-indicator" [class.online]="getOtherParticipant(conversation).is_online"></div>
+          </div>
+
+          <!-- Conversation Content -->
+          <div class="conversation-content">
+            <div class="conversation-header">
+              <div class="user-info">
+                <h3 class="user-name">
+                  {{ getOtherParticipant(conversation).first_name }} {{ getOtherParticipant(conversation).last_name }}
+                </h3>
+                <span class="online-status" [class]="getOnlineStatus(getOtherParticipant(conversation).id)">
+                  {{ getOtherParticipant(conversation).is_online ? 'Online' : getLastSeenTime(getOtherParticipant(conversation).last_seen || '') }}
+                </span>
+              </div>
+              
+              <div class="conversation-meta">
+                <span class="message-time" *ngIf="conversation.last_message">
+                  {{ conversation.last_message.created_at | date:'shortTime' }}
+                </span>
+                <span class="unread-badge" *ngIf="conversation.unread_count > 0">
+                  {{ getUnreadCount(conversation) }}
+                </span>
+              </div>
+            </div>
+
+            <div class="conversation-preview">
+              <p class="last-message" *ngIf="conversation.last_message">
+                <span class="message-sender" *ngIf="conversation.last_message.sender_id === currentUser?.id">
+                  You: 
+                </span>
+                {{ conversation.last_message.content }}
+              </p>
+              <p class="no-messages" *ngIf="!conversation.last_message">
+                No messages yet
+              </p>
+            </div>
+          </div>
+
+          <!-- Conversation Actions -->
+          <div class="conversation-actions">
+            <button 
+              (click)="onMarkAsRead(conversation.id); $event.stopPropagation()" 
+              class="btn-mark-read"
+              *ngIf="conversation.unread_count > 0"
+              title="Mark as read">
+              ✓
+            </button>
+            
+            <div class="dropdown-menu">
+              <button class="btn-more" (click)="$event.stopPropagation()">⋯</button>
+              <div class="dropdown-content">
+                <button (click)="onBlockUser(getOtherParticipant(conversation).id)" class="dropdown-item">
+                  <span class="dropdown-icon">🚫</span>
+                  Block User
+                </button>
+                <button (click)="onDeleteConversation(conversation.id)" class="dropdown-item">
+                  <span class="dropdown-icon">🗑️</span>
+                  Delete Conversation
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Load More Button -->
+      <div *ngIf="hasMoreConversations && filteredConversations.length > 0" class="load-more">
+        <button 
+          (click)="loadMoreConversations()" 
+          [disabled]="loadingMore"
+          class="btn-load-more">
+          <span *ngIf="loadingMore">Loading...</span>
+          <span *ngIf="!loadingMore">Load More Conversations</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notifications -->
+  <app-toast></app-toast>
 </div>

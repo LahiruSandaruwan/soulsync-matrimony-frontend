@@ -1,12 +1,49 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
+import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
+import { SearchService } from '../../core/services/search.service';
+import { MatchService } from '../../core/services/match.service';
+import { AuthService } from '../../core/services/auth.service';
+import { UserCardComponent } from '../../shared/components/user-card/user-card.component';
+
+interface SearchFilters {
+  age_min: number;
+  age_max: number;
+  location: string;
+  religion: string;
+  education: string;
+  marital_status: string;
+  occupation: string;
+  looking_for: string;
+  distance_max: number;
+  height_min?: number;
+  height_max?: number;
+  family_type?: string;
+  diet?: string;
+  smoking?: string;
+  drinking?: string;
+}
+
+interface SearchResult {
+  id: number;
+  user: any;
+  compatibility_score: number;
+  distance_km?: number;
+  matching_factors: string[];
+}
 
 @Component({
   selector: 'app-search-users',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule],
+  imports: [
+    CommonModule, 
+    RouterModule, 
+    FormsModule, 
+    ReactiveFormsModule,
+    UserCardComponent
+  ],
   template: `
     <div class="min-h-screen bg-gradient-romantic">
       <div class="container mx-auto px-4 py-8">
@@ -128,107 +165,78 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angul
         <div *ngIf="searchResults.length > 0" class="mb-6">
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-2xl font-romantic text-gradient">
-              Found {{ searchResults.length }} matches
+              Found {{ totalResults }} matches
             </h2>
             <div class="flex space-x-2">
               <button 
                 class="btn-outline text-sm"
                 (click)="sortBy('compatibility')"
+                [class.active]="currentSort === 'compatibility'"
               >
                 💕 Best Match
               </button>
               <button 
                 class="btn-outline text-sm"
                 (click)="sortBy('age')"
+                [class.active]="currentSort === 'age'"
               >
                 📅 Age
               </button>
               <button 
                 class="btn-outline text-sm"
-                (click)="sortBy('location')"
+                (click)="sortBy('distance')"
+                [class.active]="currentSort === 'distance'"
               >
-                📍 Location
+                📍 Distance
               </button>
             </div>
           </div>
 
           <!-- Results Grid -->
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <div *ngFor="let user of searchResults" class="profile-card group">
-              <!-- Profile Image -->
-              <div class="relative mb-4">
-                <img 
-                  [src]="user.profileImage || 'assets/images/default-avatar.jpg'" 
-                  [alt]="user.name"
-                  class="w-full h-48 object-cover rounded-lg"
-                >
-                <div class="absolute top-4 right-4 bg-white rounded-full p-2 shadow-lg">
-                  <span class="text-xl">💖</span>
+            <div *ngFor="let result of searchResults" class="profile-card group">
+              <app-user-card 
+                [user]="result.user" 
+                [showActions]="true"
+                [showMatchPercentage]="true"
+                (like)="likeProfile(result.user.id)"
+                (dislike)="dislikeProfile(result.user.id)"
+                (viewProfile)="viewProfile(result.user.id)">
+              </app-user-card>
+              
+              <!-- Compatibility Info -->
+              <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-sm text-gray-600">Match Score:</span>
+                  <span class="text-sm font-medium text-primary-600">{{ result.compatibility_score }}%</span>
                 </div>
-                <div class="absolute bottom-4 left-4 bg-white rounded-full px-3 py-1 shadow-lg">
-                  <span class="text-sm font-medium text-gray-700">{{ user.age }} years</span>
+                
+                <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
+                  <div 
+                    class="bg-gradient-to-r from-primary-500 to-rose-500 h-2 rounded-full transition-all duration-300" 
+                    [style.width.%]="result.compatibility_score"
+                  ></div>
                 </div>
-              </div>
-
-              <!-- Profile Info -->
-              <div class="space-y-3">
-                <div>
-                  <h3 class="text-lg font-romantic text-gradient">{{ user.name }}</h3>
-                  <p class="text-gray-600 text-sm">{{ user.location }}</p>
+                
+                <div *ngIf="result.distance_km" class="text-sm text-gray-600">
+                  📍 {{ result.distance_km }} km away
                 </div>
-
-                <div class="space-y-2">
-                  <p class="text-sm text-gray-700">
-                    <span class="font-medium">💼</span> {{ user.occupation }}
-                  </p>
-                  <p class="text-sm text-gray-700">
-                    <span class="font-medium">🎓</span> {{ user.education }}
-                  </p>
-                  <p class="text-sm text-gray-700">
-                    <span class="font-medium">🙏</span> {{ user.religion }}
-                  </p>
-                </div>
-
-                <p class="text-sm text-gray-600 line-clamp-2">
-                  {{ user.about }}
-                </p>
-
-                <!-- Compatibility Score -->
-                <div class="flex items-center justify-between">
-                  <span class="text-sm text-gray-600">Match:</span>
-                  <div class="flex items-center space-x-1">
-                    <div class="w-16 bg-gray-200 rounded-full h-2">
-                      <div 
-                        class="bg-gradient-to-r from-primary-500 to-rose-500 h-2 rounded-full" 
-                        [style.width.%]="user.compatibilityScore"
-                      ></div>
-                    </div>
-                    <span class="text-sm font-medium text-primary-600">{{ user.compatibilityScore }}%</span>
+                
+                <div *ngIf="result.matching_factors?.length" class="mt-2">
+                  <p class="text-xs text-gray-500 mb-1">Matching factors:</p>
+                  <div class="flex flex-wrap gap-1">
+                    <span *ngFor="let factor of result.matching_factors.slice(0, 3)" 
+                          class="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded">
+                      {{ factor }}
+                    </span>
                   </div>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="flex space-x-2 pt-2">
-                  <button 
-                    (click)="likeProfile(user.id)" 
-                    class="flex-1 btn-primary text-sm"
-                    [disabled]="user.isLiked"
-                  >
-                    {{ user.isLiked ? '❤️ Liked' : '💖 Like' }}
-                  </button>
-                  <button 
-                    (click)="viewProfile(user.id)" 
-                    class="flex-1 btn-outline text-sm"
-                  >
-                    👤 View
-                  </button>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Load More -->
-          <div class="text-center mt-8">
+          <div class="text-center mt-8" *ngIf="hasMoreResults">
             <button 
               (click)="loadMoreResults()" 
               class="btn-primary"
@@ -261,14 +269,26 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angul
   `,
   styles: []
 })
-export class SearchUsersComponent implements OnInit {
+export class SearchUsersComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+  
   searchForm: FormGroup;
-  searchResults: any[] = [];
+  searchResults: SearchResult[] = [];
   isSearching = false;
   isLoadingMore = false;
   hasSearched = false;
+  hasMoreResults = false;
+  totalResults = 0;
+  currentPage = 1;
+  currentSort = 'compatibility';
+  currentUser: any = null;
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private searchService: SearchService,
+    private matchService: MatchService,
+    private authService: AuthService
+  ) {
     this.searchForm = this.fb.group({
       ageMin: [18],
       ageMax: [35],
@@ -282,58 +302,75 @@ export class SearchUsersComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Initialize with default values
+    this.loadCurrentUser();
+    this.setupFormListeners();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private loadCurrentUser(): void {
+    this.authService.currentUser$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => {
+        this.currentUser = user;
+      });
+  }
+
+  private setupFormListeners(): void {
+    // Auto-search with debounce for better UX
+    this.searchForm.valueChanges
+      .pipe(
+        takeUntil(this.destroy$),
+        debounceTime(500),
+        distinctUntilChanged()
+      )
+      .subscribe(() => {
+        if (this.hasSearched) {
+          this.performSearch();
+        }
+      });
   }
 
   performSearch(): void {
     this.isSearching = true;
     this.hasSearched = true;
+    this.currentPage = 1;
     
-    // TODO: Implement API call to search users
-    setTimeout(() => {
-      this.searchResults = [
-        {
-          id: 1,
-          name: 'Priya Sharma',
-          age: 26,
-          location: 'Colombo, Sri Lanka',
-          occupation: 'Marketing Manager',
-          education: 'Master\'s Degree',
-          religion: 'Hindu',
-          about: 'I love traveling, reading books, and spending time with family. Looking for someone who values family and has similar interests.',
-          compatibilityScore: 85,
-          profileImage: null,
-          isLiked: false
+    const filters = this.buildSearchFilters();
+    
+    this.searchService.searchUsers(filters, this.currentPage)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.searchResults = response.data || [];
+          this.totalResults = response.total || 0;
+          this.hasMoreResults = response.has_more || false;
+          this.isSearching = false;
         },
-        {
-          id: 2,
-          name: 'Aisha Khan',
-          age: 24,
-          location: 'Kandy, Sri Lanka',
-          occupation: 'Software Developer',
-          education: 'Bachelor\'s Degree',
-          religion: 'Muslim',
-          about: 'Passionate about technology and innovation. I enjoy hiking, cooking, and learning new things.',
-          compatibilityScore: 78,
-          profileImage: null,
-          isLiked: false
-        },
-        {
-          id: 3,
-          name: 'Nimali Perera',
-          age: 28,
-          location: 'Galle, Sri Lanka',
-          occupation: 'Teacher',
-          education: 'Bachelor\'s Degree',
-          religion: 'Buddhist',
-          about: 'Dedicated teacher who loves children and education. I enjoy gardening, cooking traditional food, and meditation.',
-          compatibilityScore: 92,
-          profileImage: null,
-          isLiked: false
+        error: (error) => {
+          console.error('Search error:', error);
+          this.isSearching = false;
+          // Show error toast
         }
-      ];
-      this.isSearching = false;
-    }, 1000);
+      });
+  }
+
+  private buildSearchFilters(): SearchFilters {
+    const formValue = this.searchForm.value;
+    return {
+      age_min: formValue.ageMin,
+      age_max: formValue.ageMax,
+      location: formValue.location,
+      religion: formValue.religion,
+      education: formValue.education,
+      marital_status: formValue.maritalStatus,
+      occupation: formValue.occupation,
+      looking_for: formValue.lookingFor,
+      distance_max: 50 // Default distance
+    };
   }
 
   resetForm(): void {
@@ -349,32 +386,79 @@ export class SearchUsersComponent implements OnInit {
     });
     this.searchResults = [];
     this.hasSearched = false;
+    this.currentPage = 1;
+    this.hasMoreResults = false;
   }
 
   sortBy(criteria: string): void {
-    // TODO: Implement sorting logic
-    console.log('Sorting by:', criteria);
-  }
-
-  likeProfile(userId: number): void {
-    const user = this.searchResults.find(u => u.id === userId);
-    if (user) {
-      user.isLiked = true;
-      // TODO: Implement API call to like profile
-      console.log('Liked profile:', userId);
+    this.currentSort = criteria;
+    
+    switch (criteria) {
+      case 'compatibility':
+        this.searchResults.sort((a, b) => b.compatibility_score - a.compatibility_score);
+        break;
+      case 'age':
+        this.searchResults.sort((a, b) => a.user.age - b.user.age);
+        break;
+      case 'distance':
+        this.searchResults.sort((a, b) => (a.distance_km || 0) - (b.distance_km || 0));
+        break;
     }
   }
 
+  likeProfile(userId: number): void {
+    this.matchService.likeUser(userId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          // Show success message
+          console.log('Liked profile:', userId);
+        },
+        error: (error) => {
+          console.error('Error liking profile:', error);
+        }
+      });
+  }
+
+  dislikeProfile(userId: number): void {
+    this.matchService.dislikeUser(userId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          console.log('Disliked profile:', userId);
+        },
+        error: (error) => {
+          console.error('Error disliking profile:', error);
+        }
+      });
+  }
+
   viewProfile(userId: number): void {
-    // TODO: Navigate to profile view
+    // Navigate to profile view
     console.log('Viewing profile:', userId);
   }
 
   loadMoreResults(): void {
+    if (this.isLoadingMore || !this.hasMoreResults) return;
+    
     this.isLoadingMore = true;
-    // TODO: Implement pagination to load more results
-    setTimeout(() => {
-      this.isLoadingMore = false;
-    }, 1000);
+    this.currentPage++;
+    
+    const filters = this.buildSearchFilters();
+    
+    this.searchService.searchUsers(filters, this.currentPage)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          const newResults = response.data || [];
+          this.searchResults = [...this.searchResults, ...newResults];
+          this.hasMoreResults = response.has_more || false;
+          this.isLoadingMore = false;
+        },
+        error: (error) => {
+          console.error('Error loading more results:', error);
+          this.isLoadingMore = false;
+        }
+      });
   }
 } 

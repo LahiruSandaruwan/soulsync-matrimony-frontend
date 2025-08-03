@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
-import { environment } from '../../environments/environment';
+import { environment } from '../../../environments/environment';
 import { User } from '../models/user.model';
 
 export interface Conversation {
@@ -374,6 +374,15 @@ export class ChatService {
     this.currentConversationSubject.next(null);
     this.messagesSubject.next([]);
     this.unreadCountSubject.next(0);
+  }
+
+  // Add message to current conversation (for WebSocket updates)
+  addMessage(message: Message): void {
+    const currentMessages = this.messagesSubject.value;
+    this.messagesSubject.next([...currentMessages, message]);
+    
+    // Update conversation last message
+    this.updateConversationLastMessage(message);
   }
 
   private handleError(error: any): Observable<never> {

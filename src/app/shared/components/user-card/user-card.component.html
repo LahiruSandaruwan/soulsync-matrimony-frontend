@@ -5,7 +5,7 @@
       [src]="getPrimaryPhoto()" 
       [alt]="user.first_name + ' ' + user.last_name"
       class="w-full h-64 object-cover"
-      (error)="$event.target.src='assets/images/default-avatar.png'"
+      (error)="onImageError($event)"
     >
     
     <!-- Online Status -->

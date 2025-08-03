@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
-import { environment } from '../../environments/environment';
-import { Subscription, SubscriptionPlan } from '../models/user.model';
+import { environment } from '../../../environments/environment';
+import { User } from '../models/user.model';
 
 export interface PaymentMethod {
   id: number;
@@ -73,13 +73,13 @@ export interface Coupon {
 
 export interface SubscriptionResponse {
   success: boolean;
-  data: Subscription;
+  data: User;
   message: string;
 }
 
 export interface PlansResponse {
   success: boolean;
-  data: SubscriptionPlan[];
+  data: User[];
   message: string;
 }
 
@@ -105,7 +105,7 @@ export interface CouponsResponse {
   providedIn: 'root'
 })
 export class PaymentService {
-  private currentSubscriptionSubject = new BehaviorSubject<Subscription | null>(null);
+  private currentSubscriptionSubject = new BehaviorSubject<User | null>(null);
   public currentSubscription$ = this.currentSubscriptionSubject.asObservable();
 
   private paymentMethodsSubject = new BehaviorSubject<PaymentMethod[]>([]);
@@ -124,73 +124,56 @@ export class PaymentService {
   }
 
   // Subscription Plans
-  getSubscriptionPlans(): Observable<SubscriptionPlan[]> {
+  getSubscriptionPlans(): Observable<any> {
     const headers = this.getAuthHeaders();
-    return this.http.get<PlansResponse>(`${environment.apiUrl}/subscriptions/plans`, { headers })
+    return this.http.get<PlansResponse>(`${environment.apiUrl}/subscription/plans`, { headers })
       .pipe(
-        map(response => response.data),
+        map(response => response),
         catchError(this.handleError)
       );
   }
 
-  getCurrentSubscription(): Observable<Subscription> {
+  getCurrentSubscription(): Observable<any> {
     const headers = this.getAuthHeaders();
-    return this.http.get<SubscriptionResponse>(`${environment.apiUrl}/subscriptions/current`, { headers })
+    return this.http.get<SubscriptionResponse>(`${environment.apiUrl}/subscription`, { headers })
       .pipe(
-        map(response => response.data),
-        tap(subscription => {
-          this.currentSubscriptionSubject.next(subscription);
-        }),
+        map(response => response),
         catchError(this.handleError)
       );
   }
 
-  createSubscription(request: SubscriptionRequest): Observable<Subscription> {
+  subscribeToFree(): Observable<any> {
     const headers = this.getAuthHeaders();
-    return this.http.post<SubscriptionResponse>(`${environment.apiUrl}/subscriptions`, request, { headers })
+    return this.http.post<SubscriptionResponse>(`${environment.apiUrl}/subscription/subscribe-free`, {}, { headers })
       .pipe(
-        map(response => response.data),
-        tap(subscription => {
-          this.currentSubscriptionSubject.next(subscription);
-        }),
+        map(response => response),
         catchError(this.handleError)
       );
   }
 
-  updateSubscription(subscriptionId: number, updates: {
-    plan_id?: number;
-    auto_renewal?: boolean;
-  }): Observable<Subscription> {
+  subscribe(subscriptionData: any): Observable<any> {
     const headers = this.getAuthHeaders();
-    return this.http.put<SubscriptionResponse>(`${environment.apiUrl}/subscriptions/${subscriptionId}`, updates, { headers })
+    return this.http.post<SubscriptionResponse>(`${environment.apiUrl}/subscription/subscribe`, subscriptionData, { headers })
       .pipe(
-        map(response => response.data),
-        tap(subscription => {
-          this.currentSubscriptionSubject.next(subscription);
-        }),
+        map(response => response),
         catchError(this.handleError)
       );
   }
 
-  cancelSubscription(subscriptionId: number, reason?: string): Observable<any> {
+  cancelSubscription(subscriptionId?: number): Observable<any> {
     const headers = this.getAuthHeaders();
-    const body = reason ? { reason } : {};
-    return this.http.post(`${environment.apiUrl}/subscriptions/${subscriptionId}/cancel`, body, { headers })
+    const id = subscriptionId || this.currentSubscriptionSubject.value?.subscription?.id;
+    if (!id) {
+      return throwError(() => new Error('No subscription ID found'));
+    }
+    return this.http.post<SubscriptionResponse>(`${environment.apiUrl}/subscription/cancel`, { subscription_id: id }, { headers })
       .pipe(
-        tap(() => {
-          const currentSubscription = this.currentSubscriptionSubject.value;
-          if (currentSubscription && currentSubscription.id === subscriptionId) {
-            this.currentSubscriptionSubject.next({
-              ...currentSubscription,
-              status: 'cancelled'
-            });
-          }
-        }),
+        map(response => response),
         catchError(this.handleError)
       );
   }
 
-  reactivateSubscription(subscriptionId: number): Observable<Subscription> {
+  reactivateSubscription(subscriptionId: number): Observable<User> {
     const headers = this.getAuthHeaders();
     return this.http.post<SubscriptionResponse>(`${environment.apiUrl}/subscriptions/${subscriptionId}/reactivate`, {}, { headers })
       .pipe(
@@ -365,7 +348,7 @@ export class PaymentService {
   }
 
   // Utility Methods
-  getCurrentSubscriptionValue(): Subscription | null {
+  getCurrentSubscriptionValue(): User | null {
     return this.currentSubscriptionSubject.value;
   }
 
@@ -383,26 +366,34 @@ export class PaymentService {
   }
 
   isSubscriptionActive(): boolean {
-    const subscription = this.currentSubscriptionSubject.value;
+    const subscription = this.currentSubscriptionSubject.value?.subscription;
     return subscription?.status === 'active';
   }
 
   isSubscriptionExpired(): boolean {
-    const subscription = this.currentSubscriptionSubject.value;
-    if (!subscription) return false;
+    const subscription = this.currentSubscriptionSubject.value?.subscription;
+    if (!subscription?.end_date) return false;
     
     const expiryDate = new Date(subscription.end_date);
     return expiryDate < new Date();
   }
 
   getDaysUntilExpiry(): number {
-    const subscription = this.currentSubscriptionSubject.value;
-    if (!subscription) return 0;
+    const subscription = this.currentSubscriptionSubject.value?.subscription;
+    if (!subscription?.end_date) return 0;
     
     const expiryDate = new Date(subscription.end_date);
     const today = new Date();
     const diffTime = expiryDate.getTime() - today.getTime();
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return Math.max(0, diffDays);
+  }
+
+  getSubscriptionExpiryDate(): Date | null {
+    const subscription = this.currentSubscriptionSubject.value?.subscription;
+    if (!subscription?.end_date) return null;
+    return new Date(subscription.end_date);
   }
 
   clearCache(): void {
