@@ -71,10 +71,10 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
   
   activeTab = 'site';
   
-  siteForm: FormGroup;
-  emailForm: FormGroup;
-  paymentForm: FormGroup;
-  securityForm: FormGroup;
+  siteForm!: FormGroup;
+  emailForm!: FormGroup;
+  paymentForm!: FormGroup;
+  securityForm!: FormGroup;
   
   siteSettings: SiteSettings = {
     site_name: 'Soulsync Matrimony',
