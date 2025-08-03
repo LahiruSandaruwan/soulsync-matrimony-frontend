@@ -90,6 +90,19 @@ export class ChatService {
     });
   }
 
+  // Start a conversation with a user (creates new conversation)
+  startConversation(userId: number): Observable<{
+    conversation_id: number;
+    conversation: Conversation;
+  }> {
+    const headers = this.getAuthHeaders();
+    return this.http.post<{ success: boolean, data: any }>(`${environment.apiUrl}/chat/start-conversation`, { user_id: userId }, { headers })
+      .pipe(
+        map(response => response.data),
+        catchError(this.handleError)
+      );
+  }
+
   // Conversations
   getConversations(): Observable<Conversation[]> {
     const headers = this.getAuthHeaders();

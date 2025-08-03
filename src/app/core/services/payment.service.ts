@@ -3,20 +3,31 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { User } from '../models/user.model';
+
+export interface SubscriptionPlan {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  currency: string;
+  interval: 'monthly' | 'yearly' | 'lifetime';
+  features: string[];
+  is_popular: boolean;
+  is_active: boolean;
+  stripe_price_id?: string;
+  paypal_plan_id?: string;
+}
 
 export interface PaymentMethod {
   id: number;
-  user_id: number;
-  type: 'stripe' | 'paypal' | 'payhere';
-  provider: string;
-  last_four?: string;
+  type: 'card' | 'paypal' | 'bank_account';
+  last4?: string;
   brand?: string;
   expiry_month?: number;
   expiry_year?: number;
   is_default: boolean;
+  payment_method_id: string;
   created_at: string;
-  updated_at: string;
 }
 
 export interface PaymentIntent {
@@ -29,90 +40,59 @@ export interface PaymentIntent {
   created_at: string;
 }
 
-export interface SubscriptionRequest {
-  plan_id: number;
-  payment_method_id?: number;
-  auto_renewal: boolean;
-  coupon_code?: string;
-}
-
-export interface PaymentRequest {
-  amount: number;
-  currency: string;
-  payment_method_id: number;
-  description: string;
-  metadata?: any;
-}
-
-export interface BillingHistory {
+export interface Subscription {
   id: number;
-  user_id: number;
-  subscription_id?: number;
-  amount: number;
-  currency: string;
-  status: 'pending' | 'succeeded' | 'failed' | 'refunded';
-  payment_method: string;
-  description: string;
-  invoice_url?: string;
+  plan_id: number;
+  plan: SubscriptionPlan;
+  status: 'active' | 'canceled' | 'past_due' | 'unpaid' | 'trialing';
+  current_period_start: string;
+  current_period_end: string;
+  cancel_at_period_end: boolean;
+  canceled_at?: string;
+  trial_end?: string;
+  stripe_subscription_id?: string;
+  paypal_subscription_id?: string;
   created_at: string;
   updated_at: string;
 }
 
-export interface Coupon {
+export interface PaymentHistory {
   id: number;
-  code: string;
-  type: 'percentage' | 'fixed';
-  value: number;
-  currency?: string;
-  max_uses: number;
-  used_count: number;
-  valid_from: string;
-  valid_until: string;
-  is_active: boolean;
+  amount: number;
+  currency: string;
+  status: 'pending' | 'succeeded' | 'failed' | 'refunded';
+  payment_method: PaymentMethod;
+  subscription?: Subscription;
+  description: string;
+  created_at: string;
 }
 
-export interface SubscriptionResponse {
-  success: boolean;
-  data: User;
-  message: string;
+export interface CreateSubscriptionRequest {
+  plan_id: number;
+  payment_method_id: string;
+  coupon_code?: string;
 }
 
-export interface PlansResponse {
-  success: boolean;
-  data: User[];
-  message: string;
-}
-
-export interface PaymentMethodsResponse {
-  success: boolean;
-  data: PaymentMethod[];
-  message: string;
-}
-
-export interface BillingHistoryResponse {
-  success: boolean;
-  data: BillingHistory[];
-  message: string;
-}
-
-export interface CouponsResponse {
-  success: boolean;
-  data: Coupon[];
-  message: string;
+export interface UpdateSubscriptionRequest {
+  plan_id?: number;
+  cancel_at_period_end?: boolean;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class PaymentService {
-  private currentSubscriptionSubject = new BehaviorSubject<User | null>(null);
+  private plansSubject = new BehaviorSubject<SubscriptionPlan[]>([]);
+  public plans$ = this.plansSubject.asObservable();
+
+  private currentSubscriptionSubject = new BehaviorSubject<Subscription | null>(null);
   public currentSubscription$ = this.currentSubscriptionSubject.asObservable();
 
   private paymentMethodsSubject = new BehaviorSubject<PaymentMethod[]>([]);
   public paymentMethods$ = this.paymentMethodsSubject.asObservable();
 
-  private billingHistorySubject = new BehaviorSubject<BillingHistory[]>([]);
-  public billingHistory$ = this.billingHistorySubject.asObservable();
+  private paymentHistorySubject = new BehaviorSubject<PaymentHistory[]>([]);
+  public paymentHistory$ = this.paymentHistorySubject.asObservable();
 
   constructor(private http: HttpClient) {}
 
@@ -124,58 +104,84 @@ export class PaymentService {
   }
 
   // Subscription Plans
-  getSubscriptionPlans(): Observable<any> {
+  getSubscriptionPlans(): Observable<SubscriptionPlan[]> {
     const headers = this.getAuthHeaders();
-    return this.http.get<PlansResponse>(`${environment.apiUrl}/subscription/plans`, { headers })
+    return this.http.get<{ success: boolean, data: SubscriptionPlan[] }>(`${environment.apiUrl}/subscriptions/plans`, { headers })
       .pipe(
-        map(response => response),
+        map(response => response.data),
+        tap(plans => {
+          this.plansSubject.next(plans);
+        }),
         catchError(this.handleError)
       );
   }
 
-  getCurrentSubscription(): Observable<any> {
+  getSubscriptionPlan(planId: number): Observable<SubscriptionPlan> {
     const headers = this.getAuthHeaders();
-    return this.http.get<SubscriptionResponse>(`${environment.apiUrl}/subscription`, { headers })
+    return this.http.get<{ success: boolean, data: SubscriptionPlan }>(`${environment.apiUrl}/subscriptions/plans/${planId}`, { headers })
       .pipe(
-        map(response => response),
+        map(response => response.data),
         catchError(this.handleError)
       );
   }
 
-  subscribeToFree(): Observable<any> {
+  // Current Subscription
+  getCurrentSubscription(): Observable<Subscription | null> {
     const headers = this.getAuthHeaders();
-    return this.http.post<SubscriptionResponse>(`${environment.apiUrl}/subscription/subscribe-free`, {}, { headers })
+    return this.http.get<{ success: boolean, data: Subscription | null }>(`${environment.apiUrl}/subscriptions/current`, { headers })
       .pipe(
-        map(response => response),
+        map(response => response.data),
+        tap(subscription => {
+          this.currentSubscriptionSubject.next(subscription);
+        }),
         catchError(this.handleError)
       );
   }
 
-  subscribe(subscriptionData: any): Observable<any> {
+  // Create Subscription
+  createSubscription(request: CreateSubscriptionRequest): Observable<Subscription> {
     const headers = this.getAuthHeaders();
-    return this.http.post<SubscriptionResponse>(`${environment.apiUrl}/subscription/subscribe`, subscriptionData, { headers })
+    return this.http.post<{ success: boolean, data: Subscription }>(`${environment.apiUrl}/subscriptions`, request, { headers })
       .pipe(
-        map(response => response),
+        map(response => response.data),
+        tap(subscription => {
+          this.currentSubscriptionSubject.next(subscription);
+        }),
         catchError(this.handleError)
       );
   }
 
-  cancelSubscription(subscriptionId?: number): Observable<any> {
+  // Update Subscription
+  updateSubscription(subscriptionId: number, request: UpdateSubscriptionRequest): Observable<Subscription> {
     const headers = this.getAuthHeaders();
-    const id = subscriptionId || this.currentSubscriptionSubject.value?.subscription?.id;
-    if (!id) {
-      return throwError(() => new Error('No subscription ID found'));
-    }
-    return this.http.post<SubscriptionResponse>(`${environment.apiUrl}/subscription/cancel`, { subscription_id: id }, { headers })
+    return this.http.put<{ success: boolean, data: Subscription }>(`${environment.apiUrl}/subscriptions/${subscriptionId}`, request, { headers })
       .pipe(
-        map(response => response),
+        map(response => response.data),
+        tap(subscription => {
+          this.currentSubscriptionSubject.next(subscription);
+        }),
         catchError(this.handleError)
       );
   }
 
-  reactivateSubscription(subscriptionId: number): Observable<User> {
+  // Cancel Subscription
+  cancelSubscription(subscriptionId: number, cancelAtPeriodEnd: boolean = true): Observable<Subscription> {
     const headers = this.getAuthHeaders();
-    return this.http.post<SubscriptionResponse>(`${environment.apiUrl}/subscriptions/${subscriptionId}/reactivate`, {}, { headers })
+    return this.http.post<{ success: boolean, data: Subscription }>(`${environment.apiUrl}/subscriptions/${subscriptionId}/cancel`, 
+      { cancel_at_period_end: cancelAtPeriodEnd }, { headers })
+      .pipe(
+        map(response => response.data),
+        tap(subscription => {
+          this.currentSubscriptionSubject.next(subscription);
+        }),
+        catchError(this.handleError)
+      );
+  }
+
+  // Reactivate Subscription
+  reactivateSubscription(subscriptionId: number): Observable<Subscription> {
+    const headers = this.getAuthHeaders();
+    return this.http.post<{ success: boolean, data: Subscription }>(`${environment.apiUrl}/subscriptions/${subscriptionId}/reactivate`, {}, { headers })
       .pipe(
         map(response => response.data),
         tap(subscription => {
@@ -188,7 +194,7 @@ export class PaymentService {
   // Payment Methods
   getPaymentMethods(): Observable<PaymentMethod[]> {
     const headers = this.getAuthHeaders();
-    return this.http.get<PaymentMethodsResponse>(`${environment.apiUrl}/payments/methods`, { headers })
+    return this.http.get<{ success: boolean, data: PaymentMethod[] }>(`${environment.apiUrl}/payments/methods`, { headers })
       .pipe(
         map(response => response.data),
         tap(methods => {
@@ -198,13 +204,10 @@ export class PaymentService {
       );
   }
 
-  addPaymentMethod(paymentMethodData: {
-    type: 'stripe' | 'paypal' | 'payhere';
-    token?: string;
-    payment_method_id?: string;
-  }): Observable<PaymentMethod> {
+  addPaymentMethod(paymentMethodId: string, type: 'card' | 'paypal'): Observable<PaymentMethod> {
     const headers = this.getAuthHeaders();
-    return this.http.post<{ success: boolean, data: PaymentMethod }>(`${environment.apiUrl}/payments/methods`, paymentMethodData, { headers })
+    return this.http.post<{ success: boolean, data: PaymentMethod }>(`${environment.apiUrl}/payments/methods`, 
+      { payment_method_id: paymentMethodId, type }, { headers })
       .pipe(
         map(response => response.data),
         tap(method => {
@@ -215,20 +218,17 @@ export class PaymentService {
       );
   }
 
-  updatePaymentMethod(methodId: number, updates: {
-    is_default?: boolean;
-    expiry_month?: number;
-    expiry_year?: number;
-  }): Observable<PaymentMethod> {
+  setDefaultPaymentMethod(methodId: number): Observable<PaymentMethod> {
     const headers = this.getAuthHeaders();
-    return this.http.put<{ success: boolean, data: PaymentMethod }>(`${environment.apiUrl}/payments/methods/${methodId}`, updates, { headers })
+    return this.http.put<{ success: boolean, data: PaymentMethod }>(`${environment.apiUrl}/payments/methods/${methodId}/default`, {}, { headers })
       .pipe(
         map(response => response.data),
-        tap(updatedMethod => {
+        tap(method => {
           const currentMethods = this.paymentMethodsSubject.value;
-          const updatedMethods = currentMethods.map(method => 
-            method.id === methodId ? updatedMethod : method
-          );
+          const updatedMethods = currentMethods.map(m => ({
+            ...m,
+            is_default: m.id === methodId
+          }));
           this.paymentMethodsSubject.next(updatedMethods);
         }),
         catchError(this.handleError)
@@ -241,63 +241,69 @@ export class PaymentService {
       .pipe(
         tap(() => {
           const currentMethods = this.paymentMethodsSubject.value;
-          const filteredMethods = currentMethods.filter(method => method.id !== methodId);
-          this.paymentMethodsSubject.next(filteredMethods);
+          const updatedMethods = currentMethods.filter(m => m.id !== methodId);
+          this.paymentMethodsSubject.next(updatedMethods);
         }),
         catchError(this.handleError)
       );
   }
 
-  setDefaultPaymentMethod(methodId: number): Observable<PaymentMethod> {
-    return this.updatePaymentMethod(methodId, { is_default: true });
+  // Payment History
+  getPaymentHistory(page: number = 1, limit: number = 20): Observable<PaymentHistory[]> {
+    const headers = this.getAuthHeaders();
+    const params = { page: page.toString(), limit: limit.toString() };
+
+    return this.http.get<{ success: boolean, data: PaymentHistory[] }>(`${environment.apiUrl}/payments/history`, { headers, params })
+      .pipe(
+        map(response => response.data),
+        tap(history => {
+          if (page === 1) {
+            this.paymentHistorySubject.next(history);
+          } else {
+            const currentHistory = this.paymentHistorySubject.value;
+            this.paymentHistorySubject.next([...currentHistory, ...history]);
+          }
+        }),
+        catchError(this.handleError)
+      );
   }
 
-  // Payment Processing
-  createPaymentIntent(amount: number, currency: string = 'USD'): Observable<PaymentIntent> {
+  // Stripe Integration
+  createStripePaymentIntent(amount: number, currency: string = 'usd'): Observable<PaymentIntent> {
     const headers = this.getAuthHeaders();
-    return this.http.post<{ success: boolean, data: PaymentIntent }>(`${environment.apiUrl}/payments/intent`, {
-      amount,
-      currency
-    }, { headers })
+    return this.http.post<{ success: boolean, data: PaymentIntent }>(`${environment.apiUrl}/payments/stripe/create-intent`, 
+      { amount, currency }, { headers })
       .pipe(
         map(response => response.data),
         catchError(this.handleError)
       );
   }
 
-  processPayment(request: PaymentRequest): Observable<any> {
+  confirmStripePayment(paymentIntentId: string, paymentMethodId: string): Observable<PaymentIntent> {
     const headers = this.getAuthHeaders();
-    return this.http.post(`${environment.apiUrl}/payments/process`, request, { headers })
+    return this.http.post<{ success: boolean, data: PaymentIntent }>(`${environment.apiUrl}/payments/stripe/confirm`, 
+      { payment_intent_id: paymentIntentId, payment_method_id: paymentMethodId }, { headers })
       .pipe(
+        map(response => response.data),
         catchError(this.handleError)
       );
   }
 
-  // Billing History
-  getBillingHistory(page: number = 1, limit: number = 20): Observable<BillingHistory[]> {
+  // PayPal Integration
+  createPayPalOrder(amount: number, currency: string = 'USD'): Observable<{ order_id: string; approval_url: string }> {
     const headers = this.getAuthHeaders();
-    const params = { page: page.toString(), limit: limit.toString() };
-    
-    return this.http.get<BillingHistoryResponse>(`${environment.apiUrl}/payments/history`, { 
-      headers, 
-      params 
-    }).pipe(
-      map(response => response.data),
-      tap(history => {
-        if (page === 1) {
-          this.billingHistorySubject.next(history);
-        } else {
-          const currentHistory = this.billingHistorySubject.value;
-          this.billingHistorySubject.next([...currentHistory, ...history]);
-        }
-      }),
-      catchError(this.handleError)
-    );
+    return this.http.post<{ success: boolean, data: { order_id: string; approval_url: string } }>(`${environment.apiUrl}/payments/paypal/create-order`, 
+      { amount, currency }, { headers })
+      .pipe(
+        map(response => response.data),
+        catchError(this.handleError)
+      );
   }
 
-  getInvoice(invoiceId: string): Observable<{ url: string }> {
+  capturePayPalOrder(orderId: string): Observable<any> {
     const headers = this.getAuthHeaders();
-    return this.http.get<{ success: boolean, data: { url: string } }>(`${environment.apiUrl}/payments/invoices/${invoiceId}`, { headers })
+    return this.http.post<{ success: boolean, data: any }>(`${environment.apiUrl}/payments/paypal/capture`, 
+      { order_id: orderId }, { headers })
       .pipe(
         map(response => response.data),
         catchError(this.handleError)
@@ -305,50 +311,27 @@ export class PaymentService {
   }
 
   // Coupons
-  validateCoupon(code: string): Observable<Coupon> {
+  validateCoupon(couponCode: string): Observable<{
+    valid: boolean;
+    discount_percent?: number;
+    discount_amount?: number;
+    message?: string;
+  }> {
     const headers = this.getAuthHeaders();
-    return this.http.get<{ success: boolean, data: Coupon }>(`${environment.apiUrl}/payments/coupons/validate/${code}`, { headers })
+    return this.http.post<{ success: boolean, data: any }>(`${environment.apiUrl}/payments/validate-coupon`, 
+      { coupon_code: couponCode }, { headers })
       .pipe(
         map(response => response.data),
         catchError(this.handleError)
       );
   }
 
-  getAvailableCoupons(): Observable<Coupon[]> {
-    const headers = this.getAuthHeaders();
-    return this.http.get<CouponsResponse>(`${environment.apiUrl}/payments/coupons`, { headers })
-      .pipe(
-        map(response => response.data),
-        catchError(this.handleError)
-      );
+  // Utility methods
+  getPlansValue(): SubscriptionPlan[] {
+    return this.plansSubject.value;
   }
 
-  // Refunds
-  requestRefund(paymentId: string, reason: string): Observable<any> {
-    const headers = this.getAuthHeaders();
-    return this.http.post(`${environment.apiUrl}/payments/refunds`, {
-      payment_id: paymentId,
-      reason
-    }, { headers })
-      .pipe(
-        catchError(this.handleError)
-      );
-  }
-
-  // Webhooks
-  handleWebhook(payload: any, signature: string): Observable<any> {
-    const headers = this.getAuthHeaders();
-    return this.http.post(`${environment.apiUrl}/payments/webhooks`, {
-      payload,
-      signature
-    }, { headers })
-      .pipe(
-        catchError(this.handleError)
-      );
-  }
-
-  // Utility Methods
-  getCurrentSubscriptionValue(): User | null {
+  getCurrentSubscriptionValue(): Subscription | null {
     return this.currentSubscriptionSubject.value;
   }
 
@@ -356,54 +339,52 @@ export class PaymentService {
     return this.paymentMethodsSubject.value;
   }
 
-  getBillingHistoryValue(): BillingHistory[] {
-    return this.billingHistorySubject.value;
+  getPaymentHistoryValue(): PaymentHistory[] {
+    return this.paymentHistorySubject.value;
   }
 
-  getDefaultPaymentMethod(): PaymentMethod | null {
-    const methods = this.paymentMethodsSubject.value;
-    return methods.find(method => method.is_default) || null;
+  // Check if user has active subscription
+  hasActiveSubscription(): boolean {
+    const subscription = this.currentSubscriptionSubject.value;
+    return subscription?.status === 'active' || subscription?.status === 'trialing';
   }
 
-  isSubscriptionActive(): boolean {
-    const subscription = this.currentSubscriptionSubject.value?.subscription;
-    return subscription?.status === 'active';
+  // Check if user has premium features
+  hasPremiumFeatures(): boolean {
+    return this.hasActiveSubscription();
   }
 
-  isSubscriptionExpired(): boolean {
-    const subscription = this.currentSubscriptionSubject.value?.subscription;
-    if (!subscription?.end_date) return false;
-    
-    const expiryDate = new Date(subscription.end_date);
-    return expiryDate < new Date();
-  }
-
-  getDaysUntilExpiry(): number {
-    const subscription = this.currentSubscriptionSubject.value?.subscription;
-    if (!subscription?.end_date) return 0;
-    
-    const expiryDate = new Date(subscription.end_date);
-    const today = new Date();
-    const diffTime = expiryDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    return Math.max(0, diffDays);
-  }
-
-  getSubscriptionExpiryDate(): Date | null {
-    const subscription = this.currentSubscriptionSubject.value?.subscription;
-    if (!subscription?.end_date) return null;
-    return new Date(subscription.end_date);
-  }
-
+  // Clear cache
   clearCache(): void {
+    this.plansSubject.next([]);
     this.currentSubscriptionSubject.next(null);
     this.paymentMethodsSubject.next([]);
-    this.billingHistorySubject.next([]);
+    this.paymentHistorySubject.next([]);
+  }
+
+  // Compatibility methods for existing components
+  subscribeToFree(): Observable<Subscription> {
+    // Create a free subscription
+    return this.createSubscription({
+      plan_id: 1, // Assuming plan ID 1 is free
+      payment_method_id: 'free'
+    });
+  }
+
+  subscribe(subscriptionData: any): Observable<Subscription> {
+    return this.createSubscription(subscriptionData);
+  }
+
+  cancelSubscriptionLegacy(subscriptionId?: number): Observable<Subscription> {
+    const id = subscriptionId || this.currentSubscriptionSubject.value?.id;
+    if (!id) {
+      return throwError(() => new Error('No subscription ID found'));
+    }
+    return this.cancelSubscription(id, true);
   }
 
   private handleError(error: any): Observable<never> {
-    let errorMessage = 'An error occurred';
+    let errorMessage = 'Payment operation failed';
     
     if (error.error?.message) {
       errorMessage = error.error.message;

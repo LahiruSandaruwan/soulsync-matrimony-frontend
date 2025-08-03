@@ -57,6 +57,9 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy {
   
   showPaymentModal = false;
   processingPayment = false;
+  errorMessage = '';
+  successMessage = '';
+  paymentMethod = '';
   
   // Currency preference
   currency: 'USD' | 'LKR' = 'USD';
@@ -207,91 +210,101 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy {
 
   onSelectPlan(plan: SubscriptionPlan): void {
     if (plan.type === 'free') {
-      this.onSubscribeToFree();
+      this.subscribeToFreePlan();
     } else {
       this.selectedPlan = plan;
       this.showPaymentModal = true;
     }
   }
 
-  onSubscribeToFree(): void {
-    this.processingPayment = true;
-    
+  subscribeToFreePlan(): void {
+    this.loading = true;
     this.paymentService.subscribeToFree()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response: any) => {
-          this.success = 'Successfully subscribed to Free plan!';
-          this.processingPayment = false;
+        next: (response) => {
+          this.loading = false;
+          this.success = 'Successfully subscribed to free plan!';
           this.loadCurrentSubscription();
-          
-          // Update current user subscription
-          if (this.currentUser) {
-            this.currentUser.subscription = response.data;
-            this.authService.currentUserSubject.next(this.currentUser);
-          }
+          setTimeout(() => {
+            this.success = '';
+          }, 3000);
         },
-        error: (error: any) => {
-          this.error = error.message || 'Failed to subscribe to Free plan.';
-          this.processingPayment = false;
+        error: (error) => {
+          this.loading = false;
+          this.error = error.message || 'Failed to subscribe to free plan';
+          setTimeout(() => {
+            this.error = '';
+          }, 3000);
         }
       });
   }
 
-  onProcessPayment(paymentMethod: string): void {
-    if (!this.selectedPlan) return;
+  subscribeToPlan(plan: any): void {
+    this.selectedPlan = plan;
+    this.showPaymentModal = true;
+  }
 
-    this.processingPayment = true;
-    
+  processSubscription(): void {
+    if (!this.selectedPlan || !this.paymentMethod) {
+      this.errorMessage = 'Please select a plan and payment method';
+      return;
+    }
+
+    this.loading = true;
     const subscriptionData = {
       plan_id: this.selectedPlan.id,
-      payment_method: paymentMethod,
-      currency: this.currency
+      payment_method_id: this.paymentMethod
     };
 
     this.paymentService.subscribe(subscriptionData)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response: any) => {
-          this.success = `Successfully subscribed to ${this.selectedPlan?.name} plan!`;
-          this.processingPayment = false;
+        next: (response) => {
+          this.loading = false;
           this.showPaymentModal = false;
-          this.selectedPlan = null;
+          this.success = 'Successfully subscribed!';
           this.loadCurrentSubscription();
-          
-          // Update current user subscription
-          if (this.currentUser) {
-            this.currentUser.subscription = response.data;
-            this.authService.currentUserSubject.next(this.currentUser);
-          }
+          setTimeout(() => {
+            this.success = '';
+          }, 3000);
         },
-        error: (error: any) => {
-          this.error = error.message || 'Payment failed. Please try again.';
-          this.processingPayment = false;
+        error: (error) => {
+          this.loading = false;
+          this.error = error.message || 'Failed to subscribe';
+          setTimeout(() => {
+            this.error = '';
+          }, 3000);
         }
       });
   }
 
-  onCancelSubscription(): void {
-    if (confirm('Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your billing period.')) {
-      this.paymentService.cancelSubscription()
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (response: any) => {
-            this.success = 'Subscription cancelled successfully.';
-            this.loadCurrentSubscription();
-            
-            // Update current user subscription
-            if (this.currentUser) {
-              this.currentUser.subscription = response.data;
-              this.authService.currentUserSubject.next(this.currentUser);
-            }
-          },
-          error: (error: any) => {
-            this.error = error.message || 'Failed to cancel subscription.';
-          }
-        });
+  cancelCurrentSubscription(): void {
+    if (!this.currentSubscription) {
+      this.errorMessage = 'No active subscription found';
+      return;
     }
+
+    this.loading = true;
+    this.paymentService.cancelSubscriptionLegacy()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.loading = false;
+          this.success = 'Subscription cancelled successfully';
+          this.loadCurrentSubscription();
+          setTimeout(() => {
+            this.success = '';
+          }, 3000);
+        },
+        error: (error) => {
+          this.loading = false;
+          this.error = error.message || 'Failed to cancel subscription';
+          setTimeout(() => {
+            this.error = '';
+          }, 3000);
+        }
+      });
   }
 
   onUpgradeSubscription(plan: SubscriptionPlan): void {
@@ -369,5 +382,14 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy {
     if (limit === undefined) return 'N/A';
     if (limit === -1) return 'Unlimited';
     return limit.toString();
+  }
+
+  onCancelSubscription(): void {
+    this.cancelCurrentSubscription();
+  }
+
+  onProcessPayment(method: string): void {
+    this.paymentMethod = method;
+    this.processSubscription();
   }
 }

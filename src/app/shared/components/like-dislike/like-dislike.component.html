@@ -1,0 +1,123 @@
+<div class="like-dislike-container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center py-12">
+    <app-loading-spinner></app-loading-spinner>
+  </div>
+
+  <!-- Profile Card -->
+  <div 
+    *ngIf="!loading && profile"
+    #cardElement
+    class="profile-card"
+    [style.transform]="cardTransform"
+    [style.opacity]="cardOpacity"
+    (touchstart)="onTouchStart($event)"
+    (touchmove)="onTouchMove($event)"
+    (touchend)="onTouchEnd($event)"
+  >
+    <!-- Profile Image -->
+    <div class="profile-image-container">
+      <img 
+        [src]="getPrimaryPhoto()" 
+        [alt]="getFullName()"
+        class="profile-image"
+        (error)="onImageError($event)"
+      >
+      
+      <!-- Swipe Indicators -->
+      <div *ngIf="showSwipe" class="swipe-indicators">
+        <div 
+          *ngIf="swipeDirection === 'right'"
+          class="swipe-indicator like-indicator"
+        >
+          ❤️ LIKE
+        </div>
+        <div 
+          *ngIf="swipeDirection === 'left'"
+          class="swipe-indicator dislike-indicator"
+        >
+          ✗ NOPE
+        </div>
+        <div 
+          *ngIf="swipeDirection === 'up'"
+          class="swipe-indicator superlike-indicator"
+        >
+          ⭐ SUPER LIKE
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Info -->
+    <div class="profile-info">
+      <div class="profile-header">
+        <h2 class="profile-name">{{ getFullName() }}</h2>
+        <span class="profile-age">{{ getAge(profile.user.date_of_birth) }}</span>
+      </div>
+      
+      <div class="profile-details">
+        <div class="compatibility-score">
+          <span class="score-label">Compatibility:</span>
+          <span class="score-value" [ngClass]="getCompatibilityColor()">
+            {{ profile.compatibility_score }}%
+          </span>
+        </div>
+        
+        <div *ngIf="getDistanceText()" class="distance">
+          📍 {{ getDistanceText() }}
+        </div>
+        
+        <div *ngIf="profile.mutual_interests && profile.mutual_interests.length > 0" class="mutual-interests">
+          <span class="interests-label">Mutual Interests:</span>
+          <div class="interests-tags">
+            <span 
+              *ngFor="let interest of profile.mutual_interests"
+              class="interest-tag"
+            >
+              {{ interest }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div *ngIf="showButtons && profile" class="action-buttons">
+    <button 
+      (click)="onDislike()"
+      [disabled]="isDisliking || loading"
+      class="action-btn dislike-btn"
+    >
+      <span *ngIf="isDisliking">...</span>
+      <span *ngIf="!isDisliking">✗</span>
+    </button>
+    
+    <button 
+      (click)="onSuperLike()"
+      [disabled]="isSuperLiking || loading"
+      class="action-btn superlike-btn"
+    >
+      <span *ngIf="isSuperLiking">...</span>
+      <span *ngIf="!isSuperLiking">⭐</span>
+    </button>
+    
+    <button 
+      (click)="onLike()"
+      [disabled]="isLiking || loading"
+      class="action-btn like-btn"
+    >
+      <span *ngIf="isLiking">...</span>
+      <span *ngIf="!isLiking">❤️</span>
+    </button>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && !profile" class="empty-state">
+    <div class="empty-icon">💔</div>
+    <h3 class="empty-title">No More Profiles</h3>
+    <p class="empty-description">
+      You've seen all available profiles in your area. 
+      Try adjusting your preferences or check back later!
+    </p>
+  </div>
+</div> 

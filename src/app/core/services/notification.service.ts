@@ -1,36 +1,38 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, BehaviorSubject, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 export interface Notification {
   id: number;
-  user_id: number;
-  type: 'match' | 'message' | 'like' | 'super_like' | 'profile_view' | 'subscription' | 'system' | 'verification';
+  type: 'match' | 'like' | 'message' | 'super_like' | 'profile_view' | 'system' | 'reminder';
   title: string;
   message: string;
-  data?: any;
+  data: any;
   is_read: boolean;
-  is_deleted: boolean;
+  is_archived: boolean;
   created_at: string;
   updated_at: string;
+  user_id: number;
+  sender_id?: number;
+  sender?: {
+    id: number;
+    name: string;
+    photo_url?: string;
+  };
 }
 
-export interface NotificationPreferences {
-  id: number;
-  user_id: number;
+export interface NotificationSettings {
   email_notifications: boolean;
   push_notifications: boolean;
   sms_notifications: boolean;
   match_notifications: boolean;
-  message_notifications: boolean;
   like_notifications: boolean;
+  message_notifications: boolean;
   profile_view_notifications: boolean;
-  subscription_notifications: boolean;
-  system_notifications: boolean;
-  created_at: string;
-  updated_at: string;
+  reminder_notifications: boolean;
+  marketing_notifications: boolean;
 }
 
 export interface NotificationResponse {
@@ -39,32 +41,13 @@ export interface NotificationResponse {
   message: string;
 }
 
-export interface NotificationDetailResponse {
+export interface NotificationCountResponse {
   success: boolean;
-  data: Notification;
-  message: string;
-}
-
-export interface PreferencesResponse {
-  success: boolean;
-  data: NotificationPreferences;
-  message: string;
-}
-
-export interface NotificationStats {
-  total: number;
-  unread: number;
-  read: number;
-  by_type: {
-    match: number;
-    message: number;
-    like: number;
-    super_like: number;
-    profile_view: number;
-    subscription: number;
-    system: number;
-    verification: number;
+  data: {
+    unread_count: number;
+    total_count: number;
   };
+  message: string;
 }
 
 @Injectable({
@@ -77,8 +60,8 @@ export class NotificationService {
   private unreadCountSubject = new BehaviorSubject<number>(0);
   public unreadCount$ = this.unreadCountSubject.asObservable();
 
-  private preferencesSubject = new BehaviorSubject<NotificationPreferences | null>(null);
-  public preferences$ = this.preferencesSubject.asObservable();
+  private settingsSubject = new BehaviorSubject<NotificationSettings | null>(null);
+  public settings$ = this.settingsSubject.asObservable();
 
   constructor(private http: HttpClient) {}
 
@@ -89,165 +72,203 @@ export class NotificationService {
     });
   }
 
-  // Notifications
+  // Get all notifications
   getNotifications(page: number = 1, limit: number = 20): Observable<Notification[]> {
     const headers = this.getAuthHeaders();
     const params = { page: page.toString(), limit: limit.toString() };
-    
-    return this.http.get<NotificationResponse>(`${environment.apiUrl}/notifications`, { 
-      headers, 
-      params 
-    }).pipe(
-      map(response => response.data),
-      tap(notifications => {
-        if (page === 1) {
-          this.notificationsSubject.next(notifications);
-        } else {
-          const currentNotifications = this.notificationsSubject.value;
-          this.notificationsSubject.next([...currentNotifications, ...notifications]);
-        }
-        this.updateUnreadCount();
-      }),
-      catchError(this.handleError)
-    );
-  }
 
-  getNotification(notificationId: number): Observable<Notification> {
-    const headers = this.getAuthHeaders();
-    return this.http.get<NotificationDetailResponse>(`${environment.apiUrl}/notifications/${notificationId}`, { headers })
+    return this.http.get<NotificationResponse>(`${environment.apiUrl}/notifications`, { headers, params })
       .pipe(
         map(response => response.data),
+        tap(notifications => {
+          this.notificationsSubject.next(notifications);
+          this.updateUnreadCount(notifications);
+        }),
         catchError(this.handleError)
       );
   }
 
+  // Get unread notifications
+  getUnreadNotifications(): Observable<Notification[]> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<NotificationResponse>(`${environment.apiUrl}/notifications/unread`, { headers })
+      .pipe(
+        map(response => response.data),
+        tap(notifications => {
+          this.updateUnreadCount(notifications);
+        }),
+        catchError(this.handleError)
+      );
+  }
+
+  // Get notification count
+  getNotificationCount(): Observable<{ unread_count: number; total_count: number }> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<NotificationCountResponse>(`${environment.apiUrl}/notifications/count`, { headers })
+      .pipe(
+        map(response => response.data),
+        tap(counts => {
+          this.unreadCountSubject.next(counts.unread_count);
+        }),
+        catchError(this.handleError)
+      );
+  }
+
+  // Mark notification as read
   markAsRead(notificationId: number): Observable<any> {
     const headers = this.getAuthHeaders();
     return this.http.put(`${environment.apiUrl}/notifications/${notificationId}/read`, {}, { headers })
       .pipe(
         tap(() => {
-          const currentNotifications = this.notificationsSubject.value;
-          const updatedNotifications = currentNotifications.map(notification => 
-            notification.id === notificationId ? { ...notification, is_read: true } : notification
-          );
-          this.notificationsSubject.next(updatedNotifications);
-          this.updateUnreadCount();
+          this.updateNotificationReadStatus(notificationId, true);
         }),
         catchError(this.handleError)
       );
   }
 
+  // Mark all notifications as read
   markAllAsRead(): Observable<any> {
     const headers = this.getAuthHeaders();
-    return this.http.put(`${environment.apiUrl}/notifications/read-all`, {}, { headers })
+    return this.http.put(`${environment.apiUrl}/notifications/mark-all-read`, {}, { headers })
       .pipe(
         tap(() => {
-          const currentNotifications = this.notificationsSubject.value;
-          const updatedNotifications = currentNotifications.map(notification => ({
-            ...notification,
-            is_read: true
-          }));
-          this.notificationsSubject.next(updatedNotifications);
-          this.updateUnreadCount();
+          this.markAllNotificationsAsRead();
         }),
         catchError(this.handleError)
       );
   }
 
+  // Archive notification
+  archiveNotification(notificationId: number): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.put(`${environment.apiUrl}/notifications/${notificationId}/archive`, {}, { headers })
+      .pipe(
+        tap(() => {
+          this.updateNotificationArchiveStatus(notificationId, true);
+        }),
+        catchError(this.handleError)
+      );
+  }
+
+  // Delete notification
   deleteNotification(notificationId: number): Observable<any> {
     const headers = this.getAuthHeaders();
     return this.http.delete(`${environment.apiUrl}/notifications/${notificationId}`, { headers })
       .pipe(
         tap(() => {
-          const currentNotifications = this.notificationsSubject.value;
-          const filteredNotifications = currentNotifications.filter(notification => notification.id !== notificationId);
-          this.notificationsSubject.next(filteredNotifications);
-          this.updateUnreadCount();
+          this.removeNotification(notificationId);
         }),
         catchError(this.handleError)
       );
   }
 
-  deleteAllNotifications(): Observable<any> {
+  // Get notification settings
+  getSettings(): Observable<NotificationSettings> {
     const headers = this.getAuthHeaders();
-    return this.http.delete(`${environment.apiUrl}/notifications`, { headers })
-      .pipe(
-        tap(() => {
-          this.notificationsSubject.next([]);
-          this.updateUnreadCount();
-        }),
-        catchError(this.handleError)
-      );
-  }
-
-  // Notification Statistics
-  getNotificationStats(): Observable<NotificationStats> {
-    const headers = this.getAuthHeaders();
-    return this.http.get<{ success: boolean, data: NotificationStats }>(`${environment.apiUrl}/notifications/stats`, { headers })
+    return this.http.get<{ success: boolean, data: NotificationSettings }>(`${environment.apiUrl}/notifications/settings`, { headers })
       .pipe(
         map(response => response.data),
-        catchError(this.handleError)
-      );
-  }
-
-  // Notification Preferences
-  getPreferences(): Observable<NotificationPreferences> {
-    const headers = this.getAuthHeaders();
-    return this.http.get<PreferencesResponse>(`${environment.apiUrl}/notifications/preferences`, { headers })
-      .pipe(
-        map(response => response.data),
-        tap(preferences => {
-          this.preferencesSubject.next(preferences);
+        tap(settings => {
+          this.settingsSubject.next(settings);
         }),
         catchError(this.handleError)
       );
   }
 
-  updatePreferences(preferences: Partial<NotificationPreferences>): Observable<NotificationPreferences> {
+  // Update notification settings
+  updateSettings(settings: Partial<NotificationSettings>): Observable<NotificationSettings> {
     const headers = this.getAuthHeaders();
-    return this.http.put<PreferencesResponse>(`${environment.apiUrl}/notifications/preferences`, preferences, { headers })
+    return this.http.put<{ success: boolean, data: NotificationSettings }>(`${environment.apiUrl}/notifications/settings`, settings, { headers })
       .pipe(
         map(response => response.data),
-        tap(preferences => {
-          this.preferencesSubject.next(preferences);
+        tap(settings => {
+          this.settingsSubject.next(settings);
         }),
         catchError(this.handleError)
       );
   }
 
-  // Push Notification Token
-  registerPushToken(token: string): Observable<any> {
+  // Subscribe to push notifications
+  subscribeToPushNotifications(subscription: PushSubscription): Observable<any> {
     const headers = this.getAuthHeaders();
-    return this.http.post(`${environment.apiUrl}/notifications/push-token`, { token }, { headers })
-      .pipe(
-        catchError(this.handleError)
-      );
+    const payload = {
+      endpoint: subscription.endpoint,
+      keys: {
+        p256dh: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(subscription.getKey('p256dh')!)))),
+        auth: btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(subscription.getKey('auth')!))))
+      }
+    };
+
+    return this.http.post(`${environment.apiUrl}/notifications/push-subscription`, payload, { headers })
+      .pipe(catchError(this.handleError));
   }
 
-  unregisterPushToken(): Observable<any> {
+  // Unsubscribe from push notifications
+  unsubscribeFromPushNotifications(): Observable<any> {
     const headers = this.getAuthHeaders();
-    return this.http.delete(`${environment.apiUrl}/notifications/push-token`, { headers })
-      .pipe(
-        catchError(this.handleError)
-      );
+    return this.http.delete(`${environment.apiUrl}/notifications/push-subscription`, { headers })
+      .pipe(catchError(this.handleError));
   }
 
-  // Test Notifications
-  sendTestNotification(type: string): Observable<any> {
-    const headers = this.getAuthHeaders();
-    return this.http.post(`${environment.apiUrl}/notifications/test`, { type }, { headers })
-      .pipe(
-        catchError(this.handleError)
-      );
+  // Add notification locally (for real-time updates)
+  addNotification(notification: Notification): void {
+    const currentNotifications = this.notificationsSubject.value;
+    const updatedNotifications = [notification, ...currentNotifications];
+    this.notificationsSubject.next(updatedNotifications);
+    this.updateUnreadCount(updatedNotifications);
   }
 
-  // Utility Methods
-  private updateUnreadCount(): void {
-    const notifications = this.notificationsSubject.value;
-    const unreadCount = notifications.filter(notification => !notification.is_read).length;
+  // Update notification locally
+  updateNotification(notificationId: number, updates: Partial<Notification>): void {
+    const currentNotifications = this.notificationsSubject.value;
+    const updatedNotifications = currentNotifications.map(notification =>
+      notification.id === notificationId ? { ...notification, ...updates } : notification
+    );
+    this.notificationsSubject.next(updatedNotifications);
+    this.updateUnreadCount(updatedNotifications);
+  }
+
+  // Utility methods
+  private updateUnreadCount(notifications: Notification[]): void {
+    const unreadCount = notifications.filter(n => !n.is_read).length;
     this.unreadCountSubject.next(unreadCount);
   }
 
+  private updateNotificationReadStatus(notificationId: number, isRead: boolean): void {
+    const currentNotifications = this.notificationsSubject.value;
+    const updatedNotifications = currentNotifications.map(notification =>
+      notification.id === notificationId ? { ...notification, is_read: isRead } : notification
+    );
+    this.notificationsSubject.next(updatedNotifications);
+    this.updateUnreadCount(updatedNotifications);
+  }
+
+  private updateNotificationArchiveStatus(notificationId: number, isArchived: boolean): void {
+    const currentNotifications = this.notificationsSubject.value;
+    const updatedNotifications = currentNotifications.map(notification =>
+      notification.id === notificationId ? { ...notification, is_archived: isArchived } : notification
+    );
+    this.notificationsSubject.next(updatedNotifications);
+  }
+
+  private markAllNotificationsAsRead(): void {
+    const currentNotifications = this.notificationsSubject.value;
+    const updatedNotifications = currentNotifications.map(notification => ({
+      ...notification,
+      is_read: true
+    }));
+    this.notificationsSubject.next(updatedNotifications);
+    this.updateUnreadCount(updatedNotifications);
+  }
+
+  private removeNotification(notificationId: number): void {
+    const currentNotifications = this.notificationsSubject.value;
+    const updatedNotifications = currentNotifications.filter(notification => notification.id !== notificationId);
+    this.notificationsSubject.next(updatedNotifications);
+    this.updateUnreadCount(updatedNotifications);
+  }
+
+  // Get current values
   getNotificationsValue(): Notification[] {
     return this.notificationsSubject.value;
   }
@@ -256,49 +277,15 @@ export class NotificationService {
     return this.unreadCountSubject.value;
   }
 
-  getPreferencesValue(): NotificationPreferences | null {
-    return this.preferencesSubject.value;
+  getSettingsValue(): NotificationSettings | null {
+    return this.settingsSubject.value;
   }
 
-  getUnreadNotifications(): Notification[] {
-    return this.notificationsSubject.value.filter(notification => !notification.is_read);
-  }
-
-  getNotificationsByType(type: string): Notification[] {
-    return this.notificationsSubject.value.filter(notification => notification.type === type);
-  }
-
-  hasUnreadNotifications(): boolean {
-    return this.unreadCountSubject.value > 0;
-  }
-
+  // Clear cache
   clearCache(): void {
     this.notificationsSubject.next([]);
     this.unreadCountSubject.next(0);
-    this.preferencesSubject.next(null);
-  }
-
-  // Real-time notification handling (for WebSocket integration)
-  addNotification(notification: Notification): void {
-    const currentNotifications = this.notificationsSubject.value;
-    this.notificationsSubject.next([notification, ...currentNotifications]);
-    this.updateUnreadCount();
-  }
-
-  updateNotification(updatedNotification: Notification): void {
-    const currentNotifications = this.notificationsSubject.value;
-    const updatedNotifications = currentNotifications.map(notification => 
-      notification.id === updatedNotification.id ? updatedNotification : notification
-    );
-    this.notificationsSubject.next(updatedNotifications);
-    this.updateUnreadCount();
-  }
-
-  removeNotification(notificationId: number): void {
-    const currentNotifications = this.notificationsSubject.value;
-    const filteredNotifications = currentNotifications.filter(notification => notification.id !== notificationId);
-    this.notificationsSubject.next(filteredNotifications);
-    this.updateUnreadCount();
+    this.settingsSubject.next(null);
   }
 
   private handleError(error: any): Observable<never> {

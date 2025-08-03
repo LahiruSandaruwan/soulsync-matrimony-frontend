@@ -1,20 +1,307 @@
-<div class="profile-view">
-  <div class="profile-header">
-    <h1>{{ profile.firstName }} {{ profile.lastName }}</h1>
-    <p class="profile-subtitle">{{ profile.age }} years old • {{ profile.location }}</p>
+<div class="min-h-screen bg-gradient-romantic">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center py-12">
+    <app-loading-spinner></app-loading-spinner>
   </div>
-  
-  <div class="profile-content">
-    <div class="profile-section">
-      <h2>About Me</h2>
-      <p>{{ profile.bio }}</p>
-    </div>
-    
-    <div class="profile-section">
-      <h2>Photos</h2>
-      <div class="photos-grid">
-        <p class="empty-state">No photos uploaded yet</p>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="container mx-auto px-4 py-8">
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <span class="text-red-400">⚠️</span>
+        </div>
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-red-800">Error</h3>
+          <p class="text-sm text-red-700 mt-1">{{ error }}</p>
+        </div>
       </div>
     </div>
   </div>
+
+  <!-- Profile Content -->
+  <div *ngIf="!loading && !error && user" class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-romantic text-gradient mb-2">{{ getFullName() }}</h1>
+          <p class="text-gray-600">{{ getAge(user.date_of_birth) }} years old • {{ getLocation() }}</p>
+        </div>
+        <div class="flex items-center space-x-4">
+          <div class="text-center">
+            <div class="text-2xl font-bold" [ngClass]="getCompatibilityColor()">
+              {{ compatibilityScore }}%
+            </div>
+            <div class="text-sm text-gray-600">{{ getCompatibilityText() }}</div>
+          </div>
+          <button 
+            (click)="onBackToChats()" 
+            class="btn-secondary"
+            *ngIf="isMatched"
+          >
+            💬 Chat
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Photo Gallery -->
+      <div class="lg:col-span-2">
+        <div class="card">
+          <div class="relative">
+            <!-- Main Photo -->
+            <div class="relative h-96 bg-gray-200 rounded-lg overflow-hidden">
+              <img 
+                [src]="getPrimaryPhoto()" 
+                [alt]="getFullName()"
+                class="w-full h-full object-cover"
+                (error)="onImageError($event)"
+              >
+              
+              <!-- Photo Navigation -->
+              <div *ngIf="getPublicPhotos().length > 1" class="absolute inset-0 flex items-center justify-between p-4">
+                <button 
+                  (click)="onPreviousPhoto()"
+                  class="bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
+                >
+                  ←
+                </button>
+                <button 
+                  (click)="onNextPhoto()"
+                  class="bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
+                >
+                  →
+                </button>
+              </div>
+
+              <!-- Photo Counter -->
+              <div *ngIf="getPublicPhotos().length > 1" class="absolute bottom-4 right-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
+                {{ currentPhotoIndex + 1 }} / {{ getPublicPhotos().length }}
+              </div>
+            </div>
+
+            <!-- Thumbnail Gallery -->
+            <div *ngIf="getPublicPhotos().length > 1" class="flex space-x-2 mt-4 overflow-x-auto">
+              <div 
+                *ngFor="let photo of getPublicPhotos(); let i = index"
+                (click)="onPhotoClick(i)"
+                class="flex-shrink-0 w-20 h-20 bg-gray-200 rounded-lg overflow-hidden cursor-pointer border-2"
+                [ngClass]="i === currentPhotoIndex ? 'border-blue-500' : 'border-transparent'"
+              >
+                <img 
+                  [src]="photo.file_path" 
+                  [alt]="getFullName()"
+                  class="w-full h-full object-cover"
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile Details -->
+      <div class="space-y-6">
+        <!-- Action Buttons -->
+        <div class="card">
+          <div class="flex space-x-2">
+            <button 
+              (click)="onLike()"
+              [disabled]="sendingLike || isLiked"
+              class="btn-primary flex-1"
+              [ngClass]="isLiked ? 'bg-green-600' : ''"
+            >
+              <span *ngIf="sendingLike">❤️ Sending...</span>
+              <span *ngIf="!sendingLike && !isLiked">❤️ Like</span>
+              <span *ngIf="!sendingLike && isLiked">❤️ Liked</span>
+            </button>
+            
+            <button 
+              (click)="onSuperLike()"
+              [disabled]="sendingSuperLike || isSuperLiked"
+              class="btn-secondary flex-1"
+              [ngClass]="isSuperLiked ? 'bg-yellow-600' : ''"
+            >
+              <span *ngIf="sendingSuperLike">⭐ Sending...</span>
+              <span *ngIf="!sendingSuperLike && !isSuperLiked">⭐ Super Like</span>
+              <span *ngIf="!sendingSuperLike && isSuperLiked">⭐ Sent</span>
+            </button>
+          </div>
+
+          <div class="flex space-x-2 mt-2">
+            <button 
+              (click)="onStartConversation()"
+              [disabled]="startingConversation || !isMatched"
+              class="btn-secondary flex-1"
+              [ngClass]="!isMatched ? 'opacity-50 cursor-not-allowed' : ''"
+            >
+              <span *ngIf="startingConversation">💬 Starting...</span>
+              <span *ngIf="!startingConversation">💬 Message</span>
+            </button>
+            
+            <button 
+              (click)="onBlock()"
+              [disabled]="blocking"
+              class="btn-danger flex-1"
+            >
+              <span *ngIf="blocking">🚫 Blocking...</span>
+              <span *ngIf="!blocking">🚫 Block</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Basic Information -->
+        <div class="card">
+          <h3 class="text-lg font-semibold mb-4">Basic Information</h3>
+          <div class="space-y-3">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Age:</span>
+              <span>{{ getAge(user.date_of_birth) }} years</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Location:</span>
+              <span>{{ getLocation() }}</span>
+            </div>
+            <div *ngIf="user.profile?.education_level" class="flex justify-between">
+              <span class="text-gray-600">Education:</span>
+              <span>{{ user.profile?.education_level | titlecase }}</span>
+            </div>
+            <div *ngIf="user.profile?.occupation" class="flex justify-between">
+              <span class="text-gray-600">Occupation:</span>
+              <span>{{ user.profile?.occupation }}</span>
+            </div>
+            <div *ngIf="user.profile?.religion" class="flex justify-between">
+              <span class="text-gray-600">Religion:</span>
+              <span>{{ user.profile?.religion }}</span>
+            </div>
+            <div *ngIf="user.profile?.marital_status" class="flex justify-between">
+              <span class="text-gray-600">Marital Status:</span>
+              <span>{{ user.profile?.marital_status | titlecase }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Personal Details -->
+        <div class="card" *ngIf="user.profile?.about_me">
+          <h3 class="text-lg font-semibold mb-4">About</h3>
+          <p class="text-gray-700">{{ user.profile?.about_me }}</p>
+        </div>
+
+        <!-- Looking For -->
+        <div class="card" *ngIf="user.profile?.looking_for">
+          <h3 class="text-lg font-semibold mb-4">Looking For</h3>
+          <p class="text-gray-700">{{ user.profile?.looking_for }}</p>
+        </div>
+
+        <!-- Hobbies -->
+        <div class="card" *ngIf="user.profile?.hobbies && (user.profile?.hobbies || []).length > 0">
+          <h3 class="text-lg font-semibold mb-4">Hobbies & Interests</h3>
+          <div class="flex flex-wrap gap-2">
+            <span 
+              *ngFor="let hobby of user.profile?.hobbies || []"
+              class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+            >
+              {{ hobby }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Languages -->
+        <div class="card" *ngIf="user.profile?.languages_known && (user.profile?.languages_known || []).length > 0">
+          <h3 class="text-lg font-semibold mb-4">Languages</h3>
+          <div class="flex flex-wrap gap-2">
+            <span 
+              *ngFor="let language of user.profile?.languages_known || []"
+              class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
+            >
+              {{ language }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Additional Details -->
+        <div class="card">
+          <h3 class="text-lg font-semibold mb-4">Additional Details</h3>
+          <div class="space-y-3">
+            <div *ngIf="user.profile?.height_cm" class="flex justify-between">
+              <span class="text-gray-600">Height:</span>
+              <span>{{ user.profile?.height_cm }} cm</span>
+            </div>
+            <div *ngIf="user.profile?.body_type" class="flex justify-between">
+              <span class="text-gray-600">Body Type:</span>
+              <span>{{ user.profile?.body_type | titlecase }}</span>
+            </div>
+            <div *ngIf="user.profile?.diet" class="flex justify-between">
+              <span class="text-gray-600">Diet:</span>
+              <span>{{ user.profile?.diet | titlecase }}</span>
+            </div>
+            <div *ngIf="user.profile?.smoking" class="flex justify-between">
+              <span class="text-gray-600">Smoking:</span>
+              <span>{{ user.profile?.smoking | titlecase }}</span>
+            </div>
+            <div *ngIf="user.profile?.drinking" class="flex justify-between">
+              <span class="text-gray-600">Drinking:</span>
+              <span>{{ user.profile?.drinking | titlecase }}</span>
+            </div>
+            <div *ngIf="user.profile?.willing_to_relocate" class="flex justify-between">
+              <span class="text-gray-600">Willing to Relocate:</span>
+              <span>{{ user.profile?.willing_to_relocate ? 'Yes' : 'No' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Report Button -->
+        <div class="text-center">
+          <button 
+            (click)="onReport()"
+            class="text-red-600 hover:text-red-800 text-sm underline"
+          >
+            Report Profile
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Photo Modal -->
+  <app-modal 
+    *ngIf="showPhotoModal" 
+    (close)="onClosePhotoModal()"
+    class="z-50"
+  >
+    <div class="relative max-w-4xl mx-auto">
+      <div class="relative">
+        <img 
+          [src]="getPublicPhotos()[currentPhotoIndex].file_path" 
+          [alt]="getFullName()"
+          class="w-full h-auto max-h-96 object-contain"
+        >
+        
+        <!-- Modal Navigation -->
+        <div *ngIf="getPublicPhotos().length > 1" class="absolute inset-0 flex items-center justify-between p-4">
+          <button 
+            (click)="onPreviousPhoto()"
+            class="bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all"
+          >
+            ←
+          </button>
+          <button 
+            (click)="onNextPhoto()"
+            class="bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all"
+          >
+            →
+          </button>
+        </div>
+
+        <!-- Close Button -->
+        <button 
+          (click)="onClosePhotoModal()"
+          class="absolute top-4 right-4 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-70 transition-all"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+  </app-modal>
 </div> 

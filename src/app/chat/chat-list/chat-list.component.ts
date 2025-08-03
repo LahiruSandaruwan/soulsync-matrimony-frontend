@@ -107,30 +107,36 @@ export class ChatListComponent implements OnInit, OnDestroy {
     this.loadConversations();
   }
 
+  private updateUserOnlineStatus(status: any): void {
+    if (status.is_online) {
+      this.onlineUsers.add(status.user_id);
+      this.updateConversationOnlineStatus(status.user_id, true);
+    } else {
+      this.onlineUsers.delete(status.user_id);
+      this.updateConversationOnlineStatus(status.user_id, false);
+    }
+  }
+
   private setupWebSocket(): void {
-    // Connect to WebSocket for real-time updates
-    this.webSocketService.connect();
-    
-    // Listen for new messages
+    const token = localStorage.getItem('token');
+    if (token) {
+      this.webSocketService.connect(token);
+    }
+
+    // Subscribe to real-time messages
     this.webSocketService.getMessages()
       .pipe(takeUntil(this.destroy$))
-      .subscribe((message: any) => {
-        if (message.type === 'chat') {
+      .subscribe(message => {
+        if (message.type === 'message') {
           this.handleNewMessage(message.data);
         }
       });
 
-    // Listen for user online/offline events
+    // Subscribe to online status updates
     this.webSocketService.getOnlineStatusUpdates()
       .pipe(takeUntil(this.destroy$))
-      .subscribe((status: any) => {
-        if (status.is_online) {
-          this.onlineUsers.add(status.user_id);
-          this.updateConversationOnlineStatus(status.user_id, true);
-        } else {
-          this.onlineUsers.delete(status.user_id);
-          this.updateConversationOnlineStatus(status.user_id, false);
-        }
+      .subscribe(status => {
+        this.updateUserOnlineStatus(status);
       });
   }
 

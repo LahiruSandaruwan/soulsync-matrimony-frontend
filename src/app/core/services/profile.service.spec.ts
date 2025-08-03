@@ -1,7 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { ProfileService } from './profile.service';
+import { ProfileService, ProfileResponse, PhotosResponse, PreferenceResponse } from './profile.service';
 import { environment } from '../../../environments/environment';
+import { UserProfile, UserPhoto } from '../models/user.model';
 
 describe('ProfileService', () => {
   let service: ProfileService;
@@ -26,16 +27,50 @@ describe('ProfileService', () => {
 
   describe('getProfile', () => {
     it('should send GET request to profile endpoint', () => {
-      const mockResponse = {
-        id: 1,
-        first_name: 'John',
-        last_name: 'Doe',
-        email: 'john@example.com',
-        profile_completion: 85
+      const mockResponse: ProfileResponse = {
+        success: true,
+        data: {
+          id: 1,
+          user_id: 1,
+          height_cm: 170,
+          weight_kg: 65,
+          body_type: 'average',
+          complexion: 'fair',
+          blood_group: 'A+',
+          current_city: 'New York',
+          current_state: 'NY',
+          current_country: 'USA',
+          education_level: 'bachelors',
+          occupation: 'Software Engineer',
+          company: 'Tech Corp',
+          job_title: 'Senior Developer',
+          annual_income_usd: 80000,
+          religion: 'Christianity',
+          caste: 'General',
+          mother_tongue: 'English',
+          languages_known: ['English', 'Spanish'],
+          family_type: 'nuclear',
+          family_status: 'middle_class',
+          diet: 'vegetarian',
+          smoking: 'never',
+          drinking: 'never',
+          hobbies: ['Reading', 'Traveling'],
+          about_me: 'I am a passionate individual',
+          looking_for: 'Someone who shares my values',
+          marital_status: 'never_married',
+          have_children: false,
+          children_count: 0,
+          willing_to_relocate: true,
+          preferred_locations: ['New York', 'California'],
+          completion_percentage: 85,
+          created_at: '2023-01-01T00:00:00Z',
+          updated_at: '2023-01-01T00:00:00Z'
+        },
+        message: 'Profile retrieved successfully'
       };
 
       service.getProfile().subscribe(response => {
-        expect(response).toEqual(mockResponse);
+        expect(response).toEqual(mockResponse.data);
       });
 
       const req = httpMock.expectOne(`${environment.apiUrl}/profile`);
@@ -51,10 +86,21 @@ describe('ProfileService', () => {
         last_name: 'Doe',
         about_me: 'Test description'
       };
-      const mockResponse = { message: 'Profile updated successfully' };
+      const mockResponse: ProfileResponse = {
+        success: true,
+        data: {
+          id: 1,
+          user_id: 1,
+          about_me: 'Test description',
+          completion_percentage: 85,
+          created_at: '2023-01-01T00:00:00Z',
+          updated_at: '2023-01-01T00:00:00Z'
+        },
+        message: 'Profile updated successfully'
+      };
 
       service.updateProfile(profileData).subscribe(response => {
-        expect(response).toEqual(mockResponse);
+        expect(response).toEqual(mockResponse.data);
       });
 
       const req = httpMock.expectOne(`${environment.apiUrl}/profile`);
@@ -83,34 +129,39 @@ describe('ProfileService', () => {
 
   describe('getPhotos', () => {
     it('should send GET request to get photos endpoint', () => {
-      const mockResponse = [
-        { id: 1, url: 'photo1.jpg', is_public: true },
-        { id: 2, url: 'photo2.jpg', is_public: false }
-      ];
+      const mockResponse: PhotosResponse = {
+        success: true,
+        data: [
+          {
+            id: 1,
+            user_id: 1,
+            file_path: 'uploads/photos/photo1.jpg',
+            is_primary: true,
+            is_private: false,
+            status: 'approved' as const,
+            created_at: '2023-01-01T00:00:00Z',
+            updated_at: '2023-01-01T00:00:00Z'
+          },
+          {
+            id: 2,
+            user_id: 1,
+            file_path: 'uploads/photos/photo2.jpg',
+            is_primary: false,
+            is_private: true,
+            status: 'approved' as const,
+            created_at: '2023-01-01T00:00:00Z',
+            updated_at: '2023-01-01T00:00:00Z'
+          }
+        ],
+        message: 'Photos retrieved successfully'
+      };
 
       service.getPhotos().subscribe(response => {
-        expect(response).toEqual(mockResponse);
+        expect(response).toEqual(mockResponse.data);
       });
 
       const req = httpMock.expectOne(`${environment.apiUrl}/profile/photos`);
       expect(req.request.method).toBe('GET');
-      req.flush(mockResponse);
-    });
-  });
-
-  describe('updatePhotoPrivacy', () => {
-    it('should send PUT request to update photo privacy endpoint', () => {
-      const photoId = 1;
-      const isPublic = true;
-      const mockResponse = { message: 'Photo privacy updated successfully' };
-
-      service.updatePhotoPrivacy(photoId, isPublic).subscribe(response => {
-        expect(response).toEqual(mockResponse);
-      });
-
-      const req = httpMock.expectOne(`${environment.apiUrl}/profile/photos/${photoId}`);
-      expect(req.request.method).toBe('PUT');
-      expect(req.request.body).toEqual({ is_public: isPublic });
       req.flush(mockResponse);
     });
   });
@@ -130,121 +181,117 @@ describe('ProfileService', () => {
     });
   });
 
-  describe('getSettings', () => {
-    it('should send GET request to get settings endpoint', () => {
+  describe('setPrimaryPhoto', () => {
+    it('should send PUT request to set primary photo endpoint', () => {
+      const photoId = 1;
       const mockResponse = {
-        notification_settings: {
-          email_notifications: true,
-          push_notifications: true
-        },
-        privacy_settings: {
-          profile_visibility: 'public',
-          show_online_status: true
+        success: true,
+        data: {
+          id: 1,
+          user_id: 1,
+          file_path: 'uploads/photos/test.jpg',
+          is_primary: true,
+          is_private: false,
+          status: 'approved' as const,
+          created_at: '2023-01-01T00:00:00Z',
+          updated_at: '2023-01-01T00:00:00Z'
         }
       };
 
-      service.getSettings().subscribe(response => {
-        expect(response).toEqual(mockResponse);
+      service.setPrimaryPhoto(photoId).subscribe(response => {
+        expect(response).toEqual(mockResponse.data);
       });
 
-      const req = httpMock.expectOne(`${environment.apiUrl}/profile/settings`);
-      expect(req.request.method).toBe('GET');
-      req.flush(mockResponse);
-    });
-  });
-
-  describe('updateNotificationSettings', () => {
-    it('should send PUT request to update notification settings endpoint', () => {
-      const settings = {
-        email_notifications: true,
-        push_notifications: false,
-        sms_notifications: true
-      };
-      const mockResponse = { message: 'Notification settings updated successfully' };
-
-      service.updateNotificationSettings(settings).subscribe(response => {
-        expect(response).toEqual(mockResponse);
-      });
-
-      const req = httpMock.expectOne(`${environment.apiUrl}/profile/notification-settings`);
+      const req = httpMock.expectOne(`${environment.apiUrl}/profile/photos/${photoId}`);
       expect(req.request.method).toBe('PUT');
-      expect(req.request.body).toEqual(settings);
       req.flush(mockResponse);
     });
   });
 
-  describe('updatePrivacySettings', () => {
-    it('should send PUT request to update privacy settings endpoint', () => {
-      const settings = {
-        profile_visibility: 'public',
-        show_online_status: true,
-        allow_messages_from: 'matches'
+  describe('getProfileCompletion', () => {
+    it('should send GET request to get profile completion endpoint', () => {
+      const mockResponse = { 
+        success: true,
+        data: { completion_percentage: 85 }
       };
-      const mockResponse = { message: 'Privacy settings updated successfully' };
 
-      service.updatePrivacySettings(settings).subscribe(response => {
-        expect(response).toEqual(mockResponse);
+      service.getProfileCompletion().subscribe(response => {
+        expect(response).toEqual(mockResponse.data);
       });
 
-      const req = httpMock.expectOne(`${environment.apiUrl}/profile/privacy-settings`);
+      const req = httpMock.expectOne(`${environment.apiUrl}/profile/completion`);
+      expect(req.request.method).toBe('GET');
+      req.flush(mockResponse);
+    });
+  });
+
+  describe('getPreferences', () => {
+    it('should send GET request to get preferences endpoint', () => {
+      const mockResponse: PreferenceResponse = {
+        success: true,
+        data: {
+          id: 1,
+          user_id: 1,
+          age_min: 25,
+          age_max: 35,
+          height_min: 160,
+          height_max: 180,
+          education_level: ['bachelors', 'masters'],
+          religion: ['Christianity', 'Hinduism'],
+          location_preference: 'same_city',
+          max_distance_km: 50,
+          deal_breakers: ['smoking', 'drinking'],
+          preferred_diet: ['vegetarian'],
+          created_at: '2023-01-01T00:00:00Z',
+          updated_at: '2023-01-01T00:00:00Z'
+        },
+        message: 'Preferences retrieved successfully'
+      };
+
+      service.getPreferences().subscribe(response => {
+        expect(response).toEqual(mockResponse.data);
+      });
+
+      const req = httpMock.expectOne(`${environment.apiUrl}/profile/preferences`);
+      expect(req.request.method).toBe('GET');
+      req.flush(mockResponse);
+    });
+  });
+
+  describe('updatePreferences', () => {
+    it('should send PUT request to update preferences endpoint', () => {
+      const preferencesData = {
+        age_min: 25,
+        age_max: 35,
+        location_preference: 'same_city' as const
+      };
+      const mockResponse: PreferenceResponse = {
+        success: true,
+        data: {
+          id: 1,
+          user_id: 1,
+          age_min: 25,
+          age_max: 35,
+          location_preference: 'same_city',
+          created_at: '2023-01-01T00:00:00Z',
+          updated_at: '2023-01-01T00:00:00Z'
+        },
+        message: 'Preferences updated successfully'
+      };
+
+      service.updatePreferences(preferencesData).subscribe(response => {
+        expect(response).toEqual(mockResponse.data);
+      });
+
+      const req = httpMock.expectOne(`${environment.apiUrl}/profile/preferences`);
       expect(req.request.method).toBe('PUT');
-      expect(req.request.body).toEqual(settings);
+      expect(req.request.body).toEqual(preferencesData);
       req.flush(mockResponse);
     });
   });
 
-  describe('exportData', () => {
-    it('should send GET request to export data endpoint', () => {
-      const mockResponse = { download_url: 'https://example.com/export.zip' };
-
-      service.exportData().subscribe(response => {
-        expect(response).toEqual(mockResponse);
-      });
-
-      const req = httpMock.expectOne(`${environment.apiUrl}/profile/export-data`);
-      expect(req.request.method).toBe('GET');
-      req.flush(mockResponse);
-    });
-  });
-
-  describe('getMatches', () => {
-    it('should send GET request to get matches endpoint', () => {
-      const mockResponse = [
-        { id: 1, name: 'Alice', compatibility: 85 },
-        { id: 2, name: 'Bob', compatibility: 78 }
-      ];
-
-      service.getMatches().subscribe(response => {
-        expect(response).toEqual(mockResponse);
-      });
-
-      const req = httpMock.expectOne(`${environment.apiUrl}/profile/matches`);
-      expect(req.request.method).toBe('GET');
-      req.flush(mockResponse);
-    });
-  });
-
-  describe('getProfileViews', () => {
-    it('should send GET request to get profile views endpoint', () => {
-      const mockResponse = [
-        { id: 1, viewer: 'Alice', viewed_at: '2023-01-15T10:30:00Z' },
-        { id: 2, viewer: 'Bob', viewed_at: '2023-01-14T15:45:00Z' }
-      ];
-
-      service.getProfileViews().subscribe(response => {
-        expect(response).toEqual(mockResponse);
-      });
-
-      const req = httpMock.expectOne(`${environment.apiUrl}/profile/views`);
-      expect(req.request.method).toBe('GET');
-      req.flush(mockResponse);
-    });
-  });
-
-  describe('handleError', () => {
+  describe('error handling', () => {
     it('should handle HTTP errors', () => {
-      const errorResponse = { status: 404, message: 'Profile not found' };
-      
       service.getProfile().subscribe({
         next: () => fail('should have failed'),
         error: (error) => {
@@ -253,7 +300,7 @@ describe('ProfileService', () => {
       });
 
       const req = httpMock.expectOne(`${environment.apiUrl}/profile`);
-      req.flush(errorResponse, { status: 404, statusText: 'Not Found' });
+      req.flush('Error', { status: 500, statusText: 'Internal Server Error' });
     });
   });
 }); 

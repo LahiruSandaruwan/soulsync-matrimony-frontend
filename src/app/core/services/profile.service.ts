@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { User } from '../models/user.model';
 import { UserProfile, UserPhoto, UserPreference } from '../models/user.model';
 
 export interface ProfileUpdateRequest {
@@ -223,6 +224,46 @@ export class ProfileService {
         tap(preference => {
           this.currentPreferenceSubject.next(preference);
         }),
+        catchError(this.handleError)
+      );
+  }
+
+  // Get user profile by ID (for viewing other users' profiles)
+  getUserProfile(userId: number): Observable<UserProfile> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<ProfileResponse>(`${environment.apiUrl}/users/${userId}/profile`, { headers })
+      .pipe(
+        map(response => response.data),
+        catchError(this.handleError)
+      );
+  }
+
+  // Get user photos by ID (for viewing other users' photos)
+  getUserPhotos(userId: number): Observable<UserPhoto[]> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<PhotosResponse>(`${environment.apiUrl}/users/${userId}/photos`, { headers })
+      .pipe(
+        map(response => response.data),
+        catchError(this.handleError)
+      );
+  }
+
+  // Get user preferences by ID (for viewing other users' preferences)
+  getUserPreferences(userId: number): Observable<UserPreference> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<PreferenceResponse>(`${environment.apiUrl}/users/${userId}/preferences`, { headers })
+      .pipe(
+        map(response => response.data),
+        catchError(this.handleError)
+      );
+  }
+
+  // Get user by ID (for viewing other users' basic info)
+  getUser(userId: number): Observable<User> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<{ success: boolean, data: User }>(`${environment.apiUrl}/users/${userId}`, { headers })
+      .pipe(
+        map(response => response.data),
         catchError(this.handleError)
       );
   }

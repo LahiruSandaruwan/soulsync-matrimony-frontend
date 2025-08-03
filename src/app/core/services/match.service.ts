@@ -323,9 +323,25 @@ export class MatchService {
       );
   }
 
-  // Compatibility
+  // Get interaction status with a user (like, super-like, block, match)
+  getInteractionStatus(userId: number): Observable<{
+    is_liked: boolean;
+    is_super_liked: boolean;
+    is_blocked: boolean;
+    is_matched: boolean;
+    is_mutual_like: boolean;
+  }> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<{ success: boolean, data: any }>(`${environment.apiUrl}/matches/interaction-status/${userId}`, { headers })
+      .pipe(
+        map(response => response.data),
+        catchError(this.handleError)
+      );
+  }
+
+  // Get compatibility score with a user
   getCompatibilityScore(userId: number): Observable<{
-    overall_score: number;
+    compatibility_score: number;
     personality_score: number;
     lifestyle_score: number;
     values_score: number;
@@ -334,6 +350,20 @@ export class MatchService {
   }> {
     const headers = this.getAuthHeaders();
     return this.http.get<{ success: boolean, data: any }>(`${environment.apiUrl}/matches/compatibility/${userId}`, { headers })
+      .pipe(
+        map(response => response.data),
+        catchError(this.handleError)
+      );
+  }
+
+  // Start a conversation with a user (creates match if mutual like)
+  startConversation(userId: number): Observable<{
+    conversation_id: number;
+    is_new_match: boolean;
+    match_percentage: number;
+  }> {
+    const headers = this.getAuthHeaders();
+    return this.http.post<{ success: boolean, data: any }>(`${environment.apiUrl}/matches/start-conversation`, { user_id: userId }, { headers })
       .pipe(
         map(response => response.data),
         catchError(this.handleError)

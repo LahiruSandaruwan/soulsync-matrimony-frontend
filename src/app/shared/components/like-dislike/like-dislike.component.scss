@@ -1,0 +1,336 @@
+.like-dislike-container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 1rem;
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-card {
+  width: 100%;
+  max-width: 350px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  cursor: grab;
+  user-select: none;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  position: relative;
+  
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.profile-image-container {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  overflow: hidden;
+}
+
+.profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.profile-info {
+  padding: 1.5rem;
+  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.8));
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  color: white;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.profile-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.profile-age {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.profile-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.compatibility-score {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  
+  .score-label {
+    opacity: 0.8;
+  }
+  
+  .score-value {
+    font-weight: 600;
+    font-size: 1rem;
+  }
+}
+
+.distance {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.mutual-interests {
+  margin-top: 0.5rem;
+  
+  .interests-label {
+    display: block;
+    font-size: 0.8rem;
+    opacity: 0.8;
+    margin-bottom: 0.25rem;
+  }
+  
+  .interests-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+  
+  .interest-tag {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    backdrop-filter: blur(10px);
+  }
+}
+
+// Swipe Indicators
+.swipe-indicators {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.swipe-indicator {
+  padding: 1rem 2rem;
+  border: 4px solid;
+  border-radius: 15px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transform: rotate(-15deg);
+  animation: indicatorPulse 0.5s ease-in-out;
+  
+  &.like-indicator {
+    border-color: #10b981;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+  }
+  
+  &.dislike-indicator {
+    border-color: #ef4444;
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+  }
+  
+  &.superlike-indicator {
+    border-color: #f59e0b;
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+  }
+}
+
+@keyframes indicatorPulse {
+  0% {
+    transform: rotate(-15deg) scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: rotate(-15deg) scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(-15deg) scale(1);
+    opacity: 1;
+  }
+}
+
+// Action Buttons
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 1rem;
+}
+
+.action-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  
+  &:hover:not(:disabled) {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+  
+  &:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  &.dislike-btn {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+    }
+  }
+  
+  &.superlike-btn {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background: linear-gradient(135deg, #d97706, #b45309);
+    }
+  }
+  
+  &.like-btn {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background: linear-gradient(135deg, #059669, #047857);
+    }
+  }
+}
+
+// Empty State
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #6b7280;
+  
+  .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+  
+  .empty-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #374151;
+  }
+  
+  .empty-description {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+}
+
+// Responsive Design
+@media (max-width: 480px) {
+  .like-dislike-container {
+    padding: 0.5rem;
+    min-height: 500px;
+  }
+  
+  .profile-card {
+    max-width: 100%;
+  }
+  
+  .profile-image-container {
+    height: 350px;
+  }
+  
+  .action-buttons {
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+  
+  .action-btn {
+    width: 55px;
+    height: 55px;
+    font-size: 1.3rem;
+  }
+  
+  .profile-name {
+    font-size: 1.3rem;
+  }
+  
+  .profile-age {
+    font-size: 1.1rem;
+  }
+}
+
+// Touch Device Optimizations
+@media (hover: none) and (pointer: coarse) {
+  .profile-card {
+    cursor: default;
+  }
+  
+  .action-btn {
+    min-width: 60px;
+    min-height: 60px;
+  }
+}
+
+// Dark Mode Support
+@media (prefers-color-scheme: dark) {
+  .profile-card {
+    background: #1f2937;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  }
+  
+  .empty-state {
+    color: #9ca3af;
+    
+    .empty-title {
+      color: #d1d5db;
+    }
+  }
+} 

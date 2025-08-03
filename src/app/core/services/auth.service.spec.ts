@@ -2,12 +2,16 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { AuthService } from './auth.service';
 import { environment } from '../../../environments/environment';
+import { AuthResponse, RegisterRequest, ForgotPasswordRequest } from '../models/user.model';
 
 describe('AuthService', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
 
   beforeEach(() => {
+    // Clear localStorage to ensure clean state
+    localStorage.clear();
+    
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [AuthService]
@@ -18,6 +22,7 @@ describe('AuthService', () => {
 
   afterEach(() => {
     httpMock.verify();
+    localStorage.clear();
   });
 
   it('should be created', () => {
@@ -27,7 +32,25 @@ describe('AuthService', () => {
   describe('login', () => {
     it('should send POST request to login endpoint', () => {
       const loginData = { email: 'test@example.com', password: 'password123' };
-      const mockResponse = { token: 'test-token', user: { id: 1, email: 'test@example.com' } };
+      const mockResponse: AuthResponse = {
+        success: true,
+        data: {
+          token: 'test-token',
+          user: {
+            id: 1,
+            email: 'test@example.com',
+            first_name: 'John',
+            last_name: 'Doe',
+            date_of_birth: '1990-01-01',
+            gender: 'male',
+            country_code: '+1',
+            email_verified_at: null,
+            created_at: '2023-01-01T00:00:00Z',
+            updated_at: '2023-01-01T00:00:00Z'
+          }
+        },
+        message: 'Login successful'
+      };
 
       service.login(loginData).subscribe(response => {
         expect(response).toEqual(mockResponse);
@@ -42,16 +65,37 @@ describe('AuthService', () => {
 
   describe('register', () => {
     it('should send POST request to register endpoint', () => {
-      const registerData = {
+      const registerData: RegisterRequest = {
         first_name: 'John',
         last_name: 'Doe',
         email: 'john@example.com',
         password: 'password123',
         password_confirmation: 'password123',
         date_of_birth: '1990-01-01',
-        gender: 'male'
+        gender: 'male',
+        country_code: '+1',
+        terms_accepted: true,
+        privacy_accepted: true
       };
-      const mockResponse = { message: 'User registered successfully' };
+      const mockResponse: AuthResponse = {
+        success: true,
+        data: {
+          token: 'test-token',
+          user: {
+            id: 1,
+            email: 'john@example.com',
+            first_name: 'John',
+            last_name: 'Doe',
+            date_of_birth: '1990-01-01',
+            gender: 'male',
+            country_code: '+1',
+            email_verified_at: null,
+            created_at: '2023-01-01T00:00:00Z',
+            updated_at: '2023-01-01T00:00:00Z'
+          }
+        },
+        message: 'User registered successfully'
+      };
 
       service.register(registerData).subscribe(response => {
         expect(response).toEqual(mockResponse);
@@ -80,7 +124,25 @@ describe('AuthService', () => {
 
   describe('refreshToken', () => {
     it('should send POST request to refresh token endpoint', () => {
-      const mockResponse = { token: 'new-token' };
+      const mockResponse: AuthResponse = {
+        success: true,
+        data: {
+          token: 'new-token',
+          user: {
+            id: 1,
+            email: 'test@example.com',
+            first_name: 'John',
+            last_name: 'Doe',
+            date_of_birth: '1990-01-01',
+            gender: 'male',
+            country_code: '+1',
+            email_verified_at: null,
+            created_at: '2023-01-01T00:00:00Z',
+            updated_at: '2023-01-01T00:00:00Z'
+          }
+        },
+        message: 'Token refreshed successfully'
+      };
 
       service.refreshToken().subscribe(response => {
         expect(response).toEqual(mockResponse);
@@ -94,16 +156,16 @@ describe('AuthService', () => {
 
   describe('forgotPassword', () => {
     it('should send POST request to forgot password endpoint', () => {
-      const email = 'test@example.com';
+      const forgotPasswordData: ForgotPasswordRequest = { email: 'test@example.com' };
       const mockResponse = { message: 'Password reset email sent' };
 
-      service.forgotPassword(email).subscribe(response => {
+      service.forgotPassword(forgotPasswordData).subscribe(response => {
         expect(response).toEqual(mockResponse);
       });
 
       const req = httpMock.expectOne(`${environment.apiUrl}/auth/forgot-password`);
       expect(req.request.method).toBe('POST');
-      expect(req.request.body).toEqual({ email });
+      expect(req.request.body).toEqual(forgotPasswordData);
       req.flush(mockResponse);
     });
   });
@@ -129,6 +191,31 @@ describe('AuthService', () => {
     });
   });
 
+  describe('getCurrentUser', () => {
+    it('should send GET request to get current user endpoint', () => {
+      const mockUser = {
+        id: 1,
+        email: 'test@example.com',
+        first_name: 'John',
+        last_name: 'Doe',
+        date_of_birth: '1990-01-01',
+        gender: 'male' as const,
+        country_code: '+1',
+        email_verified_at: null,
+        created_at: '2023-01-01T00:00:00Z',
+        updated_at: '2023-01-01T00:00:00Z'
+      };
+
+      service.getCurrentUser().subscribe(response => {
+        expect(response).toEqual(mockUser);
+      });
+
+      const req = httpMock.expectOne(`${environment.apiUrl}/auth/me`);
+      expect(req.request.method).toBe('GET');
+      req.flush({ success: true, data: mockUser });
+    });
+  });
+
   describe('changePassword', () => {
     it('should send POST request to change password endpoint', () => {
       const passwordData = {
@@ -151,7 +238,7 @@ describe('AuthService', () => {
 
   describe('enableTwoFactor', () => {
     it('should send POST request to enable 2FA endpoint', () => {
-      const mockResponse = { message: 'Two-factor authentication enabled' };
+      const mockResponse = { message: '2FA enabled successfully' };
 
       service.enableTwoFactor().subscribe(response => {
         expect(response).toEqual(mockResponse);
@@ -165,110 +252,216 @@ describe('AuthService', () => {
 
   describe('deleteAccount', () => {
     it('should send DELETE request to delete account endpoint', () => {
-      const password = 'password123';
       const mockResponse = { message: 'Account deleted successfully' };
 
-      service.deleteAccount(password).subscribe(response => {
+      service.deleteAccount('password123').subscribe(response => {
         expect(response).toEqual(mockResponse);
       });
 
       const req = httpMock.expectOne(`${environment.apiUrl}/auth/account`);
       expect(req.request.method).toBe('DELETE');
-      expect(req.request.body).toEqual({ password });
+      expect(req.request.body).toEqual({ password: 'password123' });
       req.flush(mockResponse);
     });
   });
 
-  describe('getCurrentUser', () => {
-    it('should send GET request to get current user endpoint', () => {
-      const mockResponse = { id: 1, email: 'test@example.com', name: 'Test User' };
+  describe('verifyEmail', () => {
+    it('should send GET request to verify email endpoint', () => {
+      const mockResponse = { message: 'Email verified successfully' };
 
-      service.getCurrentUser().subscribe(response => {
+      service.verifyEmail('user-id', 'verification-hash').subscribe(response => {
         expect(response).toEqual(mockResponse);
       });
 
-      const req = httpMock.expectOne(`${environment.apiUrl}/auth/user`);
+      const req = httpMock.expectOne(`${environment.apiUrl}/email/verify/user-id/verification-hash`);
       expect(req.request.method).toBe('GET');
       req.flush(mockResponse);
     });
   });
 
-  describe('updateProfile', () => {
-    it('should send PUT request to update profile endpoint', () => {
-      const profileData = {
-        first_name: 'John',
-        last_name: 'Doe',
-        about_me: 'Test description'
-      };
-      const mockResponse = { message: 'Profile updated successfully' };
+  describe('resendVerificationEmail', () => {
+    it('should send POST request to resend verification email endpoint', () => {
+      const mockResponse = { message: 'Verification email sent' };
 
-      service.updateProfile(profileData).subscribe(response => {
+      service.resendVerificationEmail().subscribe(response => {
         expect(response).toEqual(mockResponse);
       });
 
-      const req = httpMock.expectOne(`${environment.apiUrl}/auth/profile`);
-      expect(req.request.method).toBe('PUT');
-      expect(req.request.body).toEqual(profileData);
+      const req = httpMock.expectOne(`${environment.apiUrl}/email/resend`);
+      expect(req.request.method).toBe('POST');
       req.flush(mockResponse);
     });
   });
 
-  describe('isAuthenticated', () => {
-    it('should return true when token exists', () => {
-      spyOn(localStorage, 'getItem').and.returnValue('test-token');
-      expect(service.isAuthenticated()).toBe(true);
-    });
+  describe('checkEmailVerificationStatus', () => {
+    it('should send GET request to check email verification status endpoint', () => {
+      const mockResponse = { verified: true };
 
-    it('should return false when token does not exist', () => {
-      spyOn(localStorage, 'getItem').and.returnValue(null);
-      expect(service.isAuthenticated()).toBe(false);
-    });
-  });
-
-  describe('getToken', () => {
-    it('should return token from localStorage', () => {
-      spyOn(localStorage, 'getItem').and.returnValue('test-token');
-      expect(service.getToken()).toBe('test-token');
-    });
-  });
-
-  describe('setToken', () => {
-    it('should store token in localStorage', () => {
-      spyOn(localStorage, 'setItem');
-      service.setToken('new-token');
-      expect(localStorage.setItem).toHaveBeenCalledWith('token', 'new-token');
-    });
-  });
-
-  describe('removeToken', () => {
-    it('should remove token from localStorage', () => {
-      spyOn(localStorage, 'removeItem');
-      service.removeToken();
-      expect(localStorage.removeItem).toHaveBeenCalledWith('token');
-    });
-  });
-
-  describe('getAuthHeaders', () => {
-    it('should return headers with authorization token', () => {
-      spyOn(localStorage, 'getItem').and.returnValue('test-token');
-      const headers = service.getAuthHeaders();
-      expect(headers.get('Authorization')).toBe('Bearer test-token');
-    });
-  });
-
-  describe('handleError', () => {
-    it('should handle HTTP errors', () => {
-      const errorResponse = { status: 401, message: 'Unauthorized' };
-      
-      service.login({ email: 'test@example.com', password: 'wrong' }).subscribe({
-        next: () => fail('should have failed'),
-        error: (error) => {
-          expect(error).toBeTruthy();
-        }
+      service.checkEmailVerificationStatus().subscribe(response => {
+        expect(response).toEqual(mockResponse);
       });
 
+      const req = httpMock.expectOne(`${environment.apiUrl}/email/check`);
+      expect(req.request.method).toBe('GET');
+      req.flush(mockResponse);
+    });
+  });
+
+  describe('socialLogin', () => {
+    it('should send POST request to social login endpoint', () => {
+      const socialLoginData = { provider: 'google', token: 'social-token' };
+      const mockResponse: AuthResponse = {
+        success: true,
+        data: {
+          token: 'test-token',
+          user: {
+            id: 1,
+            email: 'test@example.com',
+            first_name: 'John',
+            last_name: 'Doe',
+            date_of_birth: '1990-01-01',
+            gender: 'male',
+            country_code: '+1',
+            email_verified_at: null,
+            created_at: '2023-01-01T00:00:00Z',
+            updated_at: '2023-01-01T00:00:00Z'
+          }
+        },
+        message: 'Social login successful'
+      };
+
+      service.socialLogin('google', 'social-token').subscribe(response => {
+        expect(response).toEqual(mockResponse);
+      });
+
+      const req = httpMock.expectOne(`${environment.apiUrl}/auth/social-login`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(socialLoginData);
+      req.flush(mockResponse);
+    });
+  });
+
+  describe('authentication state', () => {
+    it('should initialize with no authentication', () => {
+      expect(service.isAuthenticated()).toBe(false);
+      expect(service.getCurrentUserValue()).toBeNull();
+      expect(service.getToken()).toBeNull();
+    });
+
+    it('should update authentication state after successful login', () => {
+      const mockResponse: AuthResponse = {
+        success: true,
+        data: {
+          token: 'test-token',
+          user: {
+            id: 1,
+            email: 'test@example.com',
+            first_name: 'John',
+            last_name: 'Doe',
+            date_of_birth: '1990-01-01',
+            gender: 'male',
+            country_code: '+1',
+            email_verified_at: null,
+            created_at: '2023-01-01T00:00:00Z',
+            updated_at: '2023-01-01T00:00:00Z'
+          }
+        },
+        message: 'Login successful'
+      };
+
+      service.login({ email: 'test@example.com', password: 'password123' }).subscribe();
+
       const req = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
-      req.flush(errorResponse, { status: 401, statusText: 'Unauthorized' });
+      req.flush(mockResponse);
+
+      expect(service.isAuthenticated()).toBe(true);
+      expect(service.getCurrentUserValue()).toEqual(mockResponse.data.user);
+      expect(service.getToken()).toBe('test-token');
+    });
+
+    it('should clear authentication state after logout', () => {
+      // First login
+      const mockResponse: AuthResponse = {
+        success: true,
+        data: {
+          token: 'test-token',
+          user: {
+            id: 1,
+            email: 'test@example.com',
+            first_name: 'John',
+            last_name: 'Doe',
+            date_of_birth: '1990-01-01',
+            gender: 'male',
+            country_code: '+1',
+            email_verified_at: null,
+            created_at: '2023-01-01T00:00:00Z',
+            updated_at: '2023-01-01T00:00:00Z'
+          }
+        },
+        message: 'Login successful'
+      };
+
+      service.login({ email: 'test@example.com', password: 'password123' }).subscribe();
+      const loginReq = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
+      loginReq.flush(mockResponse);
+
+      // Then logout
+      service.logout().subscribe();
+      const logoutReq = httpMock.expectOne(`${environment.apiUrl}/auth/logout`);
+      logoutReq.flush({ message: 'Logged out successfully' });
+
+      expect(service.isAuthenticated()).toBe(false);
+      expect(service.getCurrentUserValue()).toBeNull();
+      expect(service.getToken()).toBeNull();
+    });
+  });
+
+  describe('role checking', () => {
+    it('should check user roles correctly', () => {
+      const mockUser = {
+        id: 1,
+        email: 'admin@example.com',
+        first_name: 'Admin',
+        last_name: 'User',
+        date_of_birth: '1990-01-01',
+        gender: 'male',
+        country_code: '+1',
+        email_verified_at: null,
+        created_at: '2023-01-01T00:00:00Z',
+        updated_at: '2023-01-01T00:00:00Z',
+        role: 'admin'
+      };
+
+      // Set current user
+      (service as any).currentUserSubject.next(mockUser);
+
+      expect(service.hasRole('admin')).toBe(true);
+      expect(service.hasRole('user')).toBe(false);
+      expect(service.isAdmin()).toBe(true);
+    });
+
+    it('should check premium status correctly', () => {
+      const mockUser = {
+        id: 1,
+        email: 'premium@example.com',
+        first_name: 'Premium',
+        last_name: 'User',
+        date_of_birth: '1990-01-01',
+        gender: 'male',
+        country_code: '+1',
+        email_verified_at: null,
+        created_at: '2023-01-01T00:00:00Z',
+        updated_at: '2023-01-01T00:00:00Z',
+        subscription: {
+          status: 'active',
+          plan_type: 'premium'
+        }
+      };
+
+      // Set current user
+      (service as any).currentUserSubject.next(mockUser);
+
+      expect(service.isPremium()).toBe(true);
     });
   });
 }); 
