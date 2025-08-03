@@ -334,4 +334,19 @@ export class WebSocketService {
   getOnlineStatusUpdates(): Observable<OnlineStatus> {
     return this.onlineStatus$;
   }
+
+  // Method to get messages observable (for compatibility)
+  onMessage(): Observable<WebSocketMessage> {
+    return this.messages$;
+  }
+
+  // Method to get typing observable (for compatibility)
+  onTyping(): Observable<any> {
+    return this.typing$;
+  }
+
+  // Method to send typing indicator (for compatibility)
+  sendTyping(conversationId: number, isTyping: boolean): void {
+    this.sendTypingIndicator(conversationId, isTyping);
+  }
 } 

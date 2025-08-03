@@ -92,9 +92,11 @@ export class PhotoUploadComponent implements OnInit, OnDestroy {
       });
   }
 
-  onFileSelect(event: any): void {
-    const files = Array.from(event.target.files);
-    this.processFiles(files);
+  onFilesSelected(event: any): void {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      this.processFiles(Array.from(files) as File[]);
+    }
   }
 
   onDragOver(event: DragEvent): void {

@@ -69,7 +69,8 @@
           type="file" 
           multiple
           accept="image/*"
-          (change)="onFileSelect($event)"
+          class="hidden"
+          (change)="onFilesSelected($event)"
           style="display: none;">
       </div>
 

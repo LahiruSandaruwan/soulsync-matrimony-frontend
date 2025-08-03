@@ -5,6 +5,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { ProfileService } from '../../core/services/profile.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
+import { Router } from '@angular/router';
 
 interface UserSettings {
   email_notifications: boolean;
@@ -39,17 +40,27 @@ interface SecuritySettings {
 export class AccountSettingsComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   
-  currentUser: any = null;
   loading = true;
   saving = false;
   error = '';
   success = '';
   
+  activeTab = 'profile';
+  
   // Forms
-  profileForm: FormGroup;
-  passwordForm: FormGroup;
-  notificationForm: FormGroup;
-  privacyForm: FormGroup;
+  profileForm!: FormGroup;
+  passwordForm!: FormGroup;
+  notificationForm!: FormGroup;
+  privacyForm!: FormGroup;
+  deleteAccountForm!: FormGroup;
+  
+  // Modals
+  showPasswordModal = false;
+  showTwoFactorModal = false;
+  showDeleteAccountModal = false;
+  
+  currentUser: any = null;
+  settings: UserSettings | null = null;
   
   // Settings
   userSettings: UserSettings = {
@@ -70,16 +81,11 @@ export class AccountSettingsComponent implements OnInit, OnDestroy {
     password_changed_at: ''
   };
   
-  // UI State
-  activeTab = 'profile';
-  showPasswordModal = false;
-  showDeleteAccountModal = false;
-  showTwoFactorModal = false;
-
   constructor(
-    private authService: AuthService,
+    private fb: FormBuilder,
     private profileService: ProfileService,
-    private fb: FormBuilder
+    private authService: AuthService,
+    private router: Router
   ) {
     this.initializeForms();
   }
@@ -96,45 +102,52 @@ export class AccountSettingsComponent implements OnInit, OnDestroy {
 
   private initializeForms(): void {
     this.profileForm = this.fb.group({
-      first_name: ['', [Validators.required, Validators.minLength(2)]],
-      last_name: ['', [Validators.required, Validators.minLength(2)]],
+      first_name: ['', Validators.required],
+      last_name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.pattern(/^\+?[\d\s\-\(\)]+$/)]],
+      phone: [''],
       date_of_birth: ['', Validators.required],
-      gender: ['', Validators.required]
+      gender: ['', Validators.required],
+      current_city: [''],
+      current_country: [''],
+      about_me: ['', Validators.maxLength(500)]
     });
 
     this.passwordForm = this.fb.group({
-      current_password: ['', [Validators.required, Validators.minLength(8)]],
+      current_password: ['', Validators.required],
       new_password: ['', [Validators.required, Validators.minLength(8)]],
-      confirm_password: ['', [Validators.required]]
+      confirm_password: ['', Validators.required]
     }, { validators: this.passwordMatchValidator });
 
     this.notificationForm = this.fb.group({
       email_notifications: [true],
-      sms_notifications: [false],
       push_notifications: [true],
-      marketing_emails: [false],
-      login_notifications: [true]
+      sms_notifications: [false],
+      match_notifications: [true],
+      message_notifications: [true],
+      profile_view_notifications: [true],
+      weekly_digest: [false]
     });
 
     this.privacyForm = this.fb.group({
       profile_visibility: ['public'],
       show_online_status: [true],
-      allow_messages_from: ['matches_only'],
-      data_sharing: [false]
+      allow_messages_from: ['matches'],
+      show_last_seen: [true],
+      allow_profile_views: [true],
+      share_contact_info: [false]
+    });
+
+    this.deleteAccountForm = this.fb.group({
+      password: ['', Validators.required],
+      confirm_delete: [false, Validators.requiredTrue]
     });
   }
 
-  private passwordMatchValidator(form: FormGroup): { [key: string]: any } | null {
-    const newPassword = form.get('new_password')?.value;
-    const confirmPassword = form.get('confirm_password')?.value;
-    
-    if (newPassword && confirmPassword && newPassword !== confirmPassword) {
-      return { passwordMismatch: true };
-    }
-    
-    return null;
+  private passwordMatchValidator(group: FormGroup): {[key: string]: any} | null {
+    const newPassword = group.get('new_password')?.value;
+    const confirmPassword = group.get('confirm_password')?.value;
+    return newPassword === confirmPassword ? null : { 'passwordMismatch': true };
   }
 
   private loadCurrentUser(): void {
@@ -232,31 +245,26 @@ export class AccountSettingsComponent implements OnInit, OnDestroy {
   }
 
   onChangePassword(): void {
-    if (this.passwordForm.invalid) {
-      this.markFormGroupTouched(this.passwordForm);
-      return;
+    if (this.passwordForm.valid) {
+      const passwordData = this.passwordForm.value;
+      this.authService.changePassword(
+        passwordData.current_password,
+        passwordData.new_password,
+        passwordData.confirm_password
+      )
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.success = 'Password changed successfully!';
+            this.passwordForm.reset();
+            setTimeout(() => this.success = '', 3000);
+          },
+          error: (error: any) => {
+            this.error = error.message || 'Failed to change password';
+            setTimeout(() => this.error = '', 5000);
+          }
+        });
     }
-
-    this.saving = true;
-    this.error = '';
-    this.success = '';
-
-    const passwordData = this.passwordForm.value;
-
-    this.authService.changePassword(passwordData)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.success = 'Password changed successfully!';
-          this.saving = false;
-          this.passwordForm.reset();
-          this.showPasswordModal = false;
-        },
-        error: (error: any) => {
-          this.error = error.message || 'Failed to change password';
-          this.saving = false;
-        }
-      });
   }
 
   onSaveNotifications(): void {
@@ -329,27 +337,20 @@ export class AccountSettingsComponent implements OnInit, OnDestroy {
   }
 
   onDeleteAccount(): void {
-    this.saving = true;
-    this.error = '';
-    this.success = '';
-
-    this.authService.deleteAccount()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.success = 'Account deleted successfully!';
-          this.saving = false;
-          this.showDeleteAccountModal = false;
-          // Redirect to logout
-          setTimeout(() => {
-            this.authService.logout();
-          }, 2000);
-        },
-        error: (error: any) => {
-          this.error = error.message || 'Failed to delete account';
-          this.saving = false;
-        }
-      });
+    if (this.passwordForm.valid) {
+      const password = this.passwordForm.get('current_password')?.value;
+      this.authService.deleteAccount(password)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.router.navigate(['/auth/login']);
+          },
+          error: (error: any) => {
+            this.error = error.message || 'Failed to delete account';
+            setTimeout(() => this.error = '', 5000);
+          }
+        });
+    }
   }
 
   onExportData(): void {

@@ -1,4 +1,298 @@
 <div class="user-management">
-  <h2>User-management Component</h2>
-  <p>This is the admin user-management component.</p>
+  <div class="page-header">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">User Management</h1>
+      <p class="text-gray-600">Manage all users, their profiles, and account status</p>
+    </div>
+    <div class="header-actions">
+      <button 
+        (click)="exportUsers()"
+        class="btn-secondary">
+        <span class="mr-2">📊</span>
+        Export
+      </button>
+      <button 
+        (click)="refreshData()"
+        class="btn-primary">
+        <span class="mr-2">🔄</span>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center py-12">
+    <app-loading-spinner></app-loading-spinner>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <span class="text-red-400">⚠️</span>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-sm font-medium text-red-800">Error</h3>
+        <p class="text-sm text-red-700 mt-1">{{ error }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div *ngIf="!loading" class="bg-white rounded-lg shadow p-6 mb-6">
+    <h3 class="text-lg font-medium text-gray-900 mb-4">Filters</h3>
+    <form [formGroup]="filterForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+        <input 
+          type="text" 
+          formControlName="search"
+          placeholder="Search by name or email"
+          class="form-input">
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+        <select formControlName="status" class="form-select">
+          <option *ngFor="let option of statusOptions" [value]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Subscription</label>
+        <select formControlName="subscription" class="form-select">
+          <option *ngFor="let option of subscriptionOptions" [value]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Profile Completion</label>
+        <select formControlName="profile_completion" class="form-select">
+          <option *ngFor="let option of completionOptions" [value]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+      
+      <div class="flex items-end">
+        <button 
+          type="button"
+          (click)="clearFilters()"
+          class="btn-secondary w-full">
+          Clear Filters
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Bulk Actions -->
+  <div *ngIf="showBulkActions" class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center">
+        <span class="text-sm font-medium text-blue-800">
+          {{ selectedUsers.length }} user(s) selected
+        </span>
+      </div>
+      <div class="flex space-x-2">
+        <button 
+          (click)="onBulkAction('suspend')"
+          class="btn-warning">
+          Suspend
+        </button>
+        <button 
+          (click)="onBulkAction('ban')"
+          class="btn-danger">
+          Ban
+        </button>
+        <button 
+          (click)="onBulkAction('delete')"
+          class="btn-danger">
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users Table -->
+  <div *ngIf="!loading" class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <input 
+                type="checkbox" 
+                [checked]="selectedUsers.length === paginatedUsers.length && paginatedUsers.length > 0"
+                (change)="onSelectAll($any($event.target).checked)"
+                class="form-checkbox">
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              User
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Status
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Subscription
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Profile
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Activity
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr *ngFor="let user of paginatedUsers" class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <input 
+                type="checkbox" 
+                [checked]="selectedUsers.includes(user.id)"
+                (change)="onUserSelect(user.id, $any($event.target).checked)"
+                class="form-checkbox">
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <div class="flex-shrink-0 h-10 w-10">
+                  <div class="h-10 w-10 rounded-full bg-gradient-to-r from-pink-400 to-purple-500 flex items-center justify-center">
+                    <span class="text-white font-medium">
+                      {{ user.first_name.charAt(0) }}{{ user.last_name.charAt(0) }}
+                    </span>
+                  </div>
+                </div>
+                <div class="ml-4">
+                  <div class="text-sm font-medium text-gray-900">
+                    {{ user.first_name }} {{ user.last_name }}
+                  </div>
+                  <div class="text-sm text-gray-500">{{ user.email }}</div>
+                  <div class="text-xs text-gray-400">
+                    Joined {{ formatDate(user.created_at) }}
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span [class]="'inline-flex px-2 py-1 text-xs font-semibold rounded-full ' + getStatusBadgeClass(user.status)">
+                {{ user.status }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span [class]="'inline-flex px-2 py-1 text-xs font-semibold rounded-full ' + getSubscriptionBadgeClass(user.subscription_status)">
+                {{ user.subscription_status }}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                  <div 
+                    class="bg-blue-600 h-2 rounded-full" 
+                    [style.width.%]="user.profile_completion">
+                  </div>
+                </div>
+                <span class="text-sm text-gray-900">{{ user.profile_completion }}%</span>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <div>{{ user.matches_count }} matches</div>
+              <div class="text-gray-500">{{ formatLastActive(user.last_active) }}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <div class="flex space-x-2">
+                <button 
+                  (click)="onViewUser(user)"
+                  class="text-blue-600 hover:text-blue-900">
+                  View
+                </button>
+                <button 
+                  *ngIf="user.status === 'active'"
+                  (click)="onSuspendUser(user.id)"
+                  class="text-yellow-600 hover:text-yellow-900">
+                  Suspend
+                </button>
+                <button 
+                  *ngIf="user.status !== 'banned'"
+                  (click)="onBanUser(user.id)"
+                  class="text-red-600 hover:text-red-900">
+                  Ban
+                </button>
+                <button 
+                  (click)="onDeleteUser(user.id)"
+                  class="text-red-600 hover:text-red-900">
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="totalPages > 1" class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+      <div class="flex-1 flex justify-between sm:hidden">
+        <button 
+          (click)="onPageChange(currentPage - 1)"
+          [disabled]="currentPage === 1"
+          class="btn-secondary">
+          Previous
+        </button>
+        <button 
+          (click)="onPageChange(currentPage + 1)"
+          [disabled]="currentPage === totalPages"
+          class="btn-secondary">
+          Next
+        </button>
+      </div>
+      <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+        <div>
+          <p class="text-sm text-gray-700">
+            Showing 
+            <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span>
+            to 
+            <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, totalItems) }}</span>
+            of 
+            <span class="font-medium">{{ totalItems }}</span>
+            results
+          </p>
+        </div>
+        <div>
+          <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+            <button 
+              (click)="onPageChange(currentPage - 1)"
+              [disabled]="currentPage === 1"
+              class="btn-pagination">
+              Previous
+            </button>
+            <button 
+              *ngFor="let page of [].constructor(totalPages); let i = index"
+              (click)="onPageChange(i + 1)"
+              [class]="'btn-pagination ' + (currentPage === i + 1 ? 'bg-blue-50 border-blue-500 text-blue-600' : '')">
+              {{ i + 1 }}
+            </button>
+            <button 
+              (click)="onPageChange(currentPage + 1)"
+              [disabled]="currentPage === totalPages"
+              class="btn-pagination">
+              Next
+            </button>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && filteredUsers.length === 0" class="text-center py-12">
+    <span class="text-6xl">👥</span>
+    <h3 class="mt-2 text-sm font-medium text-gray-900">No users found</h3>
+    <p class="mt-1 text-sm text-gray-500">Try adjusting your filters or search terms.</p>
+  </div>
 </div>

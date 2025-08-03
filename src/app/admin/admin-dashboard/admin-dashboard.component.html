@@ -1,4 +1,207 @@
 <div class="admin-dashboard">
-  <h2>Admin-dashboard Component</h2>
-  <p>This is the admin admin-dashboard component.</p>
+  <div class="dashboard-header">
+    <h1 class="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+    <p class="text-gray-600">Welcome back, {{ currentUser?.first_name }}! Here's what's happening today.</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center py-12">
+    <app-loading-spinner></app-loading-spinner>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <span class="text-red-400">⚠️</span>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-sm font-medium text-red-800">Error</h3>
+        <p class="text-sm text-red-700 mt-1">{{ error }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!loading && !error" class="space-y-6">
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- Total Users -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <span class="text-2xl">👥</span>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600">Total Users</p>
+            <p class="text-2xl font-bold text-gray-900">{{ stats.totalUsers.toLocaleString() }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Users -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <span class="text-2xl">🟢</span>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600">Active Users</p>
+            <p class="text-2xl font-bold text-gray-900">{{ stats.activeUsers.toLocaleString() }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Premium Users -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <span class="text-2xl">👑</span>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600">Premium Users</p>
+            <p class="text-2xl font-bold text-gray-900">{{ stats.premiumUsers.toLocaleString() }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Revenue -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <span class="text-2xl">💰</span>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-600">Monthly Revenue</p>
+            <p class="text-2xl font-bold text-gray-900">{{ formatCurrency(stats.revenueThisMonth) }}</p>
+            <p class="text-sm text-green-600">+{{ stats.growthRate }}% from last month</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Additional Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Matches -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Total Matches</p>
+            <p class="text-xl font-bold text-gray-900">{{ stats.totalMatches.toLocaleString() }}</p>
+          </div>
+          <span class="text-2xl">💕</span>
+        </div>
+      </div>
+
+      <!-- Conversations -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Conversations</p>
+            <p class="text-xl font-bold text-gray-900">{{ stats.totalConversations.toLocaleString() }}</p>
+          </div>
+          <span class="text-2xl">💬</span>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-600">Pending Reports</p>
+            <p class="text-xl font-bold text-red-600">{{ stats.pendingReports }}</p>
+          </div>
+          <span class="text-2xl">🚨</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Recent Activity -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-medium text-gray-900">Recent Activity</h3>
+        </div>
+        <div class="p-6">
+          <div class="space-y-4">
+            <div *ngFor="let activity of recentActivity" class="flex items-start space-x-3">
+              <div class="flex-shrink-0">
+                <span class="text-lg">{{ getActivityIcon(activity.type) }}</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-gray-900">{{ activity.description }}</p>
+                <p *ngIf="activity.user" class="text-sm text-gray-500">
+                  {{ activity.user.name }} ({{ activity.user.email }})
+                </p>
+                <p class="text-xs text-gray-400">{{ formatDate(activity.created_at) }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Users -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-lg font-medium text-gray-900">Top Users</h3>
+        </div>
+        <div class="p-6">
+          <div class="space-y-4">
+            <div *ngFor="let user of topUsers" class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0">
+                  <div class="w-10 h-10 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full flex items-center justify-center">
+                    <span class="text-white font-medium">{{ user.name.charAt(0) }}</span>
+                  </div>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-gray-900">{{ user.name }}</p>
+                  <p class="text-xs text-gray-500">{{ user.email }}</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="text-sm font-medium text-gray-900">{{ user.matches_count }} matches</p>
+                <p class="text-xs text-gray-500">{{ user.profile_completion }}% complete</p>
+                <span *ngIf="user.subscription_status === 'premium'" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                  Premium
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <button 
+          routerLink="/admin/users"
+          class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          <span class="mr-2">👥</span>
+          Manage Users
+        </button>
+        <button 
+          routerLink="/admin/reports"
+          class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+          <span class="mr-2">🚨</span>
+          View Reports
+        </button>
+        <button 
+          routerLink="/admin/content"
+          class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+          <span class="mr-2">📝</span>
+          Content Moderation
+        </button>
+        <button 
+          routerLink="/admin/settings"
+          class="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          <span class="mr-2">⚙️</span>
+          Settings
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

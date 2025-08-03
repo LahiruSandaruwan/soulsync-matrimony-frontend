@@ -205,14 +205,17 @@ export class ChatBoxComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   private markMessagesAsRead(): void {
-    const unreadMessages = this.messages.filter(
-      msg => !msg.is_read && msg.sender_id !== this.currentUser?.id
-    );
-
-    if (unreadMessages.length > 0) {
-      this.chatService.markMessagesAsRead(this.conversationId)
+    if (this.conversationId) {
+      this.chatService.markConversationAsRead(this.conversationId)
         .pipe(takeUntil(this.destroy$))
-        .subscribe();
+        .subscribe({
+          next: () => {
+            // Messages marked as read
+          },
+          error: (error: any) => {
+            console.error('Failed to mark messages as read:', error);
+          }
+        });
     }
   }
 
@@ -230,14 +233,13 @@ export class ChatBoxComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (!this.newMessage.trim() && !this.selectedFile) {
       return;
     }
-
     this.sending = true;
     const messageData = {
-      conversation_id: this.conversationId,
+      receiver_id: this.otherUser.id,
       content: this.newMessage,
-      message_type: this.selectedFile ? 'file' : 'text'
+      message_type: this.selectedFile ? 'file' as const : 'text' as const,
+      file: this.selectedFile || undefined
     };
-
     this.chatService.sendMessage(messageData)
       .pipe(takeUntil(this.destroy$))
       .subscribe({

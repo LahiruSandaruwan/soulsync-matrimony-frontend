@@ -247,30 +247,16 @@ export class ChatService {
       );
   }
 
+  // Mark conversation as read
   markConversationAsRead(conversationId: number): Observable<any> {
     const headers = this.getAuthHeaders();
-    return this.http.put(`${environment.apiUrl}/chat/conversations/${conversationId}/read`, {}, { headers })
-      .pipe(
-        tap(() => {
-          // Update conversation unread count
-          const currentConversations = this.conversationsSubject.value;
-          const updatedConversations = currentConversations.map(conv => 
-            conv.id === conversationId ? { ...conv, unread_count: 0 } : conv
-          );
-          this.conversationsSubject.next(updatedConversations);
-          
-          // Update current conversation
-          if (this.currentConversationSubject.value?.id === conversationId) {
-            this.currentConversationSubject.next({
-              ...this.currentConversationSubject.value,
-              unread_count: 0
-            });
-          }
-          
-          this.updateUnreadCount(updatedConversations);
-        }),
-        catchError(this.handleError)
-      );
+    return this.http.post(`${environment.apiUrl}/chat/conversations/${conversationId}/read`, {}, { headers })
+      .pipe(catchError(this.handleError));
+  }
+
+  // Mark messages as read (alias for markConversationAsRead)
+  markMessagesAsRead(conversationId: number): Observable<any> {
+    return this.markConversationAsRead(conversationId);
   }
 
   deleteMessage(messageId: number): Observable<any> {

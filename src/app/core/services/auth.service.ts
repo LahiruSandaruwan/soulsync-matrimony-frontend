@@ -121,33 +121,32 @@ export class AuthService {
       );
   }
 
+  // Change password
   changePassword(currentPassword: string, newPassword: string, confirmPassword: string): Observable<any> {
     const headers = this.getAuthHeaders();
-    const request = {
+    return this.http.post(`${environment.apiUrl}/auth/change-password`, {
       current_password: currentPassword,
-      password: newPassword,
-      password_confirmation: confirmPassword
-    };
-    
-    return this.http.post(`${environment.apiUrl}/auth/change-password`, request, { headers })
-      .pipe(
-        catchError(this.handleError)
-      );
+      new_password: newPassword,
+      confirm_password: confirmPassword
+    }, { headers })
+      .pipe(catchError(this.handleError));
   }
 
+  // Enable two-factor authentication
+  enableTwoFactor(): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.post(`${environment.apiUrl}/auth/2fa/enable`, {}, { headers })
+      .pipe(catchError(this.handleError));
+  }
+
+  // Delete account
   deleteAccount(password: string): Observable<any> {
     const headers = this.getAuthHeaders();
-    const request = { password };
-    
-    return this.http.delete(`${environment.apiUrl}/auth/delete-account`, { 
-      headers, 
-      body: request 
-    }).pipe(
-      tap(() => {
-        this.clearAuth();
-      }),
-      catchError(this.handleError)
-    );
+    return this.http.delete(`${environment.apiUrl}/auth/account`, {
+      headers,
+      body: { password }
+    })
+      .pipe(catchError(this.handleError));
   }
 
   verifyEmail(id: string, hash: string): Observable<any> {

@@ -145,27 +145,27 @@ export class ProfileService {
       );
   }
 
-  uploadPhoto(request: PhotoUploadRequest): Observable<UserPhoto> {
+  // Upload photo
+  uploadPhoto(formData: FormData): Observable<any> {
     const headers = this.getAuthHeaders();
-    const formData = new FormData();
-    formData.append('photo', request.file);
-    if (request.is_primary !== undefined) {
-      formData.append('is_primary', request.is_primary.toString());
-    }
-    if (request.is_private !== undefined) {
-      formData.append('is_private', request.is_private.toString());
-    }
+    // Remove Content-Type header to let browser set it with boundary for FormData
+    const newHeaders = new HttpHeaders();
+    headers.keys().forEach(key => {
+      if (key !== 'Content-Type') {
+        newHeaders.set(key, headers.get(key) || '');
+      }
+    });
+    return this.http.post(`${environment.apiUrl}/profile/photos`, formData, { headers: newHeaders })
+      .pipe(catchError(this.handleError));
+  }
 
-    return this.http.post<{ success: boolean, data: UserPhoto }>(
-      `${environment.apiUrl}/profile/photos`, formData, { headers }
-    ).pipe(
-      map(response => response.data),
-      tap(photo => {
-        const currentPhotos = this.photosSubject.value;
-        this.photosSubject.next([...currentPhotos, photo]);
-      }),
-      catchError(this.handleError)
-    );
+  // Update photo privacy
+  updatePhotoPrivacy(photoId: number, isPublic: boolean): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.put(`${environment.apiUrl}/profile/photos/${photoId}`, {
+      is_public: isPublic
+    }, { headers })
+      .pipe(catchError(this.handleError));
   }
 
   updatePhoto(photoId: number, updates: { is_primary?: boolean; is_private?: boolean }): Observable<UserPhoto> {
@@ -258,6 +258,34 @@ export class ProfileService {
       map(response => response.data),
       catchError(this.handleError)
     );
+  }
+
+  // Get user settings
+  getSettings(): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.get(`${environment.apiUrl}/profile/settings`, { headers })
+      .pipe(catchError(this.handleError));
+  }
+
+  // Update notification settings
+  updateNotificationSettings(settings: any): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.put(`${environment.apiUrl}/profile/notification-settings`, settings, { headers })
+      .pipe(catchError(this.handleError));
+  }
+
+  // Update privacy settings
+  updatePrivacySettings(settings: any): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.put(`${environment.apiUrl}/profile/privacy-settings`, settings, { headers })
+      .pipe(catchError(this.handleError));
+  }
+
+  // Export user data
+  exportData(): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.get(`${environment.apiUrl}/profile/export-data`, { headers })
+      .pipe(catchError(this.handleError));
   }
 
   // Utility Methods

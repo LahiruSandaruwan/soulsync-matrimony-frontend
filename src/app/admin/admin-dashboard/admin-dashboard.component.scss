@@ -1,12 +1,239 @@
 .admin-dashboard {
-  padding: 20px;
-  
-  h2 {
-    color: #2c3e50;
-    margin-bottom: 16px;
+  @apply p-6 space-y-6;
+
+  .dashboard-header {
+    @apply mb-8;
+
+    h1 {
+      @apply text-3xl font-bold text-gray-900 mb-2;
+    }
+
+    p {
+      @apply text-gray-600;
+    }
   }
-  
-  p {
-    color: #7f8c8d;
+
+  // Statistics Cards
+  .stats-card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6 transition-all duration-200 hover:shadow-md;
+
+    .stats-icon {
+      @apply text-2xl;
+    }
+
+    .stats-content {
+      @apply ml-4;
+
+      .stats-label {
+        @apply text-sm font-medium text-gray-600;
+      }
+
+      .stats-value {
+        @apply text-2xl font-bold text-gray-900;
+      }
+
+      .stats-change {
+        @apply text-sm mt-1;
+      }
+    }
+  }
+
+  // Activity Feed
+  .activity-item {
+    @apply flex items-start space-x-3 p-3 rounded-lg transition-colors duration-200 hover:bg-gray-50;
+
+    .activity-icon {
+      @apply flex-shrink-0 text-lg;
+    }
+
+    .activity-content {
+      @apply flex-1 min-w-0;
+
+      .activity-title {
+        @apply text-sm font-medium text-gray-900;
+      }
+
+      .activity-subtitle {
+        @apply text-sm text-gray-500;
+      }
+
+      .activity-time {
+        @apply text-xs text-gray-400;
+      }
+    }
+  }
+
+  // User Cards
+  .user-card {
+    @apply flex items-center justify-between p-4 bg-gray-50 rounded-lg transition-all duration-200 hover:bg-gray-100;
+
+    .user-info {
+      @apply flex items-center space-x-3;
+
+      .user-avatar {
+        @apply w-10 h-10 bg-gradient-to-r from-pink-400 to-purple-500 rounded-full flex items-center justify-center;
+
+        span {
+          @apply text-white font-medium;
+        }
+      }
+
+      .user-details {
+        .user-name {
+          @apply text-sm font-medium text-gray-900;
+        }
+
+        .user-email {
+          @apply text-xs text-gray-500;
+        }
+      }
+    }
+
+    .user-stats {
+      @apply text-right;
+
+      .user-matches {
+        @apply text-sm font-medium text-gray-900;
+      }
+
+      .user-completion {
+        @apply text-xs text-gray-500;
+      }
+
+      .user-badge {
+        @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium;
+      }
+    }
+  }
+
+  // Quick Actions
+  .quick-actions {
+    @apply grid grid-cols-1 md:grid-cols-4 gap-4;
+
+    .action-button {
+      @apply flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+
+      &.primary {
+        @apply text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500;
+      }
+
+      &.danger {
+        @apply text-white bg-red-600 hover:bg-red-700 focus:ring-red-500;
+      }
+
+      &.success {
+        @apply text-white bg-green-600 hover:bg-green-700 focus:ring-green-500;
+      }
+
+      &.secondary {
+        @apply text-gray-700 bg-white border-gray-300 hover:bg-gray-50 focus:ring-blue-500;
+      }
+    }
+  }
+
+  // Responsive Design
+  @media (max-width: 768px) {
+    @apply p-4;
+
+    .dashboard-header {
+      h1 {
+        @apply text-2xl;
+      }
+    }
+
+    .stats-card {
+      @apply p-4;
+
+      .stats-content {
+        @apply ml-3;
+
+        .stats-value {
+          @apply text-xl;
+        }
+      }
+    }
+
+    .quick-actions {
+      @apply grid-cols-2;
+
+      .action-button {
+        @apply px-3 py-2 text-xs;
+      }
+    }
+  }
+
+  // Loading and Error States
+  .loading-state {
+    @apply flex justify-center items-center py-12;
+  }
+
+  .error-state {
+    @apply bg-red-50 border border-red-200 rounded-lg p-4 mb-6;
+
+    .error-content {
+      @apply flex;
+
+      .error-icon {
+        @apply flex-shrink-0 text-red-400;
+      }
+
+      .error-details {
+        @apply ml-3;
+
+        .error-title {
+          @apply text-sm font-medium text-red-800;
+        }
+
+        .error-message {
+          @apply text-sm text-red-700 mt-1;
+        }
+      }
+    }
+  }
+
+  // Animations
+  .fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  // Hover Effects
+  .hover-lift {
+    transition: transform 0.2s ease-in-out;
+
+    &:hover {
+      transform: translateY(-2px);
+    }
+  }
+
+  // Custom Scrollbar
+  .custom-scrollbar {
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 3px;
+
+      &:hover {
+        background: #a8a8a8;
+      }
+    }
   }
 }
