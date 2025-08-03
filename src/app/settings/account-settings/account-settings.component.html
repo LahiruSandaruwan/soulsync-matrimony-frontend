@@ -1,4 +1,178 @@
-<div class="account-settings">
-  <h2>Account-settings Component</h2>
-  <p>This is the account-settings component.</p>
+<div class="account-settings-container">
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="loading">
+    <app-loading-spinner></app-loading-spinner>
+    <p>Loading your settings...</p>
+  </div>
+
+  <!-- Main Content -->
+  <div class="settings-content" *ngIf="!loading">
+    <!-- Header -->
+    <div class="settings-header">
+      <h1>Account Settings</h1>
+      <p>Manage your account preferences, security, and privacy settings</p>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="settings-tabs">
+      <button class="tab-button" [class.active]="activeTab === 'profile'" (click)="onTabChange('profile')">
+        Profile
+      </button>
+      <button class="tab-button" [class.active]="activeTab === 'security'" (click)="onTabChange('security')">
+        Security
+      </button>
+      <button class="tab-button" [class.active]="activeTab === 'notifications'" (click)="onTabChange('notifications')">
+        Notifications
+      </button>
+      <button class="tab-button" [class.active]="activeTab === 'privacy'" (click)="onTabChange('privacy')">
+        Privacy
+      </button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+      <!-- Profile Tab -->
+      <div class="tab-panel" *ngIf="activeTab === 'profile'">
+        <div class="panel-header">
+          <h2>Profile Information</h2>
+          <p>Update your basic profile information</p>
+        </div>
+
+        <form [formGroup]="profileForm" (ngSubmit)="onSaveProfile()" class="settings-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="first_name">First Name</label>
+              <input type="text" id="first_name" formControlName="first_name" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="last_name">Last Name</label>
+              <input type="text" id="last_name" formControlName="last_name" class="form-control">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email">Email Address</label>
+              <input type="email" id="email" formControlName="email" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="phone">Phone Number</label>
+              <input type="tel" id="phone" formControlName="phone" class="form-control">
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" [disabled]="saving || profileForm.invalid">
+              <app-loading-spinner *ngIf="saving" [size]="'sm'"></app-loading-spinner>
+              <span *ngIf="!saving">Save Changes</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Security Tab -->
+      <div class="tab-panel" *ngIf="activeTab === 'security'">
+        <div class="panel-header">
+          <h2>Security Settings</h2>
+          <p>Manage your account security and authentication</p>
+        </div>
+
+        <div class="settings-section">
+          <h3>Password</h3>
+          <div class="setting-item">
+            <div class="setting-info">
+              <h4>Change Password</h4>
+              <p>Update your account password to keep it secure</p>
+            </div>
+            <button class="btn-secondary" (click)="showPasswordModal = true">Change Password</button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Two-Factor Authentication</h3>
+          <div class="setting-item">
+            <div class="setting-info">
+              <h4>Two-Factor Authentication</h4>
+              <p>Add an extra layer of security to your account</p>
+            </div>
+            <button class="btn-secondary" (click)="onToggleTwoFactor()">Enable</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notifications Tab -->
+      <div class="tab-panel" *ngIf="activeTab === 'notifications'">
+        <div class="panel-header">
+          <h2>Notification Preferences</h2>
+          <p>Choose how you want to receive notifications</p>
+        </div>
+
+        <form [formGroup]="notificationForm" (ngSubmit)="onSaveNotifications()" class="settings-form">
+          <div class="settings-section">
+            <h3>Email Notifications</h3>
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Email Notifications</h4>
+                <p>Receive notifications via email</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" formControlName="email_notifications">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" [disabled]="saving">
+              <app-loading-spinner *ngIf="saving" [size]="'sm'"></app-loading-spinner>
+              <span *ngIf="!saving">Save Preferences</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Privacy Tab -->
+      <div class="tab-panel" *ngIf="activeTab === 'privacy'">
+        <div class="panel-header">
+          <h2>Privacy Settings</h2>
+          <p>Control your privacy and data sharing preferences</p>
+        </div>
+
+        <form [formGroup]="privacyForm" (ngSubmit)="onSavePrivacy()" class="settings-form">
+          <div class="settings-section">
+            <h3>Profile Visibility</h3>
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Profile Visibility</h4>
+                <p>Control who can see your profile</p>
+              </div>
+              <select formControlName="profile_visibility" class="form-control">
+                <option value="public">Public - Everyone can see</option>
+                <option value="friends_only">Friends Only - Only matches can see</option>
+                <option value="private">Private - Only you can see</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" [disabled]="saving">
+              <app-loading-spinner *ngIf="saving" [size]="'sm'"></app-loading-spinner>
+              <span *ngIf="!saving">Save Privacy Settings</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Success/Error display -->
+<div class="message-toast success" *ngIf="success">
+  <span>{{ success }}</span>
+  <button (click)="onClearSuccess()">×</button>
+</div>
+
+<div class="message-toast error" *ngIf="error">
+  <span>{{ error }}</span>
+  <button (click)="onClearError()">×</button>
 </div>

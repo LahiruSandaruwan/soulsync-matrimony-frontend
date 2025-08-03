@@ -1,4 +1,179 @@
-<div class="chat-box">
-  <h2>Chat-box Component</h2>
-  <p>This is the chat-box component.</p>
+<div class="chat-box-container">
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="loading">
+    <app-loading-spinner></app-loading-spinner>
+    <p>Loading conversation...</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-container" *ngIf="error && !loading">
+    <div class="error-message">
+      <h3>Error</h3>
+      <p>{{ error }}</p>
+      <button class="btn-primary" (click)="loadConversation()">Retry</button>
+    </div>
+  </div>
+
+  <!-- Chat Interface -->
+  <div class="chat-interface" *ngIf="!loading && !error">
+    <!-- Chat Header -->
+    <div class="chat-header">
+      <div class="header-left">
+        <button class="btn-back" (click)="onBackToChats()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <div class="user-info" *ngIf="otherUser">
+          <div class="user-avatar">
+            <img [src]="otherUser.profile?.primary_photo || 'assets/images/default-avatar.png'" 
+                 [alt]="otherUser.first_name"
+                 (error)="onImageError($event)">
+            <div class="online-indicator" [class.online]="otherUser.is_online"></div>
+          </div>
+          <div class="user-details">
+            <h3>{{ otherUser.first_name }} {{ otherUser.last_name }}</h3>
+            <p class="user-status" *ngIf="otherUser.is_online">Online</p>
+            <p class="user-status" *ngIf="!otherUser.is_online && otherUser.last_seen">
+              Last seen {{ otherUser.last_seen | date:'short' }}
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn-action" (click)="onViewProfile()" title="View Profile">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </button>
+        <button class="btn-action" title="More Options">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="1"/>
+            <circle cx="19" cy="12" r="1"/>
+            <circle cx="5" cy="12" r="1"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Messages Container -->
+    <div class="messages-container" #messageContainer>
+      <div class="messages-list">
+        <div class="message-group" *ngFor="let message of messages; trackBy: trackByMessageId">
+          <div class="message" [class.my-message]="isMyMessage(message)" [class.other-message]="!isMyMessage(message)">
+            <div class="message-content">
+              <!-- Text Message -->
+              <div class="message-text" *ngIf="message.message_type === 'text'">
+                {{ message.content }}
+              </div>
+              
+              <!-- File Message -->
+              <div class="message-file" *ngIf="message.message_type === 'file'">
+                <div class="file-info">
+                  <span class="file-icon">{{ getFileIcon(message.file_name || '') }}</span>
+                  <div class="file-details">
+                    <span class="file-name">{{ message.file_name }}</span>
+                    <span class="file-size" *ngIf="message.file_url">View File</span>
+                  </div>
+                </div>
+                <a [href]="message.file_url" target="_blank" class="file-link" *ngIf="message.file_url">
+                  Download
+                </a>
+              </div>
+              
+              <!-- Image Message -->
+              <div class="message-image" *ngIf="message.message_type === 'image'">
+                <img [src]="message.file_url" [alt]="message.content" (error)="onImageError($event)">
+              </div>
+            </div>
+            <div class="message-meta">
+              <span class="message-time">{{ getMessageTime(message.created_at) }}</span>
+              <span class="message-status" *ngIf="isMyMessage(message)">
+                <svg *ngIf="message.is_read" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>
+                <svg *ngIf="!message.is_read" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18 8l-8 8-4-4-1.41 1.41L10 18.17l8.59-8.59z"/>
+                </svg>
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Typing Indicator -->
+        <div class="typing-indicator" *ngIf="isTyping">
+          <div class="typing-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <p>{{ otherUser?.first_name }} is typing...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message Input -->
+    <div class="message-input-container">
+      <!-- File Preview -->
+      <div class="file-preview" *ngIf="selectedFile">
+        <div class="file-info">
+          <span class="file-icon">{{ getFileIcon(selectedFile.name) }}</span>
+          <span class="file-name">{{ selectedFile.name }}</span>
+        </div>
+        <button class="btn-remove-file" (click)="onRemoveFile()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="input-group">
+        <button class="btn-attach" (click)="fileInput.click()" title="Attach File">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+          </svg>
+        </button>
+        
+        <div class="text-input-container">
+          <textarea 
+            #messageInput
+            [(ngModel)]="newMessage"
+            (input)="onTyping()"
+            (keypress)="onKeyPress($event)"
+            placeholder="Type a message..."
+            class="message-input"
+            rows="1"
+            [disabled]="sending">
+          </textarea>
+        </div>
+        
+        <button 
+          class="btn-send" 
+          (click)="onSendMessage()"
+          [disabled]="sending || (!newMessage.trim() && !selectedFile)">
+          <svg *ngIf="!sending" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22,2 15,22 11,13 2,9"/>
+          </svg>
+          <app-loading-spinner *ngIf="sending" [size]="'sm'"></app-loading-spinner>
+        </button>
+      </div>
+      
+      <!-- Hidden file input -->
+      <input 
+        #fileInput
+        type="file" 
+        (change)="onFileSelect($event)"
+        accept="image/*,.pdf,.txt"
+        style="display: none;">
+    </div>
+  </div>
+</div>
+
+<!-- Error display -->
+<div class="error-toast" *ngIf="error">
+  <span>{{ error }}</span>
+  <button (click)="error = ''">×</button>
 </div>
