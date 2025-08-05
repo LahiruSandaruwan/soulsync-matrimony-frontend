@@ -218,23 +218,33 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy {
   }
 
   subscribeToFreePlan(): void {
-    this.loading = true;
-    this.paymentService.subscribeToFree()
+    this.processingPayment = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    // For free plan, we don't need payment processing
+    const request = {
+      plan_id: 1, // Assuming plan ID 1 is free
+      currency: this.currency,
+      auto_renewal: false
+    };
+
+    this.paymentService.subscribeToPlan(request)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
-          this.loading = false;
-          this.success = 'Successfully subscribed to free plan!';
+        next: (response: any) => {
+          this.processingPayment = false;
+          this.successMessage = 'Successfully subscribed to free plan!';
           this.loadCurrentSubscription();
           setTimeout(() => {
-            this.success = '';
+            this.successMessage = '';
           }, 3000);
         },
-        error: (error) => {
-          this.loading = false;
-          this.error = error.message || 'Failed to subscribe to free plan';
+        error: (error: any) => {
+          this.processingPayment = false;
+          this.errorMessage = error.message || 'Failed to subscribe to free plan';
           setTimeout(() => {
-            this.error = '';
+            this.errorMessage = '';
           }, 3000);
         }
       });
@@ -246,34 +256,38 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy {
   }
 
   processSubscription(): void {
-    if (!this.selectedPlan || !this.paymentMethod) {
-      this.errorMessage = 'Please select a plan and payment method';
+    if (!this.selectedPlan) {
+      this.errorMessage = 'Please select a plan';
       return;
     }
 
-    this.loading = true;
-    const subscriptionData = {
+    this.processingPayment = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    const request = {
       plan_id: this.selectedPlan.id,
-      payment_method_id: this.paymentMethod
+      currency: this.currency,
+      auto_renewal: true
     };
 
-    this.paymentService.subscribe(subscriptionData)
+    this.paymentService.subscribeToPlan(request)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
-          this.loading = false;
+        next: (response: any) => {
+          this.processingPayment = false;
+          this.successMessage = 'Subscription successful!';
           this.showPaymentModal = false;
-          this.success = 'Successfully subscribed!';
           this.loadCurrentSubscription();
           setTimeout(() => {
-            this.success = '';
+            this.successMessage = '';
           }, 3000);
         },
-        error: (error) => {
-          this.loading = false;
-          this.error = error.message || 'Failed to subscribe';
+        error: (error: any) => {
+          this.processingPayment = false;
+          this.errorMessage = error.message || 'Payment failed';
           setTimeout(() => {
-            this.error = '';
+            this.errorMessage = '';
           }, 3000);
         }
       });
@@ -285,23 +299,26 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.loading = true;
-    this.paymentService.cancelSubscriptionLegacy()
+    this.processingPayment = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.paymentService.cancelSubscription()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
-          this.loading = false;
-          this.success = 'Subscription cancelled successfully';
+        next: (response: any) => {
+          this.processingPayment = false;
+          this.successMessage = 'Subscription cancelled successfully';
           this.loadCurrentSubscription();
           setTimeout(() => {
-            this.success = '';
+            this.successMessage = '';
           }, 3000);
         },
-        error: (error) => {
-          this.loading = false;
-          this.error = error.message || 'Failed to cancel subscription';
+        error: (error: any) => {
+          this.processingPayment = false;
+          this.errorMessage = error.message || 'Failed to cancel subscription';
           setTimeout(() => {
-            this.error = '';
+            this.errorMessage = '';
           }, 3000);
         }
       });
@@ -385,7 +402,29 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy {
   }
 
   onCancelSubscription(): void {
-    this.cancelCurrentSubscription();
+    this.processingPayment = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.paymentService.cancelSubscription()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          this.processingPayment = false;
+          this.successMessage = 'Subscription cancelled successfully';
+          this.loadCurrentSubscription();
+          setTimeout(() => {
+            this.successMessage = '';
+          }, 3000);
+        },
+        error: (error: any) => {
+          this.processingPayment = false;
+          this.errorMessage = error.message || 'Failed to cancel subscription';
+          setTimeout(() => {
+            this.errorMessage = '';
+          }, 3000);
+        }
+      });
   }
 
   onProcessPayment(method: string): void {

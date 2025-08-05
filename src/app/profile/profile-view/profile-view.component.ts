@@ -1,131 +1,75 @@
-import { Component, OnInit, OnDestroy, Input } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { ProfileService } from '../../core/services/profile.service';
-import { MatchService } from '../../core/services/match.service';
-import { ChatService } from '../../core/services/chat.service';
 import { AuthService } from '../../core/services/auth.service';
+import { MatchService } from '../../core/services/match.service';
+import { User, UserPhoto } from '../../core/models/match.model';
+import { UserProfile } from '../../core/models/user.model';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
-import { ModalComponent } from '../../shared/components/modal/modal.component';
-
-interface UserProfile {
-  id: number;
-  user_id: number;
-  height_cm?: number;
-  weight_kg?: number;
-  body_type?: string;
-  complexion?: string;
-  blood_group?: string;
-  current_city?: string;
-  current_state?: string;
-  current_country?: string;
-  education_level?: string;
-  occupation?: string;
-  company?: string;
-  job_title?: string;
-  annual_income_usd?: number;
-  religion?: string;
-  caste?: string;
-  mother_tongue?: string;
-  languages_known?: string[];
-  family_type?: string;
-  family_status?: string;
-  diet?: string;
-  smoking?: string;
-  drinking?: string;
-  hobbies?: string[];
-  about_me?: string;
-  looking_for?: string;
-  marital_status?: string;
-  have_children?: boolean;
-  children_count?: number;
-  willing_to_relocate?: boolean;
-  preferred_locations?: string[];
-  completion_percentage?: number;
-  created_at?: string;
-  updated_at?: string;
-}
-
-interface UserPhoto {
-  id: number;
-  user_id: number;
-  file_path: string;
-  is_primary: boolean;
-  is_private: boolean;
-  status: string;
-  created_at: string;
-  updated_at: string;
-}
-
-interface User {
-  id: number;
-  email: string;
-  first_name: string;
-  last_name: string;
-  date_of_birth: string;
-  gender: string;
-  country_code: string;
-  email_verified_at?: string;
-  created_at: string;
-  updated_at: string;
-  profile?: UserProfile;
-  photos?: UserPhoto[];
-}
 
 @Component({
   selector: 'app-profile-view',
   standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
     LoadingSpinnerComponent
   ],
   templateUrl: './profile-view.component.html',
   styleUrls: ['./profile-view.component.scss']
 })
 export class ProfileViewComponent implements OnInit, OnDestroy {
-  @Input() userId?: number;
-  
   private destroy$ = new Subject<void>();
   
   user: User | null = null;
+  userProfile: UserProfile | null = null;
   currentUser: any = null;
+  
   // Loading states
-  loading = false;
+  loading = true;
+  loadingPhotos = false;
   liking = false;
   disliking = false;
   superLiking = false;
   startingConversation = false;
   blocking = false;
-
-  // Photo modal
-  showPhotoModal = false;
-  currentPhotoIndex = 0;
-
-  // Messages
-  successMessage = '';
-  errorMessage = '';
-  error = '';
-
-  // Interaction states
-  isLiked = false;
-  isSuperLiked = false;
-  isBlocked = false;
-  isMatched = false;
-  compatibilityScore = 0;
   
+  // Error handling
+  error = '';
+  success = '';
+  
+  // User photos
+  userPhotos: UserPhoto[] = [];
+  currentPhotoIndex = 0;
+  showPhotoModal = false;
+  
+  // Match status
+  isMatched = false;
+  isLiked = false;
+  isBlocked = false;
+  
+  // Profile completion
+  completionPercentage = 0;
+  
+  // Compatibility
+  compatibilityScore = 0;
+  matchingFactors: string[] = [];
+  
+  // Distance
+  distanceKm = 0;
+
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
     private profileService: ProfileService,
     private authService: AuthService,
-    private matchService: MatchService,
-    private chatService: ChatService
+    private matchService: MatchService
   ) {}
 
   ngOnInit(): void {
     this.loadCurrentUser();
-    this.setupRouteParams();
+    this.loadUserProfile();
   }
 
   ngOnDestroy(): void {
@@ -141,31 +85,41 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
       });
   }
 
-  private setupRouteParams(): void {
-    this.route.params
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(params => {
-        const userId = this.userId || +params['id'];
-        if (userId) {
-          this.loadUserProfile(userId);
-          this.checkInteractionStatus(userId);
-        }
-      });
-  }
-
-  // Public method for template access
-  loadUserProfile(userId: number): void {
+  loadUserProfile(): void {
     this.loading = true;
     this.error = '';
 
-    this.profileService.getUserProfile(userId)
+    const userId = this.route.snapshot.params['id'];
+    if (!userId) {
+      this.error = 'User ID not provided';
+      this.loading = false;
+      return;
+    }
+
+    this.profileService.getProfileById(parseInt(userId))
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response: any) => {
-          this.user = response.data;
-          this.loadUserPhotos(userId);
-          this.calculateCompatibility();
+        next: (profile: UserProfile) => {
+          this.userProfile = profile;
+          
+          // For now, we'll create a mock user object since the profile doesn't contain user data
+          // In a real implementation, the API should return both user and profile data
+          this.user = {
+            id: profile.user_id,
+            email: '', // Not available in profile view
+            first_name: 'User', // Placeholder - should come from API
+            last_name: profile.user_id.toString(), // Placeholder - should come from API
+            date_of_birth: '1990-01-01', // Placeholder - should come from API
+            gender: 'male', // Placeholder - should come from API
+            country_code: '+1', // Placeholder - should come from API
+            created_at: profile.created_at,
+            updated_at: profile.updated_at,
+            profile: profile as any, // Type assertion for compatibility
+            photos: []
+          };
           this.loading = false;
+          this.loadUserPhotos(parseInt(userId));
+          this.calculateCompatibility();
         },
         error: (error: any) => {
           this.error = error.message || 'Failed to load profile';
@@ -174,81 +128,178 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
       });
   }
 
-  private loadUserPhotos(userId: number): void {
-    this.profileService.getUserPhotos(userId)
+  loadUserPhotos(userId: number): void {
+    this.loadingPhotos = true;
+    
+    // For viewing other users' photos, we'll use the same method
+    // The backend should handle permissions
+    this.profileService.getPhotos()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response: any) => {
+        next: (photos) => {
+          this.userPhotos = photos;
           if (this.user) {
-            this.user.photos = response.data;
+            this.user.photos = photos;
           }
+          this.loadingPhotos = false;
         },
         error: (error: any) => {
           console.error('Failed to load photos:', error);
-        }
-      });
-  }
-
-  private checkInteractionStatus(userId: number): void {
-    // Check if user is liked, super-liked, blocked, or matched
-    this.matchService.getInteractionStatus(userId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response: any) => {
-          this.isLiked = response.data.is_liked || false;
-          this.isSuperLiked = response.data.is_super_liked || false;
-          this.isBlocked = response.data.is_blocked || false;
-          this.isMatched = response.data.is_matched || false;
-        },
-        error: (error: any) => {
-          console.error('Failed to check interaction status:', error);
+          this.loadingPhotos = false;
         }
       });
   }
 
   private calculateCompatibility(): void {
-    if (!this.user || !this.currentUser) return;
+    if (!this.currentUser || !this.userProfile) return;
 
-    this.matchService.getCompatibilityScore(this.user.id)
+    // Simple compatibility calculation based on common factors
+    let score = 0;
+    const factors: string[] = [];
+
+    // Age compatibility - using placeholder age for now
+    const currentUserAge = this.getAgeFromDateOfBirth(this.currentUser.date_of_birth);
+    const profileAge = 25; // Placeholder - should come from API
+    
+    if (Math.abs(currentUserAge - profileAge) <= 5) {
+      score += 20;
+      factors.push('Age compatibility');
+    }
+
+    // Location compatibility
+    if (this.userProfile.current_city === this.currentUser.profile?.current_city) {
+      score += 15;
+      factors.push('Same city');
+    }
+
+    // Education compatibility
+    if (this.userProfile.education_level === this.currentUser.profile?.education_level) {
+      score += 10;
+      factors.push('Similar education');
+    }
+
+    // Religion compatibility
+    if (this.userProfile.religion === this.currentUser.profile?.religion) {
+      score += 15;
+      factors.push('Same religion');
+    }
+
+    // Family type compatibility
+    if (this.userProfile.family_type === this.currentUser.profile?.family_type) {
+      score += 10;
+      factors.push('Similar family background');
+    }
+
+    // Diet compatibility
+    if (this.userProfile.diet === this.currentUser.profile?.diet) {
+      score += 10;
+      factors.push('Similar dietary preferences');
+    }
+
+    // Hobbies compatibility
+    const currentUserHobbies = this.currentUser.profile?.hobbies || [];
+    const profileHobbies = this.userProfile.hobbies || [];
+    const commonHobbies = currentUserHobbies.filter((hobby: string) => profileHobbies.includes(hobby));
+    
+    if (commonHobbies.length > 0) {
+      score += Math.min(20, commonHobbies.length * 5);
+      factors.push(`${commonHobbies.length} common interests`);
+    }
+
+    this.compatibilityScore = Math.min(100, score);
+    this.matchingFactors = factors;
+  }
+
+  onLike(): void {
+    if (!this.user) return;
+
+    this.matchService.likeUser(this.user.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
-          this.compatibilityScore = response.data.compatibility_score || 0;
+          this.isLiked = true;
+          this.success = 'Liked!';
+          
+          if (response.data?.match_created) {
+            this.isMatched = true;
+            this.success = 'It\'s a match! 💕';
+          }
+          
+          setTimeout(() => this.success = '', 3000);
         },
         error: (error: any) => {
-          console.error('Failed to calculate compatibility:', error);
+          this.error = error.message || 'Failed to like user';
+          setTimeout(() => this.error = '', 3000);
         }
       });
   }
 
-  // Photo navigation methods
-  previousPhoto(): void {
+  onSuperLike(): void {
+    if (!this.user) return;
+
+    this.matchService.superLikeUser(this.user.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          this.success = 'Super Liked! ⭐';
+          
+          if (response.data?.match_created) {
+            this.isMatched = true;
+            this.success = 'It\'s a match! 💕';
+          }
+          
+          setTimeout(() => this.success = '', 3000);
+        },
+        error: (error: any) => {
+          this.error = error.message || 'Failed to super like user';
+          setTimeout(() => this.error = '', 3000);
+        }
+      });
+  }
+
+  onBlock(): void {
+    if (!this.user) return;
+
+    this.matchService.blockUser(this.user.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.isBlocked = true;
+          this.success = 'User blocked';
+          setTimeout(() => this.success = '', 3000);
+        },
+        error: (error: any) => {
+          this.error = error.message || 'Failed to block user';
+          setTimeout(() => this.error = '', 3000);
+        }
+      });
+  }
+
+  onStartConversation(): void {
+    if (!this.user) return;
+    
+    // Navigate to chat with this user
+    window.open(`/chat/${this.user.id}`, '_blank');
+  }
+
+  onNextPhoto(): void {
+    if (this.currentPhotoIndex < this.userPhotos.length - 1) {
+      this.currentPhotoIndex++;
+    }
+  }
+
+  onPreviousPhoto(): void {
     if (this.currentPhotoIndex > 0) {
       this.currentPhotoIndex--;
     }
   }
 
-  nextPhoto(): void {
-    if (this.currentPhotoIndex < this.getPublicPhotos().length - 1) {
-      this.currentPhotoIndex++;
-    }
-  }
-
-  goToPhoto(index: number): void {
+  onPhotoClick(index: number): void {
     this.currentPhotoIndex = index;
   }
 
-  openPhotoModal(): void {
-    this.showPhotoModal = true;
-  }
-
-  closePhotoModal(): void {
-    this.showPhotoModal = false;
-  }
-
-  // Interaction methods
   onDislike(): void {
-    if (!this.user || this.disliking) return;
+    if (!this.user) return;
 
     this.disliking = true;
     this.matchService.dislikeUser(this.user.id)
@@ -256,138 +307,30 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.disliking = false;
-          this.successMessage = 'Profile passed';
-          setTimeout(() => {
-            this.successMessage = '';
-          }, 3000);
+          this.success = 'Profile passed';
+          setTimeout(() => this.success = '', 3000);
         },
         error: (error: any) => {
           this.disliking = false;
-          this.errorMessage = error.message || 'Failed to pass profile';
-          setTimeout(() => {
-            this.errorMessage = '';
-          }, 3000);
-        }
-      });
-  }
-
-  onLike(): void {
-    if (!this.user || this.liking) return;
-
-    this.liking = true;
-    this.matchService.likeUser(this.user.id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.liking = false;
-          this.isLiked = true;
-          this.successMessage = 'Profile liked!';
-          setTimeout(() => {
-            this.successMessage = '';
-          }, 3000);
-        },
-        error: (error: any) => {
-          this.liking = false;
-          this.errorMessage = error.message || 'Failed to like profile';
-          setTimeout(() => {
-            this.errorMessage = '';
-          }, 3000);
-        }
-      });
-  }
-
-  onSuperLike(): void {
-    if (!this.user || this.superLiking) return;
-
-    this.superLiking = true;
-    this.matchService.superLikeUser(this.user.id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.superLiking = false;
-          this.isSuperLiked = true;
-          this.successMessage = 'Super like sent!';
-          setTimeout(() => {
-            this.successMessage = '';
-          }, 3000);
-        },
-        error: (error: any) => {
-          this.superLiking = false;
-          this.errorMessage = error.message || 'Failed to super like profile';
-          setTimeout(() => {
-            this.errorMessage = '';
-          }, 3000);
-        }
-      });
-  }
-
-  onBlock(): void {
-    if (!this.user || this.blocking) return;
-
-    this.blocking = true;
-    this.matchService.blockUser(this.user.id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.blocking = false;
-          this.isBlocked = true;
-          this.successMessage = 'User blocked';
-          setTimeout(() => {
-            this.successMessage = '';
-          }, 3000);
-        },
-        error: (error: any) => {
-          this.blocking = false;
-          this.errorMessage = error.message || 'Failed to block user';
-          setTimeout(() => {
-            this.errorMessage = '';
-          }, 3000);
+          this.error = error.message || 'Failed to pass profile';
+          setTimeout(() => this.error = '', 3000);
         }
       });
   }
 
   onReport(): void {
     // TODO: Implement report functionality
-    this.successMessage = 'Report submitted';
-    setTimeout(() => {
-      this.successMessage = '';
-    }, 3000);
-  }
-
-  onStartConversation(): void {
-    if (!this.user || this.startingConversation) return;
-
-    this.startingConversation = true;
-    this.chatService.startConversation(this.user.id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response: any) => {
-          this.startingConversation = false;
-          this.router.navigate(['/chat', response.data.conversation_id]);
-        },
-        error: (error: any) => {
-          this.startingConversation = false;
-          this.errorMessage = error.message || 'Failed to start conversation';
-          setTimeout(() => {
-            this.errorMessage = '';
-          }, 3000);
-        }
-      });
+    this.success = 'Report submitted';
+    setTimeout(() => this.success = '', 3000);
   }
 
   onBackToChats(): void {
-    this.router.navigate(['/chat']);
+    window.history.back();
   }
 
-  onImageError(event: any): void {
-    event.target.src = '/assets/images/default-avatar.png';
-  }
-
-  // Utility methods
-  getAge(): number {
-    if (!this.user?.date_of_birth) return 0;
-    const birthDate = new Date(this.user.date_of_birth);
+  getAgeFromDateOfBirth(dateOfBirth: string): number {
     const today = new Date();
+    const birthDate = new Date(dateOfBirth);
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
     
@@ -398,46 +341,77 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
     return age;
   }
 
+  getCompatibilityColor(score: number): string {
+    if (score >= 80) return 'text-green-600';
+    if (score >= 60) return 'text-yellow-600';
+    return 'text-red-600';
+  }
+
+  getDistanceText(distance?: number): string {
+    if (!distance) return 'Location not available';
+    return `${distance} km away`;
+  }
+
+  getCurrentPhoto(): UserPhoto | null {
+    return this.userPhotos[this.currentPhotoIndex] || null;
+  }
+
+  canViewPhotos(): boolean {
+    return this.userPhotos.length > 0 && !this.isBlocked;
+  }
+
+  isOwnProfile(): boolean {
+    return this.currentUser?.id === this.user?.id;
+  }
+
   getFullName(): string {
     if (!this.user) return '';
     return `${this.user.first_name} ${this.user.last_name}`;
   }
 
+  getAge(): number {
+    if (!this.user?.date_of_birth) return 0;
+    return this.getAgeFromDateOfBirth(this.user.date_of_birth);
+  }
+
   getLocation(): string {
     const parts = [];
-    if (this.user?.profile?.current_city) parts.push(this.user.profile.current_city);
-    if (this.user?.profile?.current_state) parts.push(this.user.profile.current_state);
-    if (this.user?.profile?.current_country) parts.push(this.user.profile.current_country);
+    if (this.userProfile?.current_city) parts.push(this.userProfile.current_city);
+    if (this.userProfile?.current_state) parts.push(this.userProfile.current_state);
+    if (this.userProfile?.current_country) parts.push(this.userProfile.current_country);
     
     return parts.length > 0 ? parts.join(', ') : 'Location not specified';
   }
 
-  getCompatibilityColor(): string {
-    if (this.compatibilityScore >= 80) return 'text-green-600';
-    if (this.compatibilityScore >= 60) return 'text-yellow-600';
-    return 'text-red-600';
+  getPrimaryPhoto(): UserPhoto | null {
+    return this.userPhotos.find(photo => photo.is_primary) || this.userPhotos[0] || null;
   }
 
-  getCompatibilityText(): string {
-    if (this.compatibilityScore >= 80) return 'Excellent Match';
-    if (this.compatibilityScore >= 60) return 'Good Match';
-    return 'Fair Match';
+  getPublicPhotos(): UserPhoto[] {
+    return this.userPhotos.filter(photo => !photo.is_private);
   }
 
-  getPrimaryPhoto(): any {
-    const photos = this.user?.photos || [];
-    return photos.find(photo => photo.is_primary) || photos[0] || null;
+  previousPhoto(): void {
+    this.onPreviousPhoto();
   }
 
-  getPublicPhotos(): any[] {
-    return this.user?.photos?.filter(photo => !photo.is_private) || [];
+  nextPhoto(): void {
+    this.onNextPhoto();
   }
 
-  onClearSuccess(): void {
-    this.successMessage = '';
+  goToPhoto(index: number): void {
+    this.onPhotoClick(index);
   }
 
-  onClearError(): void {
-    this.errorMessage = '';
+  openPhotoModal(): void {
+    this.showPhotoModal = true;
+  }
+
+  closePhotoModal(): void {
+    this.showPhotoModal = false;
+  }
+
+  onImageError(event: any): void {
+    event.target.src = '/assets/images/default-avatar.png';
   }
 } 

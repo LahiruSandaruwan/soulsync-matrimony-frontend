@@ -204,7 +204,7 @@
       <div class="match-celebration">
         <div class="celebration-icon">🎉</div>
         <h2>It's a Match!</h2>
-        <p>You and {{ selectedMatch?.user.first_name }} liked each other!</p>
+        <p>You and {{ selectedMatch?.user?.first_name || 'User' }} liked each other!</p>
       </div>
       
       <div class="match-users">
@@ -214,8 +214,9 @@
         </div>
         <div class="match-heart">💕</div>
         <div class="user-avatar">
-          <img [src]="selectedMatch?.user.profile?.primary_photo || 'assets/images/default-avatar.png'" 
-               [alt]="selectedMatch?.user.first_name">
+          <img 
+            [src]="selectedMatch?.user?.profile?.primary_photo || 'assets/images/default-avatar.png'"
+            [alt]="selectedMatch?.user?.first_name || 'User'">
         </div>
       </div>
       

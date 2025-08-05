@@ -149,6 +149,7 @@ export class PhotoUploadComponent implements OnInit, OnDestroy {
 
   onUploadPhotos(): void {
     if (this.selectedFiles.length === 0) {
+      this.error = 'Please select files to upload';
       return;
     }
 
@@ -156,26 +157,22 @@ export class PhotoUploadComponent implements OnInit, OnDestroy {
     this.error = '';
     this.success = '';
 
+    // Upload files one by one
     const uploadPromises = this.selectedFiles.map(file => {
-      const formData = new FormData();
-      formData.append('photo', file);
-      
-      return this.profileService.uploadPhoto(formData)
-        .pipe(takeUntil(this.destroy$))
-        .toPromise();
+      return this.profileService.uploadPhoto(file).toPromise();
     });
 
     Promise.all(uploadPromises)
       .then(() => {
-        this.selectedFiles = [];
-        this.uploadProgress = {};
         this.uploading = false;
         this.success = 'Photos uploaded successfully!';
-        this.loadPhotos(); // Reload photos
+        this.selectedFiles = [];
+        this.uploadProgress = {};
+        this.loadPhotos();
       })
       .catch((error: any) => {
-        this.error = error.message || 'Failed to upload photos';
         this.uploading = false;
+        this.error = error.message || 'Failed to upload photos';
       });
   }
 
@@ -194,16 +191,16 @@ export class PhotoUploadComponent implements OnInit, OnDestroy {
   }
 
   onTogglePhotoPrivacy(photo: UserPhoto): void {
-    const newPrivacy = !photo.is_private;
-    this.profileService.updatePhotoPrivacy(photo.id, newPrivacy)
+    this.profileService.togglePhotoPrivacy(photo.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => {
-          this.success = `Photo ${newPrivacy ? 'made private' : 'made public'} successfully!`;
-          this.loadPhotos(); // Reload photos
+        next: (updatedPhoto) => {
+          this.success = `Photo ${updatedPhoto.is_private ? 'made private' : 'made public'}`;
+          setTimeout(() => this.success = '', 3000);
         },
         error: (error: any) => {
           this.error = error.message || 'Failed to update photo privacy';
+          setTimeout(() => this.error = '', 3000);
         }
       });
   }

@@ -1,368 +1,372 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, BehaviorSubject, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
-import { environment } from '../../../environments/environment';
-import { User } from '../models/user.model';
-import { UserProfile, UserPhoto, UserPreference } from '../models/user.model';
+import { ApiService, ApiResponse, PaginatedResponse } from './api.service';
+import { User, UserProfile, UserPhoto } from '../models/user.model';
 
-export interface ProfileUpdateRequest {
-  height_cm?: number;
-  weight_kg?: number;
-  body_type?: 'slim' | 'average' | 'athletic' | 'heavy';
-  complexion?: 'very_fair' | 'fair' | 'wheatish' | 'brown' | 'dark';
-  blood_group?: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
-  current_city?: string;
-  current_state?: string;
-  current_country?: string;
-  education_level?: 'high_school' | 'diploma' | 'bachelors' | 'masters' | 'phd' | 'other';
-  occupation?: string;
-  company?: string;
-  job_title?: string;
-  annual_income_usd?: number;
-  religion?: string;
-  caste?: string;
-  mother_tongue?: string;
-  languages_known?: string[];
-  family_type?: 'nuclear' | 'joint';
-  family_status?: 'middle_class' | 'upper_middle_class' | 'rich' | 'affluent';
-  diet?: 'vegetarian' | 'non_vegetarian' | 'vegan' | 'jain' | 'occasionally_non_veg';
-  smoking?: 'never' | 'occasionally' | 'regularly';
-  drinking?: 'never' | 'occasionally' | 'socially' | 'regularly';
-  hobbies?: string[];
-  about_me?: string;
-  looking_for?: string;
-  marital_status?: 'never_married' | 'divorced' | 'widowed' | 'separated';
-  have_children?: boolean;
-  children_count?: number;
-  willing_to_relocate?: boolean;
-  preferred_locations?: string[];
+export interface ProfileCompletion {
+  completion_percentage: number;
+  missing_fields: string[];
+  completed_fields: string[];
 }
 
-export interface PreferenceUpdateRequest {
-  age_min?: number;
-  age_max?: number;
-  height_min?: number;
-  height_max?: number;
-  education_level?: string[];
-  religion?: string[];
-  location_preference?: 'same_city' | 'same_state' | 'same_country' | 'anywhere';
-  max_distance_km?: number;
-  deal_breakers?: string[];
-  preferred_diet?: string[];
-}
-
-export interface PhotoUploadRequest {
-  file: File;
-  is_primary?: boolean;
-  is_private?: boolean;
-}
-
-export interface ProfileResponse {
-  success: boolean;
-  data: UserProfile;
-  message: string;
-}
-
-export interface PhotosResponse {
-  success: boolean;
-  data: UserPhoto[];
-  message: string;
-}
-
-export interface PreferenceResponse {
-  success: boolean;
-  data: UserPreference;
-  message: string;
+export interface ProfileStats {
+  profile_views: number;
+  likes_received: number;
+  matches_count: number;
+  response_rate: number;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProfileService {
-  private currentProfileSubject = new BehaviorSubject<UserProfile | null>(null);
-  public currentProfile$ = this.currentProfileSubject.asObservable();
-
-  private currentPreferenceSubject = new BehaviorSubject<UserPreference | null>(null);
-  public currentPreference$ = this.currentPreferenceSubject.asObservable();
+  private profileSubject = new BehaviorSubject<UserProfile | null>(null);
+  public profile$ = this.profileSubject.asObservable();
 
   private photosSubject = new BehaviorSubject<UserPhoto[]>([]);
   public photos$ = this.photosSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  private completionSubject = new BehaviorSubject<ProfileCompletion | null>(null);
+  public completion$ = this.completionSubject.asObservable();
 
-  private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
-    return new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
-  }
+  private statsSubject = new BehaviorSubject<ProfileStats | null>(null);
+  public stats$ = this.statsSubject.asObservable();
 
-  // Profile Management
+  constructor(private apiService: ApiService) {}
+
+  // Get user profile
   getProfile(): Observable<UserProfile> {
-    const headers = this.getAuthHeaders();
-    return this.http.get<ProfileResponse>(`${environment.apiUrl}/profile`, { headers })
+    return this.apiService.get<UserProfile>('/profile')
       .pipe(
-        map(response => response.data),
-        tap(profile => {
-          this.currentProfileSubject.next(profile);
+        map(response => {
+          if (response.success) {
+            this.profileSubject.next(response.data);
+            return response.data;
+          } else {
+            throw new Error(response.message);
+          }
         }),
-        catchError(this.handleError)
+        catchError(error => {
+          console.error('Profile Service Error:', error);
+          return throwError(() => error);
+        })
       );
   }
 
-  updateProfile(request: ProfileUpdateRequest): Observable<UserProfile> {
-    const headers = this.getAuthHeaders();
-    return this.http.put<ProfileResponse>(`${environment.apiUrl}/profile`, request, { headers })
+  // Update user profile
+  updateProfile(profileData: Partial<UserProfile>): Observable<UserProfile> {
+    return this.apiService.put<UserProfile>('/profile', profileData)
       .pipe(
-        map(response => response.data),
-        tap(profile => {
-          this.currentProfileSubject.next(profile);
+        map(response => {
+          if (response.success) {
+            this.profileSubject.next(response.data);
+            return response.data;
+          } else {
+            throw new Error(response.message);
+          }
         }),
-        catchError(this.handleError)
+        catchError(error => {
+          console.error('Profile Update Error:', error);
+          return throwError(() => error);
+        })
       );
   }
 
-  getProfileCompletion(): Observable<{ completion_percentage: number }> {
-    const headers = this.getAuthHeaders();
-    return this.http.get<{ success: boolean, data: { completion_percentage: number } }>(
-      `${environment.apiUrl}/profile/completion`, { headers }
-    ).pipe(
-      map(response => response.data),
-      catchError(this.handleError)
-    );
+  // Get profile completion
+  getProfileCompletion(): Observable<ProfileCompletion> {
+    return this.apiService.get<ProfileCompletion>('/profile/completion')
+      .pipe(
+        map(response => {
+          if (response.success) {
+            this.completionSubject.next(response.data);
+            return response.data;
+          } else {
+            throw new Error(response.message);
+          }
+        }),
+        catchError(error => {
+          console.error('Profile Completion Error:', error);
+          return throwError(() => error);
+        })
+      );
   }
 
-  // Photo Management
+  // Get profile statistics
+  getProfileStats(): Observable<ProfileStats> {
+    return this.apiService.get<ProfileStats>('/profile/stats')
+      .pipe(
+        map(response => {
+          if (response.success) {
+            this.statsSubject.next(response.data);
+            return response.data;
+          } else {
+            throw new Error(response.message);
+          }
+        }),
+        catchError(error => {
+          console.error('Profile Stats Error:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  // Get user photos
   getPhotos(): Observable<UserPhoto[]> {
-    const headers = this.getAuthHeaders();
-    return this.http.get<PhotosResponse>(`${environment.apiUrl}/profile/photos`, { headers })
+    return this.apiService.get<UserPhoto[]>('/profile/photos')
       .pipe(
-        map(response => response.data),
-        tap(photos => {
-          this.photosSubject.next(photos);
+        map(response => {
+          if (response.success) {
+            this.photosSubject.next(response.data);
+            return response.data;
+          } else {
+            throw new Error(response.message);
+          }
         }),
-        catchError(this.handleError)
+        catchError(error => {
+          console.error('Photos Error:', error);
+          return throwError(() => error);
+        })
       );
   }
 
-  // Upload photo
-  uploadPhoto(formData: FormData): Observable<any> {
-    const headers = this.getAuthHeaders();
-    // Remove Content-Type header to let browser set it with boundary for FormData
-    const newHeaders = new HttpHeaders();
-    headers.keys().forEach(key => {
-      if (key !== 'Content-Type') {
-        newHeaders.set(key, headers.get(key) || '');
-      }
-    });
-    return this.http.post(`${environment.apiUrl}/profile/photos`, formData, { headers: newHeaders })
-      .pipe(catchError(this.handleError));
-  }
-
-  // Update photo privacy
-  updatePhotoPrivacy(photoId: number, isPublic: boolean): Observable<any> {
-    const headers = this.getAuthHeaders();
-    return this.http.put(`${environment.apiUrl}/profile/photos/${photoId}`, {
-      is_public: isPublic
-    }, { headers })
-      .pipe(catchError(this.handleError));
-  }
-
-  updatePhoto(photoId: number, updates: { is_primary?: boolean; is_private?: boolean }): Observable<UserPhoto> {
-    const headers = this.getAuthHeaders();
-    return this.http.put<{ success: boolean, data: UserPhoto }>(
-      `${environment.apiUrl}/profile/photos/${photoId}`, updates, { headers }
-    ).pipe(
-      map(response => response.data),
-      tap(updatedPhoto => {
-        const currentPhotos = this.photosSubject.value;
-        const updatedPhotos = currentPhotos.map(photo => 
-          photo.id === photoId ? updatedPhoto : photo
-        );
-        this.photosSubject.next(updatedPhotos);
-      }),
-      catchError(this.handleError)
-    );
-  }
-
-  deletePhoto(photoId: number): Observable<any> {
-    const headers = this.getAuthHeaders();
-    return this.http.delete(`${environment.apiUrl}/profile/photos/${photoId}`, { headers })
+  // Upload single photo
+  uploadPhoto(file: File): Observable<UserPhoto> {
+    return this.apiService.uploadFile<UserPhoto>('/profile/photos', file)
       .pipe(
-        tap(() => {
-          const currentPhotos = this.photosSubject.value;
-          const filteredPhotos = currentPhotos.filter(photo => photo.id !== photoId);
-          this.photosSubject.next(filteredPhotos);
+        map(response => {
+          if (response.success) {
+            const currentPhotos = this.photosSubject.value;
+            this.photosSubject.next([...currentPhotos, response.data]);
+            return response.data;
+          } else {
+            throw new Error(response.message);
+          }
         }),
-        catchError(this.handleError)
+        catchError(error => {
+          console.error('Photo Upload Error:', error);
+          return throwError(() => error);
+        })
       );
   }
 
+  // Upload multiple photos
+  uploadPhotos(files: File[]): Observable<UserPhoto[]> {
+    return this.apiService.uploadFiles<UserPhoto[]>('/profile/photos/batch', files)
+      .pipe(
+        map(response => {
+          if (response.success) {
+            const currentPhotos = this.photosSubject.value;
+            this.photosSubject.next([...currentPhotos, ...response.data]);
+            return response.data;
+          } else {
+            throw new Error(response.message);
+          }
+        }),
+        catchError(error => {
+          console.error('Photos Upload Error:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  // Set primary photo
   setPrimaryPhoto(photoId: number): Observable<UserPhoto> {
-    return this.updatePhoto(photoId, { is_primary: true });
-  }
-
-  // Preferences Management
-  getPreferences(): Observable<UserPreference> {
-    const headers = this.getAuthHeaders();
-    return this.http.get<PreferenceResponse>(`${environment.apiUrl}/profile/preferences`, { headers })
+    return this.apiService.patch<UserPhoto>(`/profile/photos/${photoId}/primary`)
       .pipe(
-        map(response => response.data),
-        tap(preference => {
-          this.currentPreferenceSubject.next(preference);
+        map(response => {
+          if (response.success) {
+            const currentPhotos = this.photosSubject.value.map(photo => ({
+              ...photo,
+              is_primary: photo.id === photoId
+            }));
+            this.photosSubject.next(currentPhotos);
+            return response.data;
+          } else {
+            throw new Error(response.message);
+          }
         }),
-        catchError(this.handleError)
+        catchError(error => {
+          console.error('Set Primary Photo Error:', error);
+          return throwError(() => error);
+        })
       );
   }
 
-  updatePreferences(request: PreferenceUpdateRequest): Observable<UserPreference> {
-    const headers = this.getAuthHeaders();
-    return this.http.put<PreferenceResponse>(`${environment.apiUrl}/profile/preferences`, request, { headers })
+  // Delete photo
+  deletePhoto(photoId: number): Observable<void> {
+    return this.apiService.delete<void>(`/profile/photos/${photoId}`)
       .pipe(
-        map(response => response.data),
-        tap(preference => {
-          this.currentPreferenceSubject.next(preference);
+        map(response => {
+          if (response.success) {
+            const currentPhotos = this.photosSubject.value.filter(photo => photo.id !== photoId);
+            this.photosSubject.next(currentPhotos);
+          } else {
+            throw new Error(response.message);
+          }
         }),
-        catchError(this.handleError)
+        catchError(error => {
+          console.error('Delete Photo Error:', error);
+          return throwError(() => error);
+        })
       );
   }
 
-  // Get user profile by ID (for viewing other users' profiles)
-  getUserProfile(userId: number): Observable<UserProfile> {
-    const headers = this.getAuthHeaders();
-    return this.http.get<ProfileResponse>(`${environment.apiUrl}/users/${userId}/profile`, { headers })
+  // Toggle photo privacy
+  togglePhotoPrivacy(photoId: number): Observable<UserPhoto> {
+    return this.apiService.patch<UserPhoto>(`/profile/photos/${photoId}/privacy`)
       .pipe(
-        map(response => response.data),
-        catchError(this.handleError)
+        map(response => {
+          if (response.success) {
+            const currentPhotos = this.photosSubject.value.map(photo => 
+              photo.id === photoId ? { ...photo, is_private: !photo.is_private } : photo
+            );
+            this.photosSubject.next(currentPhotos);
+            return response.data;
+          } else {
+            throw new Error(response.message);
+          }
+        }),
+        catchError(error => {
+          console.error('Toggle Photo Privacy Error:', error);
+          return throwError(() => error);
+        })
       );
   }
 
-  // Get user photos by ID (for viewing other users' photos)
-  getUserPhotos(userId: number): Observable<UserPhoto[]> {
-    const headers = this.getAuthHeaders();
-    return this.http.get<PhotosResponse>(`${environment.apiUrl}/users/${userId}/photos`, { headers })
+  // Get profile by user ID (for viewing other profiles)
+  getProfileById(userId: number): Observable<UserProfile> {
+    return this.apiService.get<UserProfile>(`/profiles/${userId}`)
       .pipe(
-        map(response => response.data),
-        catchError(this.handleError)
+        map(response => {
+          if (response.success) {
+            return response.data;
+          } else {
+            throw new Error(response.message);
+          }
+        }),
+        catchError(error => {
+          console.error('Get Profile by ID Error:', error);
+          return throwError(() => error);
+        })
       );
   }
 
-  // Get user preferences by ID (for viewing other users' preferences)
-  getUserPreferences(userId: number): Observable<UserPreference> {
-    const headers = this.getAuthHeaders();
-    return this.http.get<PreferenceResponse>(`${environment.apiUrl}/users/${userId}/preferences`, { headers })
+  // Get user preferences
+  getPreferences(): Observable<any> {
+    return this.apiService.get<any>('/profile/preferences')
       .pipe(
-        map(response => response.data),
-        catchError(this.handleError)
+        map(response => {
+          if (response.success) {
+            return response.data;
+          } else {
+            throw new Error(response.message);
+          }
+        }),
+        catchError(error => {
+          console.error('Get Preferences Error:', error);
+          return throwError(() => error);
+        })
       );
-  }
-
-  // Get user by ID (for viewing other users' basic info)
-  getUser(userId: number): Observable<User> {
-    const headers = this.getAuthHeaders();
-    return this.http.get<{ success: boolean, data: User }>(`${environment.apiUrl}/users/${userId}`, { headers })
-      .pipe(
-        map(response => response.data),
-        catchError(this.handleError)
-      );
-  }
-
-  // Profile Visibility
-  updateProfileVisibility(settings: {
-    profile_visible?: boolean;
-    show_photos?: boolean;
-    show_contact?: boolean;
-    show_location?: boolean;
-  }): Observable<any> {
-    const headers = this.getAuthHeaders();
-    return this.http.put(`${environment.apiUrl}/profile/visibility`, settings, { headers })
-      .pipe(
-        catchError(this.handleError)
-      );
-  }
-
-  // Profile Verification
-  requestVerification(): Observable<any> {
-    const headers = this.getAuthHeaders();
-    return this.http.post(`${environment.apiUrl}/profile/verify`, {}, { headers })
-      .pipe(
-        catchError(this.handleError)
-      );
-  }
-
-  getVerificationStatus(): Observable<{ verified: boolean; status: string }> {
-    const headers = this.getAuthHeaders();
-    return this.http.get<{ success: boolean, data: { verified: boolean; status: string } }>(
-      `${environment.apiUrl}/profile/verification-status`, { headers }
-    ).pipe(
-      map(response => response.data),
-      catchError(this.handleError)
-    );
   }
 
   // Get user settings
   getSettings(): Observable<any> {
-    const headers = this.getAuthHeaders();
-    return this.http.get(`${environment.apiUrl}/profile/settings`, { headers })
-      .pipe(catchError(this.handleError));
+    return this.apiService.get<any>('/profile/settings')
+      .pipe(
+        map(response => {
+          if (response.success) {
+            return response.data;
+          } else {
+            throw new Error(response.message);
+          }
+        }),
+        catchError(error => {
+          console.error('Get Settings Error:', error);
+          return throwError(() => error);
+        })
+      );
   }
 
   // Update notification settings
   updateNotificationSettings(settings: any): Observable<any> {
-    const headers = this.getAuthHeaders();
-    return this.http.put(`${environment.apiUrl}/profile/notification-settings`, settings, { headers })
-      .pipe(catchError(this.handleError));
+    return this.apiService.put<any>('/profile/notification-settings', settings)
+      .pipe(
+        map(response => {
+          if (response.success) {
+            return response.data;
+          } else {
+            throw new Error(response.message);
+          }
+        }),
+        catchError(error => {
+          console.error('Update Notification Settings Error:', error);
+          return throwError(() => error);
+        })
+      );
   }
 
   // Update privacy settings
   updatePrivacySettings(settings: any): Observable<any> {
-    const headers = this.getAuthHeaders();
-    return this.http.put(`${environment.apiUrl}/profile/privacy-settings`, settings, { headers })
-      .pipe(catchError(this.handleError));
+    return this.apiService.put<any>('/profile/privacy-settings', settings)
+      .pipe(
+        map(response => {
+          if (response.success) {
+            return response.data;
+          } else {
+            throw new Error(response.message);
+          }
+        }),
+        catchError(error => {
+          console.error('Update Privacy Settings Error:', error);
+          return throwError(() => error);
+        })
+      );
   }
 
   // Export user data
   exportData(): Observable<any> {
-    const headers = this.getAuthHeaders();
-    return this.http.get(`${environment.apiUrl}/profile/export-data`, { headers })
-      .pipe(catchError(this.handleError));
+    return this.apiService.get<any>('/profile/export-data')
+      .pipe(
+        map(response => {
+          if (response.success) {
+            return response.data;
+          } else {
+            throw new Error(response.message);
+          }
+        }),
+        catchError(error => {
+          console.error('Export Data Error:', error);
+          return throwError(() => error);
+        })
+      );
   }
 
-  // Utility Methods
-  getCurrentProfileValue(): UserProfile | null {
-    return this.currentProfileSubject.value;
+  // Get current profile value
+  getProfileValue(): UserProfile | null {
+    return this.profileSubject.value;
   }
 
-  getCurrentPreferenceValue(): UserPreference | null {
-    return this.currentPreferenceSubject.value;
-  }
-
+  // Get current photos value
   getPhotosValue(): UserPhoto[] {
     return this.photosSubject.value;
   }
 
-  getPrimaryPhoto(): UserPhoto | null {
-    const photos = this.photosSubject.value;
-    return photos.find(photo => photo.is_primary) || null;
+  // Get current completion value
+  getCompletionValue(): ProfileCompletion | null {
+    return this.completionSubject.value;
   }
 
+  // Get current stats value
+  getStatsValue(): ProfileStats | null {
+    return this.statsSubject.value;
+  }
+
+  // Clear cache
   clearCache(): void {
-    this.currentProfileSubject.next(null);
-    this.currentPreferenceSubject.next(null);
+    this.profileSubject.next(null);
     this.photosSubject.next([]);
-  }
-
-  private handleError(error: any): Observable<never> {
-    let errorMessage = 'An error occurred';
-    
-    if (error.error?.message) {
-      errorMessage = error.error.message;
-    } else if (error.message) {
-      errorMessage = error.message;
-    }
-    
-    console.error('Profile Service Error:', error);
-    return throwError(() => new Error(errorMessage));
+    this.completionSubject.next(null);
+    this.statsSubject.next(null);
   }
 } 

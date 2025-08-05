@@ -1,33 +1,15 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-import { Subject, takeUntil, BehaviorSubject, combineLatest } from 'rxjs';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
+import { Subject, takeUntil } from 'rxjs';
 import { MatchService } from '../../core/services/match.service';
 import { ProfileService } from '../../core/services/profile.service';
 import { AuthService } from '../../core/services/auth.service';
+import { MatchSuggestion, MatchFilters, MatchStats } from '../../core/models/match.model';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
 import { ToastComponent } from '../../shared/components/toast/toast.component';
-
-interface MatchSuggestion {
-  id: number;
-  user: any;
-  compatibility_score: number;
-  matching_factors: string[];
-  distance_km?: number;
-  mutual_interests?: string[];
-}
-
-interface MatchFilters {
-  age_min: number;
-  age_max: number;
-  distance_max: number;
-  gender: string;
-  religion?: string[];
-  education_level?: string[];
-  location_preference: string;
-}
 
 @Component({
   selector: 'app-match-suggestions',
@@ -36,6 +18,7 @@ interface MatchFilters {
     CommonModule,
     RouterModule,
     FormsModule,
+    ReactiveFormsModule,
     LoadingSpinnerComponent,
     ModalComponent,
     ToastComponent
@@ -45,55 +28,69 @@ interface MatchFilters {
 })
 export class MatchSuggestionsComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
-  private currentIndexSubject = new BehaviorSubject<number>(0);
   
   loading = true;
   error = '';
-  currentUser: any = null;
+  success = '';
   
   suggestions: MatchSuggestion[] = [];
   currentIndex = 0;
   currentSuggestion: MatchSuggestion | null = null;
+  currentUser: any = null;
+  userPreferences: any = null;
   
-  // Filters
-  filters: MatchFilters = {
-    age_min: 18,
-    age_max: 50,
-    distance_max: 50,
-    gender: 'female',
-    location_preference: 'same_city'
-  };
-  
+  // UI state
   showFilters = false;
   showMatchModal = false;
   selectedMatch: MatchSuggestion | null = null;
   
-  // Stats
-  stats = {
+  filters: MatchFilters = {
+    age_min: 18,
+    age_max: 50,
+    distance_max: 50,
+    gender: '',
+    religion: [],
+    education_level: [],
+    location_preference: 'same_city'
+  };
+
+  filterForm: FormGroup;
+  
+  stats: MatchStats = {
     totalSuggestions: 0,
+    totalLikes: 0,
+    totalDislikes: 0,
+    totalSuperLikes: 0,
+    totalMatches: 0,
+    responseRate: 0,
+    averageCompatibility: 0,
+    // Additional properties for template compatibility
     viewedToday: 0,
     likesSent: 0,
     superLikesSent: 0
   };
 
   constructor(
+    private fb: FormBuilder,
     private matchService: MatchService,
     private profileService: ProfileService,
     private authService: AuthService
-  ) {}
+  ) {
+    this.filterForm = this.fb.group({
+      ageMin: [18],
+      ageMax: [50],
+      distanceMax: [50],
+      gender: [''],
+      religion: [[]],
+      educationLevel: [[]],
+      locationPreference: ['same_city']
+    });
+  }
 
   ngOnInit(): void {
     this.loadCurrentUser();
-    this.loadMatchSuggestions();
-    this.loadUserStats();
-    
-    // Subscribe to current index changes
-    this.currentIndexSubject
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(index => {
-        this.currentIndex = index;
-        this.currentSuggestion = this.suggestions[index] || null;
-      });
+    this.loadUserPreferences();
+    this.loadSuggestions();
   }
 
   ngOnDestroy(): void {
@@ -107,7 +104,7 @@ export class MatchSuggestionsComponent implements OnInit, OnDestroy {
       .subscribe(user => {
         this.currentUser = user;
         if (user) {
-          this.loadUserPreferences();
+          this.filters.gender = user.gender === 'male' ? 'female' : 'male';
         }
       });
   }
@@ -116,30 +113,36 @@ export class MatchSuggestionsComponent implements OnInit, OnDestroy {
     this.profileService.getPreferences()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (preferences) => {
-          if (preferences) {
-            this.filters = {
-              age_min: preferences.age_min || 18,
-              age_max: preferences.age_max || 50,
-              distance_max: preferences.max_distance_km || 50,
-              gender: this.currentUser?.gender === 'male' ? 'female' : 'male',
-              religion: preferences.religion,
-              education_level: preferences.education_level,
-              location_preference: preferences.location_preference || 'same_city'
-            };
-          }
+        next: (preferences: any) => {
+          this.userPreferences = preferences;
+          this.applyPreferencesToFilters();
         },
-        error: (error) => {
-          console.error('Error loading preferences:', error);
+        error: (error: any) => {
+          console.error('Failed to load preferences:', error);
+          // Continue without preferences
         }
       });
   }
 
-  loadMatchSuggestions(): void {
+  private applyPreferencesToFilters(): void {
+    if (this.userPreferences) {
+      this.filters = {
+        age_min: this.userPreferences.age_min || 18,
+        age_max: this.userPreferences.age_max || 50,
+        distance_max: this.userPreferences.max_distance_km || 50,
+        gender: this.currentUser?.gender === 'male' ? 'female' : 'male',
+        religion: this.userPreferences.religion || [],
+        education_level: this.userPreferences.education_level || [],
+        location_preference: this.userPreferences.location_preference || 'same_city'
+      };
+    }
+  }
+
+  loadSuggestions(): void {
     this.loading = true;
     this.error = '';
 
-    this.matchService.getSuggestions()
+    this.matchService.getSuggestions(this.filters)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
@@ -147,36 +150,23 @@ export class MatchSuggestionsComponent implements OnInit, OnDestroy {
           this.stats.totalSuggestions = this.suggestions.length;
           
           if (this.suggestions.length > 0) {
-            this.currentIndexSubject.next(0);
+            this.setCurrentSuggestion(0);
           }
           
           this.loading = false;
         },
         error: (error: any) => {
-          this.error = 'Failed to load match suggestions. Please try again.';
+          this.error = error.message || 'Failed to load suggestions';
           this.loading = false;
-          console.error('Error loading suggestions:', error);
         }
       });
   }
 
-  private loadUserStats(): void {
-    // Load user matching statistics
-    this.matchService.getMatchStats()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (stats: any) => {
-          this.stats = {
-            totalSuggestions: this.suggestions.length,
-            viewedToday: 0, // Not available in current API
-            likesSent: 0, // Not available in current API
-            superLikesSent: 0 // Not available in current API
-          };
-        },
-        error: (error: any) => {
-          console.error('Error loading user stats:', error);
-        }
-      });
+  setCurrentSuggestion(index: number): void {
+    if (index >= 0 && index < this.suggestions.length) {
+      this.currentIndex = index;
+      this.currentSuggestion = this.suggestions[index] || null;
+    }
   }
 
   onLike(): void {
@@ -186,19 +176,22 @@ export class MatchSuggestionsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
-          this.stats.likesSent++;
+          this.success = 'Liked!';
+          this.stats.totalLikes++;
           
-          // Check if it's a mutual match
-          if (response.is_mutual_match) {
-            this.showMatchModal = true;
-            this.selectedMatch = this.currentSuggestion;
+          if (response.data?.match_created) {
+            this.success = 'It\'s a match! 💕';
+            this.stats.totalMatches++;
           }
           
-          this.nextSuggestion();
+          setTimeout(() => {
+            this.success = '';
+            this.moveToNext();
+          }, 2000);
         },
         error: (error: any) => {
-          console.error('Error liking user:', error);
-          // Show error toast
+          this.error = error.message || 'Failed to like user';
+          setTimeout(() => this.error = '', 3000);
         }
       });
   }
@@ -210,10 +203,12 @@ export class MatchSuggestionsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.nextSuggestion();
+          this.stats.totalDislikes++;
+          this.moveToNext();
         },
         error: (error: any) => {
-          console.error('Error disliking user:', error);
+          this.error = error.message || 'Failed to dislike user';
+          setTimeout(() => this.error = '', 3000);
         }
       });
   }
@@ -225,25 +220,24 @@ export class MatchSuggestionsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
-          this.stats.superLikesSent++;
+          this.success = 'Super Liked! ⭐';
+          this.stats.totalSuperLikes++;
           
-          // Check if it's a mutual match
-          if (response.is_mutual_match) {
-            this.showMatchModal = true;
-            this.selectedMatch = this.currentSuggestion;
+          if (response.data?.match_created) {
+            this.success = 'It\'s a match! 💕';
+            this.stats.totalMatches++;
           }
           
-          this.nextSuggestion();
+          setTimeout(() => {
+            this.success = '';
+            this.moveToNext();
+          }, 2000);
         },
         error: (error: any) => {
-          console.error('Error super liking user:', error);
+          this.error = error.message || 'Failed to super like user';
+          setTimeout(() => this.error = '', 3000);
         }
       });
-  }
-
-  onViewProfile(userId: number): void {
-    // Navigate to user profile
-    console.log('View profile:', userId);
   }
 
   onBlock(): void {
@@ -253,51 +247,38 @@ export class MatchSuggestionsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.nextSuggestion();
+          this.success = 'User blocked';
+          setTimeout(() => {
+            this.success = '';
+            this.moveToNext();
+          }, 2000);
         },
         error: (error: any) => {
-          console.error('Error blocking user:', error);
+          this.error = error.message || 'Failed to block user';
+          setTimeout(() => this.error = '', 3000);
         }
       });
   }
 
-  private nextSuggestion(): void {
+  private moveToNext(): void {
     const nextIndex = this.currentIndex + 1;
     
     if (nextIndex < this.suggestions.length) {
-      this.currentIndexSubject.next(nextIndex);
+      this.setCurrentSuggestion(nextIndex);
     } else {
-      // No more suggestions, load more or show empty state
-      this.loadMoreSuggestions();
+      this.currentSuggestion = null;
+      this.loadSuggestions(); // Load more suggestions
     }
-  }
-
-  private loadMoreSuggestions(): void {
-    // Load more suggestions from API
-    this.loadMatchSuggestions();
-  }
-
-  onRefreshSuggestions(): void {
-    this.loadMatchSuggestions();
   }
 
   onUpdateFilters(newFilters: MatchFilters): void {
     this.filters = { ...newFilters };
-    this.loadMatchSuggestions();
-    this.showFilters = false;
+    this.loadSuggestions();
   }
 
-  onStartConversation(): void {
-    if (this.selectedMatch) {
-      // Navigate to chat with the matched user
-      console.log('Start conversation with:', this.selectedMatch.user.id);
-      this.showMatchModal = false;
-    }
-  }
-
-  onViewAllMatches(): void {
-    // Navigate to all matches page
-    console.log('View all matches');
+  onViewProfile(userId: number): void {
+    // Navigate to user profile
+    window.open(`/profile/${userId}`, '_blank');
   }
 
   getCompatibilityColor(score: number): string {
@@ -306,9 +287,38 @@ export class MatchSuggestionsComponent implements OnInit, OnDestroy {
     return 'text-red-600';
   }
 
-  getDistanceText(distance: number): string {
-    if (distance < 1) return 'Less than 1 km away';
-    if (distance < 5) return `${distance} km away`;
+  getDistanceText(distance?: number): string {
+    if (!distance) return 'Location not available';
     return `${distance} km away`;
+  }
+
+  getAgeFromDateOfBirth(dateOfBirth: string): number {
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    
+    return age;
+  }
+
+  onRefreshSuggestions(): void {
+    this.loadSuggestions();
+  }
+
+  onViewAllMatches(): void {
+    // Navigate to all matches page
+    window.open('/matches', '_blank');
+  }
+
+  onStartConversation(): void {
+    if (this.selectedMatch) {
+      // Navigate to chat with the matched user
+      window.open(`/chat/${this.selectedMatch.user.id}`, '_blank');
+      this.showMatchModal = false;
+    }
   }
 }
