@@ -5,8 +5,13 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:prod": "ng build --configuration production",
+    "build:dev": "ng build --configuration development",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "test:coverage": "ng test --code-coverage",
+    "analyze": "node analyze-bundle.js",
+    "lint": "ng lint",
     "serve:ssr:matrimony-frontend": "node dist/matrimony-frontend/server/server.mjs"
   },
   "private": true,
