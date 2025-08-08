@@ -327,7 +327,7 @@
       
       <div class="relative">
         <img 
-          [src]="(getPublicPhotos()[currentPhotoIndex]?.file_path) || '/assets/images/default-avatar.png'" 
+          [src]="(getPublicPhotos()[currentPhotoIndex].file_path) || '/assets/images/default-avatar.png'" 
           [alt]="getFullName()"
           class="w-full h-auto max-h-96 object-contain"
         >

@@ -137,7 +137,7 @@ export class WebSocketService {
     
     setTimeout(() => {
       if (this.shouldReconnect) {
-        const token = localStorage.getItem('token');
+        const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
         if (token) {
           this.connect(token);
         }
@@ -267,7 +267,7 @@ export class WebSocketService {
 
   reconnect(): void {
     this.shouldReconnect = true;
-    const token = localStorage.getItem('token');
+    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
     if (token) {
       this.connect(token);
     }

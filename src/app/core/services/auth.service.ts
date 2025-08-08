@@ -30,8 +30,8 @@ export class AuthService {
   }
 
   private loadStoredAuth(): void {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
+    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
+    const user = typeof localStorage !== 'undefined' ? localStorage.getItem('user') : null;
     
     if (token && user) {
       this.tokenSubject.next(token);
@@ -101,7 +101,9 @@ export class AuthService {
         map(response => response.data),
         tap(user => {
           this.currentUserSubject.next(user);
-          localStorage.setItem('user', JSON.stringify(user));
+          if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('user', JSON.stringify(user));
+          }
         }),
         catchError(this.handleError)
       );
@@ -200,8 +202,10 @@ export class AuthService {
   }
 
   private setAuth(token: string, user: User): void {
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+    }
     
     this.tokenSubject.next(token);
     this.currentUserSubject.next(user);
@@ -209,8 +213,10 @@ export class AuthService {
   }
 
   private clearAuth(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
     
     this.tokenSubject.next(null);
     this.currentUserSubject.next(null);

@@ -118,7 +118,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
   }
 
   private setupWebSocket(): void {
-    const token = localStorage.getItem('token');
+    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
     if (token) {
       this.webSocketService.connect(token);
     }
@@ -227,6 +227,8 @@ export class ChatListComponent implements OnInit, OnDestroy {
   }
 
   onConversationClick(conversationId: number): void {
+    // Optionally join room when navigating
+    this.webSocketService.joinConversation(conversationId);
     this.router.navigate(['/chat', conversationId]);
   }
 

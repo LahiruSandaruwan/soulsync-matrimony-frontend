@@ -66,7 +66,7 @@ export class NotificationService {
   constructor(private http: HttpClient) {}
 
   private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
+    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
     return new HttpHeaders({
       'Authorization': `Bearer ${token}`
     });
@@ -201,6 +201,33 @@ export class NotificationService {
 
     return this.http.post(`${environment.apiUrl}/notifications/push-subscription`, payload, { headers })
       .pipe(catchError(this.handleError));
+  }
+
+  // Helper to request and persist subscription using VAPID
+  async ensurePushSubscription(vapidPublicKey: string): Promise<void> {
+    if (!('serviceWorker' in navigator)) return;
+    const registration = await navigator.serviceWorker.getRegistration();
+    if (!registration) return;
+    let sub = await registration.pushManager.getSubscription();
+    if (!sub) {
+      sub = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: this.urlBase64ToUint8Array(vapidPublicKey)
+      });
+    }
+    const { firstValueFrom } = await import('rxjs');
+    await firstValueFrom(this.subscribeToPushNotifications(sub));
+  }
+
+  private urlBase64ToUint8Array(base64String: string): Uint8Array {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
   }
 
   // Unsubscribe from push notifications

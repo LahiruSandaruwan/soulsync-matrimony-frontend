@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
+import { ApiService } from '../../core/services/api.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 
 interface SiteSettings {
@@ -122,7 +123,8 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService
+    private authService: AuthService,
+    private api: ApiService
   ) {
     this.initializeForms();
   }
@@ -185,11 +187,25 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error = '';
 
-    // Mock data - replace with actual API call
-    setTimeout(() => {
-      this.populateForms();
-      this.loading = false;
-    }, 1000);
+    this.api.get<any>('/admin/settings')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          if (res.success) {
+            const s = res.data;
+            // Map payment keys if present
+            this.paymentSettings.stripe_public_key = s.payment?.stripe_public_key || '';
+            this.paymentSettings.paypal_client_id = s.payment?.paypal_client_id || '';
+            this.paymentSettings.currency = s.payment?.default_currency || 'USD';
+          }
+          this.populateForms();
+          this.loading = false;
+        },
+        error: () => {
+          this.populateForms();
+          this.loading = false;
+        }
+      });
   }
 
   private populateForms(): void {
@@ -243,14 +259,32 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
       this.error = '';
       
       const settings = this.paymentForm.value;
-      
-      // API call to save payment settings
-      setTimeout(() => {
-        this.paymentSettings = { ...this.paymentSettings, ...settings };
-        this.success = 'Payment settings saved successfully!';
-        this.saving = false;
-        setTimeout(() => this.success = '', 3000);
-      }, 1000);
+      this.api.put<any>('/admin/settings', {
+        category: 'payment',
+        settings: {
+          stripe_public_key: settings.stripe_public_key,
+          paypal_client_id: settings.paypal_client_id,
+          default_currency: settings.currency
+        }
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.paymentSettings = { ...this.paymentSettings, ...settings };
+            this.success = 'Payment settings saved successfully!';
+          } else {
+            this.error = res.message || 'Failed to save payment settings';
+          }
+          this.saving = false;
+          setTimeout(() => { this.success = ''; this.error = ''; }, 3000);
+        },
+        error: (err) => {
+          this.error = err.message || 'Failed to save payment settings';
+          this.saving = false;
+          setTimeout(() => this.error = '', 3000);
+        }
+      });
     }
   }
 

@@ -1,8 +1,10 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, firstValueFrom } from 'rxjs';
 import { PaymentService } from '../../core/services/payment.service';
+import { ScriptLoaderService } from '../../core/services/script-loader.service';
+import { environment } from '../../../environments/environment';
 import { AuthService } from '../../core/services/auth.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
@@ -43,7 +45,7 @@ interface CurrentSubscription {
   templateUrl: './subscription-plans.component.html',
   styleUrls: ['./subscription-plans.component.scss']
 })
-export class SubscriptionPlansComponent implements OnInit, OnDestroy {
+export class SubscriptionPlansComponent implements OnInit, OnDestroy, AfterViewInit {
   private destroy$ = new Subject<void>();
   
   loading = true;
@@ -60,6 +62,11 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy {
   errorMessage = '';
   successMessage = '';
   paymentMethod = '';
+  @ViewChild('stripeCard', { static: false }) stripeCardRef?: ElementRef;
+  @ViewChild('paypalButtons', { static: false }) paypalButtonsRef?: ElementRef;
+  private stripe?: any;
+  private stripeElements?: any;
+  private cardElement?: any;
   
   // Currency preference
   currency: 'USD' | 'LKR' = 'USD';
@@ -153,7 +160,8 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy {
   constructor(
     private paymentService: PaymentService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private scriptLoader: ScriptLoaderService
   ) {}
 
   ngOnInit(): void {
@@ -161,6 +169,8 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy {
     this.loadSubscriptionPlans();
     this.loadCurrentSubscription();
   }
+
+  ngAfterViewInit(): void {}
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -255,7 +265,7 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy {
     this.showPaymentModal = true;
   }
 
-  processSubscription(): void {
+  async processSubscription(): Promise<void> {
     if (!this.selectedPlan) {
       this.errorMessage = 'Please select a plan';
       return;
@@ -265,33 +275,88 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
     this.successMessage = '';
 
-    const request = {
-      plan_id: this.selectedPlan.id,
-      currency: this.currency,
-      auto_renewal: true
-    };
+    if (this.paymentMethod === 'stripe') {
+      await this.handleStripeFlow();
+    } else if (this.paymentMethod === 'paypal') {
+      // Buttons are rendered immediately on selection; nothing to do here
+      this.processingPayment = false;
+      return;
+    } else {
+      this.errorMessage = 'Select a payment method';
+      this.processingPayment = false;
+    }
+  }
 
-    this.paymentService.subscribeToPlan(request)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response: any) => {
+  private async initStripe(): Promise<void> {
+    if (this.stripe) return;
+    await this.scriptLoader.load('https://js.stripe.com/v3/');
+    // @ts-ignore
+    this.stripe = (window as any).Stripe(environment.payments.stripe.publishableKey);
+    this.stripeElements = this.stripe.elements({ appearance: { theme: 'flat' } });
+    this.cardElement = this.stripeElements.create('card');
+    if (this.stripeCardRef?.nativeElement) {
+      this.cardElement.mount(this.stripeCardRef.nativeElement);
+    }
+  }
+
+  private async handleStripeFlow(): Promise<void> {
+    try {
+      await this.initStripe();
+      const request = {
+        plan_id: this.selectedPlan!.id,
+        currency: this.currency,
+        auto_renewal: true
+      };
+      const intent = await firstValueFrom(this.paymentService.createPaymentIntent(request));
+      const { error, paymentIntent } = await this.stripe.confirmCardPayment(intent!.client_secret, {
+        payment_method: { card: this.cardElement }
+      });
+      if (error) throw new Error(error.message);
+      await firstValueFrom(this.paymentService.processStripePayment(paymentIntent.id, paymentIntent.payment_method));
+      this.processingPayment = false;
+      this.successMessage = 'Subscription successful!';
+      this.showPaymentModal = false;
+      this.loadCurrentSubscription();
+    } catch (e: any) {
+      this.processingPayment = false;
+      this.errorMessage = e.message || 'Stripe payment failed';
+    }
+  }
+
+  private async renderPayPalButtons(): Promise<void> {
+    try {
+      // Load PayPal JS SDK dynamically
+      const clientId = environment.payments.paypal.clientId;
+      const currency = this.currency;
+      await this.scriptLoader.load(`https://www.paypal.com/sdk/js?client-id=${clientId}&currency=${currency}`);
+      const amount = this.selectedPlan ? this.getPlanPrice(this.selectedPlan).toFixed(2) : '0.00';
+      // @ts-ignore
+      (window as any).paypal.Buttons({
+        style: { layout: 'vertical', color: 'gold', shape: 'rect', label: 'paypal' },
+        createOrder: (_data: any, actions: any) => {
+          return actions.order.create({
+            purchase_units: [{ amount: { value: amount, currency_code: currency } }]
+          });
+        },
+        onApprove: async (data: any) => {
+          await firstValueFrom(this.paymentService.processPayPalPayment(data.orderID));
           this.processingPayment = false;
           this.successMessage = 'Subscription successful!';
           this.showPaymentModal = false;
           this.loadCurrentSubscription();
-          setTimeout(() => {
-            this.successMessage = '';
-          }, 3000);
         },
-        error: (error: any) => {
+        onError: (err: any) => {
           this.processingPayment = false;
-          this.errorMessage = error.message || 'Payment failed';
-          setTimeout(() => {
-            this.errorMessage = '';
-          }, 3000);
+          this.errorMessage = err?.message || 'PayPal payment failed';
         }
-      });
+      }).render(this.paypalButtonsRef!.nativeElement);
+    } catch (e: any) {
+      this.processingPayment = false;
+      this.errorMessage = e.message || 'Unable to initialize PayPal';
+    }
   }
+
+  // Removed duplicate detailed handler; use single entrypoint below
 
   cancelCurrentSubscription(): void {
     if (!this.currentSubscription) {
@@ -429,6 +494,13 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy {
 
   onProcessPayment(method: string): void {
     this.paymentMethod = method;
-    this.processSubscription();
+    if (method === 'stripe') {
+      // Initialize Stripe and display card element
+      this.initStripe();
+      this.processingPayment = false;
+    } else if (method === 'paypal') {
+      this.processingPayment = true;
+      this.renderPayPalButtons();
+    }
   }
 }

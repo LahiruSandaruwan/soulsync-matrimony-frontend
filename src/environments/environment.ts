@@ -87,7 +87,8 @@ export const environment = {
     enableSMS: false,
     enablePush: true,
     enableInApp: true,
-    maxNotifications: 100
+    maxNotifications: 100,
+    vapidPublicKey: 'YOUR_VAPID_PUBLIC_KEY_BASE64URL'
   },
   
   // Chat Configuration

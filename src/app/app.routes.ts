@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 import { RoleGuard } from './core/guards/role.guard';
+import { FeatureFlagsGuard } from './core/guards/feature-flags.guard';
 
 export const routes: Routes = [
   // Auth Routes
@@ -60,11 +61,15 @@ export const routes: Routes = [
       },
       {
         path: 'chat',
-        loadComponent: () => import('./chat/chat-list/chat-list.component').then(m => m.ChatListComponent)
+        loadComponent: () => import('./chat/chat-list/chat-list.component').then(m => m.ChatListComponent),
+        canActivate: [FeatureFlagsGuard],
+        data: { featureFlag: 'chat' }
       },
       {
         path: 'chat/:conversationId',
-        loadComponent: () => import('./chat/chat-box/chat-box.component').then(m => m.ChatBoxComponent)
+        loadComponent: () => import('./chat/chat-box/chat-box.component').then(m => m.ChatBoxComponent),
+        canActivate: [FeatureFlagsGuard],
+        data: { featureFlag: 'chat' }
       },
       {
         path: 'search',

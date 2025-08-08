@@ -24,6 +24,9 @@ export interface PushNotificationConfig {
   }>;
 }
 
+// Fallback typing for Background Sync options (not in lib.dom)
+type BackgroundSyncOptions = any;
+
 @Injectable({
   providedIn: 'root'
 })
@@ -186,11 +189,10 @@ export class ServiceWorkerService {
       throw new Error('Service Worker not registered');
     }
 
-    const options: NotificationOptions = {
+    const options: any = {
       body: config.body,
       icon: config.icon || '/assets/icons/icon-192x192.png',
       badge: config.badge || '/assets/icons/badge-72x72.png',
-      image: config.image,
       tag: config.tag,
       data: config.data,
       actions: config.actions,
@@ -210,7 +212,7 @@ export class ServiceWorkerService {
     }
 
     try {
-      await this.swRegistration.sync.register(tag, options);
+      await (this.swRegistration as any).sync.register(tag, options);
     } catch (error) {
       console.error('Background sync registration failed:', error);
       throw error;
@@ -226,7 +228,7 @@ export class ServiceWorkerService {
     }
 
     try {
-      return await this.swRegistration.sync.getTags();
+      return await (this.swRegistration as any).sync.getTags();
     } catch (error) {
       console.error('Get background sync tags failed:', error);
       return [];
@@ -282,7 +284,7 @@ export class ServiceWorkerService {
   async getCachedApiResponse(url: string): Promise<Response | null> {
     try {
       const cache = await caches.open('api-cache-v1');
-      return await cache.match(url);
+      return (await cache.match(url)) ?? null;
     } catch (error) {
       console.error('Get cached API response failed:', error);
       return null;

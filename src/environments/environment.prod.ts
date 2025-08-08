@@ -45,6 +45,18 @@ export const environment = {
     maxReconnectAttempts: 5,
   },
   
+  // Analytics
+  analytics: {
+    enableGoogleAnalytics: true,
+    googleAnalyticsId: 'G-XXXXXXXXXX'
+  },
+
+  // Notifications
+  notifications: {
+    enablePush: true,
+    vapidPublicKey: 'YOUR_PROD_VAPID_PUBLIC_KEY_BASE64URL'
+  },
+  
   // Cache settings
   cache: {
     userProfile: 5 * 60 * 1000, // 5 minutes

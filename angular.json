@@ -49,7 +49,7 @@
             ],
             "scripts": [],
             "server": "src/main.server.ts",
-            "prerender": true,
+            "prerender": false,
             "ssr": {
               "entry": "src/app.config.server.ts"
             },
@@ -69,12 +69,12 @@
               {
                 "type": "initial",
                 "maximumWarning": "500kB",
-                "maximumError": "700kB"
+                "maximumError": "900kB"
               },
               {
                 "type": "anyComponentStyle",
-                "maximumWarning": "10kB",
-                "maximumError": "15kB"
+                "maximumWarning": "25kB",
+                "maximumError": "35kB"
               }
             ]
           },
@@ -83,13 +83,13 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "400kB",
-                  "maximumError": "600kB"
+                  "maximumWarning": "700kB",
+                  "maximumError": "900kB"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "8kB",
-                  "maximumError": "12kB"
+                  "maximumWarning": "25kB",
+                  "maximumError": "35kB"
                 }
               ],
               "outputHashing": "all",

@@ -47,7 +47,9 @@ export class CacheService {
     };
 
     try {
+    if (typeof localStorage !== 'undefined') {
       localStorage.setItem(this.getCacheKey(key), JSON.stringify(entry));
+    }
     } catch (error) {
       console.warn('Cache storage failed:', error);
       this.cleanOldEntries();
@@ -59,7 +61,7 @@ export class CacheService {
    */
   get<T>(key: string): T | null {
     try {
-      const cached = localStorage.getItem(this.getCacheKey(key));
+    const cached = typeof localStorage !== 'undefined' ? localStorage.getItem(this.getCacheKey(key)) : null;
       if (!cached) return null;
 
       const entry: CacheEntry<T> = JSON.parse(cached);
@@ -88,7 +90,9 @@ export class CacheService {
    */
   delete(key: string): void {
     try {
+    if (typeof localStorage !== 'undefined') {
       localStorage.removeItem(this.getCacheKey(key));
+    }
     } catch (error) {
       console.warn('Cache deletion failed:', error);
     }
@@ -99,10 +103,12 @@ export class CacheService {
    */
   clear(): void {
     try {
-      const keys = Object.keys(localStorage);
+    const keys = typeof localStorage !== 'undefined' ? Object.keys(localStorage) : [];
       keys.forEach(key => {
         if (key.startsWith(this.CACHE_PREFIX)) {
-          localStorage.removeItem(key);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(key);
+    }
         }
       });
     } catch (error) {
@@ -122,7 +128,7 @@ export class CacheService {
    */
   getWithTTL<T>(key: string): { data: T | null; ttl: number } | null {
     try {
-      const cached = localStorage.getItem(this.getCacheKey(key));
+    const cached = typeof localStorage !== 'undefined' ? localStorage.getItem(this.getCacheKey(key)) : null;
       if (!cached) return null;
 
       const entry: CacheEntry<T> = JSON.parse(cached);
@@ -307,11 +313,11 @@ export class CacheService {
     let expiredEntries = 0;
 
     try {
-      const keys = Object.keys(localStorage);
+    const keys = typeof localStorage !== 'undefined' ? Object.keys(localStorage) : [];
       keys.forEach(key => {
         if (key.startsWith(this.CACHE_PREFIX)) {
           totalEntries++;
-          const value = localStorage.getItem(key);
+    const value = typeof localStorage !== 'undefined' ? localStorage.getItem(key) : null;
           if (value) {
             totalSize += value.length;
             
@@ -338,19 +344,23 @@ export class CacheService {
    */
   private cleanExpiredEntries(): void {
     try {
-      const keys = Object.keys(localStorage);
+    const keys = typeof localStorage !== 'undefined' ? Object.keys(localStorage) : [];
       keys.forEach(key => {
         if (key.startsWith(this.CACHE_PREFIX)) {
-          const value = localStorage.getItem(key);
+    const value = typeof localStorage !== 'undefined' ? localStorage.getItem(key) : null;
           if (value) {
             try {
               const entry: CacheEntry = JSON.parse(value);
               if (this.isExpired(entry)) {
-                localStorage.removeItem(key);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(key);
+    }
               }
             } catch {
               // Invalid entry, remove it
-              localStorage.removeItem(key);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(key);
+    }
             }
           }
         }
@@ -367,17 +377,19 @@ export class CacheService {
     try {
       const entries: Array<{ key: string; timestamp: number }> = [];
       
-      const keys = Object.keys(localStorage);
+    const keys = typeof localStorage !== 'undefined' ? Object.keys(localStorage) : [];
       keys.forEach(key => {
         if (key.startsWith(this.CACHE_PREFIX)) {
-          const value = localStorage.getItem(key);
+    const value = typeof localStorage !== 'undefined' ? localStorage.getItem(key) : null;
           if (value) {
             try {
               const entry: CacheEntry = JSON.parse(value);
               entries.push({ key, timestamp: entry.timestamp });
             } catch {
               // Invalid entry, remove it
-              localStorage.removeItem(key);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(key);
+    }
             }
           }
         }
@@ -388,7 +400,9 @@ export class CacheService {
       const toRemove = Math.ceil(entries.length * 0.2); // Remove 20% of oldest entries
       
       entries.slice(0, toRemove).forEach(entry => {
-        localStorage.removeItem(entry.key);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(entry.key);
+    }
       });
     } catch (error) {
       console.warn('Cache cleanup failed:', error);

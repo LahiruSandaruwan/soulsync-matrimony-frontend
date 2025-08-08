@@ -46,7 +46,7 @@ interface Conversation {
 })
 export class ChatBoxComponent implements OnInit, OnDestroy, AfterViewChecked {
   @ViewChild('messageContainer') private messageContainer!: ElementRef;
-  @ViewChild('fileInput') private fileInput!: ElementRef;
+  @ViewChild('fileInput') private fileInput!: ElementRef<HTMLInputElement>;
   
   private destroy$ = new Subject<void>();
   
@@ -68,6 +68,10 @@ export class ChatBoxComponent implements OnInit, OnDestroy, AfterViewChecked {
   selectedFile: File | null = null;
   uploadProgress = 0;
   uploading = false;
+  // Voice recording
+  recording = false;
+  mediaRecorder: MediaRecorder | null = null;
+  recordedChunks: Blob[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -88,6 +92,9 @@ export class ChatBoxComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.destroy$.complete();
     if (this.typingTimeout) {
       clearTimeout(this.typingTimeout);
+    }
+    if (this.conversationId) {
+      this.webSocketService.leaveConversation(this.conversationId);
     }
   }
 
@@ -146,6 +153,7 @@ export class ChatBoxComponent implements OnInit, OnDestroy, AfterViewChecked {
           this.conversation = response.data;
           this.otherUser = this.getOtherParticipant(this.conversation!);
           this.loading = false;
+          this.webSocketService.joinConversation(this.conversationId);
         },
         error: (error: any) => {
           this.error = error.message || 'Failed to load conversation';
@@ -278,23 +286,61 @@ export class ChatBoxComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.webSocketService.sendTyping(this.conversationId, false);
   }
 
-  onFileSelect(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      // Validate file size (5MB limit)
-      if (file.size > 5 * 1024 * 1024) {
-        this.error = 'File size must be less than 5MB';
-        return;
-      }
+  onFileSelect(file: File | null | undefined): void {
+    if (!file) {
+      return;
+    }
 
-      // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'text/plain'];
-      if (!allowedTypes.includes(file.type)) {
-        this.error = 'Invalid file type. Allowed: JPG, PNG, GIF, PDF, TXT';
-        return;
-      }
+    if (file.size > 5 * 1024 * 1024) {
+      this.error = 'File size must be less than 5MB';
+      return;
+    }
 
-      this.selectedFile = file;
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'text/plain'];
+    if (!allowedTypes.includes(file.type)) {
+      this.error = 'Invalid file type. Allowed: JPG, PNG, GIF, PDF, TXT';
+      return;
+    }
+
+    this.selectedFile = file;
+  }
+
+  onFileInputChange(): void {
+    const input = this.fileInput?.nativeElement;
+    const file = input?.files && input.files.length > 0 ? input.files[0] : null;
+    this.onFileSelect(file);
+  }
+
+  async startRecording(): Promise<void> {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      this.recordedChunks = [];
+      this.mediaRecorder = new MediaRecorder(stream);
+      this.mediaRecorder.ondataavailable = (e: any) => {
+        if (e.data.size > 0) this.recordedChunks.push(e.data);
+      };
+      this.mediaRecorder.onstop = () => {
+        const blob = new Blob(this.recordedChunks, { type: 'audio/webm' });
+        const file = new File([blob], 'voice-message.webm', { type: 'audio/webm' });
+        if (this.otherUser?.id) {
+          this.chatService.sendVoiceMessage(this.otherUser.id, file).subscribe({
+            next: () => {},
+            error: (err: any) => this.error = err.message || 'Failed to send voice message'
+          });
+        }
+      };
+      this.mediaRecorder.start();
+      this.recording = true;
+    } catch (e: any) {
+      this.error = e.message || 'Microphone access denied';
+    }
+  }
+
+  stopRecording(): void {
+    if (this.mediaRecorder && this.recording) {
+      this.mediaRecorder.stop();
+      this.mediaRecorder.stream.getTracks().forEach(t => t.stop());
+      this.recording = false;
     }
   }
 

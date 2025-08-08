@@ -101,25 +101,16 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (profile: UserProfile) => {
           this.userProfile = profile;
-          
-          // For now, we'll create a mock user object since the profile doesn't contain user data
-          // In a real implementation, the API should return both user and profile data
-          this.user = {
+          this.user = (profile as any).user || {
             id: profile.user_id,
-            email: '', // Not available in profile view
-            first_name: 'User', // Placeholder - should come from API
-            last_name: profile.user_id.toString(), // Placeholder - should come from API
-            date_of_birth: '1990-01-01', // Placeholder - should come from API
-            gender: 'male', // Placeholder - should come from API
-            country_code: '+1', // Placeholder - should come from API
-            created_at: profile.created_at,
-            updated_at: profile.updated_at,
-            profile: profile as any, // Type assertion for compatibility
-            photos: []
+            first_name: (profile as any).first_name || 'User',
+            last_name: (profile as any).last_name || '',
+            date_of_birth: (profile as any).date_of_birth || '1990-01-01',
+            profile
           };
           this.loading = false;
           this.loadUserPhotos(parseInt(userId));
-          this.calculateCompatibility();
+          this.loadCompatibility();
         },
         error: (error: any) => {
           this.error = error.message || 'Failed to load profile';
@@ -150,64 +141,20 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
       });
   }
 
-  private calculateCompatibility(): void {
-    if (!this.currentUser || !this.userProfile) return;
-
-    // Simple compatibility calculation based on common factors
-    let score = 0;
-    const factors: string[] = [];
-
-    // Age compatibility - using placeholder age for now
-    const currentUserAge = this.getAgeFromDateOfBirth(this.currentUser.date_of_birth);
-    const profileAge = 25; // Placeholder - should come from API
-    
-    if (Math.abs(currentUserAge - profileAge) <= 5) {
-      score += 20;
-      factors.push('Age compatibility');
-    }
-
-    // Location compatibility
-    if (this.userProfile.current_city === this.currentUser.profile?.current_city) {
-      score += 15;
-      factors.push('Same city');
-    }
-
-    // Education compatibility
-    if (this.userProfile.education_level === this.currentUser.profile?.education_level) {
-      score += 10;
-      factors.push('Similar education');
-    }
-
-    // Religion compatibility
-    if (this.userProfile.religion === this.currentUser.profile?.religion) {
-      score += 15;
-      factors.push('Same religion');
-    }
-
-    // Family type compatibility
-    if (this.userProfile.family_type === this.currentUser.profile?.family_type) {
-      score += 10;
-      factors.push('Similar family background');
-    }
-
-    // Diet compatibility
-    if (this.userProfile.diet === this.currentUser.profile?.diet) {
-      score += 10;
-      factors.push('Similar dietary preferences');
-    }
-
-    // Hobbies compatibility
-    const currentUserHobbies = this.currentUser.profile?.hobbies || [];
-    const profileHobbies = this.userProfile.hobbies || [];
-    const commonHobbies = currentUserHobbies.filter((hobby: string) => profileHobbies.includes(hobby));
-    
-    if (commonHobbies.length > 0) {
-      score += Math.min(20, commonHobbies.length * 5);
-      factors.push(`${commonHobbies.length} common interests`);
-    }
-
-    this.compatibilityScore = Math.min(100, score);
-    this.matchingFactors = factors;
+  private loadCompatibility(): void {
+    if (!this.user) return;
+    // Use backend compatibility endpoint
+    this.matchService.getCompatibilityScore(this.user.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          this.compatibilityScore = res.score;
+          this.matchingFactors = res.factors || [];
+        },
+        error: () => {
+          // fallback: keep defaults
+        }
+      });
   }
 
   onLike(): void {
@@ -319,9 +266,21 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
   }
 
   onReport(): void {
-    // TODO: Implement report functionality
-    this.success = 'Report submitted';
-    setTimeout(() => this.success = '', 3000);
+    if (!this.user) return;
+    const description = 'Inappropriate behavior';
+    // POST /users/{user}/report per backend
+    (this.matchService as any).apiService.post(`/users/${this.user.id}/report`, { description })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.success = 'Report submitted';
+          setTimeout(() => this.success = '', 3000);
+        },
+        error: (err: any) => {
+          this.error = err.message || 'Failed to submit report';
+          setTimeout(() => this.error = '', 3000);
+        }
+      });
   }
 
   onBackToChats(): void {

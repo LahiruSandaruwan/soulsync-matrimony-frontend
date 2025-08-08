@@ -31,14 +31,20 @@ export class SecurityService {
   }
 
   private loadCSRFToken(): void {
-    this.csrfToken = localStorage.getItem('csrf_token') || 
-                    document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
-                    null;
+    const tokenFromMeta = typeof document !== 'undefined'
+      ? document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+      : null;
+    const tokenFromStorage = typeof localStorage !== 'undefined'
+      ? localStorage.getItem('csrf_token')
+      : null;
+    this.csrfToken = tokenFromStorage || tokenFromMeta || null;
   }
 
   setCSRFToken(token: string): void {
     this.csrfToken = token;
-    localStorage.setItem('csrf_token', token);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('csrf_token', token);
+    }
   }
 
   // Input Sanitization

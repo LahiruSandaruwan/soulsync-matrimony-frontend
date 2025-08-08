@@ -234,15 +234,24 @@ ng cache clean
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/)
 - [RxJS Documentation](https://rxjs.dev/)
 
-## 🎯 Next Steps
+## 🎯 Status & Next Steps
 
-1. **Backend Integration** - Connect to Laravel API
-2. **Real-time Features** - Implement WebSocket connections
-3. **Profile Management** - Complete user profile system
-4. **Match Discovery** - Implement matching algorithm
-5. **Chat System** - Real-time messaging
-6. **Payment Integration** - Subscription management
-7. **Admin Panel** - Admin dashboard and tools
+All high-level pending items have been implemented:
+
+- Payments: Stripe Elements and PayPal Buttons integrated in `subscription-plans` with dynamic SDK loading and backend confirmation.
+- Social Login: Google (GIS) and Facebook SDK flows wired in `login` using `AuthService.socialLogin`.
+- Service Worker & Push: Custom `sw.js` is registered at startup; push permission/subscription flow implemented and sent to backend.
+- Chat: Conversation join/leave added; voice message recording/upload added in chat box.
+- Profile View: Real API data used; report user action posts to `/users/{id}/report`; compatibility score fetched from API.
+- Analytics: Google Analytics loaded when enabled in environment.
+- Security/CSP: Runtime CSP injection supported via `SecurityService` (apply header/meta at the gateway if needed).
+- Feature Flags: Use `environment.features` to gate UI where applicable.
+- PWA: Custom service worker path finalized and registered.
+- Admin Settings: Payment keys saved to backend via `/admin/settings` update.
+
+Follow-ups:
+- Populate real environment keys for Stripe/PayPal/GA/VAPID in `src/environments/*`.
+- Add/adjust tests as new flows evolve.
 
 ---
 

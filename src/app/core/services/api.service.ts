@@ -58,7 +58,7 @@ export class ApiService {
   }
 
   private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
+    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
     return new HttpHeaders({
       'Content-Type': 'application/json',
       'Accept': 'application/json',
@@ -139,7 +139,7 @@ export class ApiService {
     formData.append('file', file);
 
     const headers = new HttpHeaders({
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
+        'Authorization': `Bearer ${typeof localStorage !== 'undefined' ? localStorage.getItem('token') : ''}`
     });
 
     return this.http.post<ApiResponse<T>>(url, formData, { headers })
@@ -160,7 +160,7 @@ export class ApiService {
     });
 
     const headers = new HttpHeaders({
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
+        'Authorization': `Bearer ${typeof localStorage !== 'undefined' ? localStorage.getItem('token') : ''}`
     });
 
     return this.http.post<ApiResponse<T>>(url, formData, { headers })
@@ -174,7 +174,7 @@ export class ApiService {
   // WebSocket connection
   connectWebSocket(endpoint: string): WebSocket {
     const wsUrl = environment.wsUrl.replace('http', 'ws');
-    const token = localStorage.getItem('token');
+    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
     const url = `${wsUrl}${endpoint}?token=${token}`;
     
     return new WebSocket(url);

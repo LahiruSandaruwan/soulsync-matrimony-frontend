@@ -280,9 +280,15 @@
         </div>
       </div>
 
-      <div *ngIf="processingPayment" class="processing-payment">
-        <app-loading-spinner></app-loading-spinner>
-        <p>Processing payment...</p>
+      <div *ngIf="paymentMethod === 'stripe'" class="stripe-container">
+        <div #stripeCard class="stripe-card-element"></div>
+        <button class="btn-primary" (click)="processSubscription()" [disabled]="processingPayment">
+          {{ processingPayment ? 'Processing...' : 'Pay with Card' }}
+        </button>
+      </div>
+
+      <div *ngIf="paymentMethod === 'paypal'" class="paypal-container">
+        <div #paypalButtons></div>
       </div>
     </div>
   </app-modal>
