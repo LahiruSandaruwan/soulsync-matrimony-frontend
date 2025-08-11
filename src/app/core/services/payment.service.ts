@@ -270,19 +270,19 @@ export class PaymentService {
 
   // Get Stripe publishable key
   getStripePublishableKey(): Observable<string> {
-    // Should come from Admin settings; expose a placeholder here
+    // Prefer admin settings; fallback to environment
     return this.apiService.get<{ publishable_key: string }>(`/admin/settings`)
       .pipe(
         map(response => {
           if (response.success) {
-            return (response.data as any)?.payment?.stripe_public_key || '';
+            return (response.data as any)?.payment?.stripe_public_key || (environment as any)?.payments?.stripe?.publishableKey || '';
           } else {
-            throw new Error(response.message);
+            return (environment as any)?.payments?.stripe?.publishableKey || '';
           }
         }),
         catchError(error => {
-          console.error('Get Stripe Key Error:', error);
-          return throwError(() => error);
+          const fallback = (environment as any)?.payments?.stripe?.publishableKey || '';
+          return fallback ? new Observable(sub => { sub.next(fallback); sub.complete(); }) : throwError(() => error);
         })
       );
   }
@@ -293,14 +293,14 @@ export class PaymentService {
       .pipe(
         map(response => {
           if (response.success) {
-            return (response.data as any)?.payment?.paypal_client_id || '';
+            return (response.data as any)?.payment?.paypal_client_id || (environment as any)?.payments?.paypal?.clientId || '';
           } else {
-            throw new Error(response.message);
+            return (environment as any)?.payments?.paypal?.clientId || '';
           }
         }),
         catchError(error => {
-          console.error('Get PayPal Client ID Error:', error);
-          return throwError(() => error);
+          const fallback = (environment as any)?.payments?.paypal?.clientId || '';
+          return fallback ? new Observable(sub => { sub.next(fallback); sub.complete(); }) : throwError(() => error);
         })
       );
   }
