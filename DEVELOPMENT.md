@@ -236,22 +236,21 @@ ng cache clean
 
 ## 🎯 Status & Next Steps
 
-All high-level pending items have been implemented:
+Key integrations completed and aligned with backend v1 endpoints:
 
-- Payments: Stripe Elements and PayPal Buttons integrated in `subscription-plans` with dynamic SDK loading and backend confirmation.
+- Payments: Stripe Elements and PayPal Buttons integrated in `subscription-plans`, using `plan_type` and verifying via `/subscription/subscribe` + `/subscription/payment/verify`. Keys are loaded via admin settings service.
 - Social Login: Google (GIS) and Facebook SDK flows wired in `login` using `AuthService.socialLogin`.
-- Service Worker & Push: Custom `sw.js` is registered at startup; push permission/subscription flow implemented and sent to backend.
-- Chat: Conversation join/leave added; voice message recording/upload added in chat box.
-- Profile View: Real API data used; report user action posts to `/users/{id}/report`; compatibility score fetched from API.
-- Analytics: Google Analytics loaded when enabled in environment.
-- Security/CSP: Runtime CSP injection supported via `SecurityService` (apply header/meta at the gateway if needed).
-- Feature Flags: Use `environment.features` to gate UI where applicable.
-- PWA: Custom service worker path finalized and registered.
-- Admin Settings: Payment keys saved to backend via `/admin/settings` update.
+- Service Worker & Push: Custom `sw.js` is registered at startup; push subscription requested when enabled. Provide a backend endpoint (FCM or VAPID) per deployment.
+- Chat: Conversation join/leave via Laravel Echo (Pusher compatible), message receive/typing listeners; voice message recording/upload in chat box.
+- Profile View: Real API data used; report user posts to `/users/{id}/report`; compatibility fetched from `/horoscope/compatibility/{id}`.
+- Analytics: Google Analytics autoloaded when enabled.
+- Feature Flags: `environment.features` merged with admin flags at runtime for guards and UI.
+- Admin: Reports, Content (Interests) and Users wired to `/admin/*` APIs with actions and CSV export.
 
 Follow-ups:
-- Populate real environment keys for Stripe/PayPal/GA/VAPID in `src/environments/*`.
-- Add/adjust tests as new flows evolve.
+- Expose public config endpoint for payments/flags to avoid admin auth requirement for client keys.
+- Add remaining browse pages for `/browse/*` and premium insights UI.
+- Expand test coverage (payments, realtime, admin, notifications) and finalize e2e.
 
 ---
 

@@ -11,6 +11,7 @@ import {
   ForgotPasswordRequest, 
   ResetPasswordRequest 
 } from '../models/user.model';
+import { WebSocketService } from './websocket.service';
 
 @Injectable({
   providedIn: 'root'
@@ -25,7 +26,7 @@ export class AuthService {
   private tokenSubject = new BehaviorSubject<string | null>(null);
   public token$ = this.tokenSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private webSocketService: WebSocketService) {
     this.loadStoredAuth();
   }
 
@@ -229,6 +230,15 @@ export class AuthService {
     this.tokenSubject.next(token);
     this.currentUserSubject.next(user);
     this.isAuthenticatedSubject.next(true);
+
+    // Initialize realtime session
+    try {
+      this.webSocketService.connect(token).then(() => {
+        if (user?.id) {
+          this.webSocketService.subscribeUser(user.id);
+        }
+      });
+    } catch (_) {}
   }
 
   private clearAuth(): void {
@@ -240,6 +250,7 @@ export class AuthService {
     this.tokenSubject.next(null);
     this.currentUserSubject.next(null);
     this.isAuthenticatedSubject.next(false);
+    try { this.webSocketService.disconnect(); } catch (_) {}
   }
 
   getToken(): string | null {
