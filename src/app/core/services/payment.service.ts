@@ -275,13 +275,15 @@ export class PaymentService {
       .pipe(
         map(response => {
           if (response.success) {
-            return (response.data as any)?.payment?.stripe_public_key || (environment as any)?.payments?.stripe?.publishableKey || '';
+            return (response.data as any)?.payment?.stripe_public_key
+              || (this as any)?.runtime?.get?.('payments.stripe.publishableKey')
+              || (environment as any)?.payments?.stripe?.publishableKey || '';
           } else {
-            return (environment as any)?.payments?.stripe?.publishableKey || '';
+            return (this as any)?.runtime?.get?.('payments.stripe.publishableKey') || (environment as any)?.payments?.stripe?.publishableKey || '';
           }
         }),
         catchError(error => {
-          const fallback = (environment as any)?.payments?.stripe?.publishableKey || '';
+          const fallback = (this as any)?.runtime?.get?.('payments.stripe.publishableKey') || (environment as any)?.payments?.stripe?.publishableKey || '';
           return fallback ? new Observable(sub => { sub.next(fallback); sub.complete(); }) : throwError(() => error);
         })
       );
@@ -293,13 +295,15 @@ export class PaymentService {
       .pipe(
         map(response => {
           if (response.success) {
-            return (response.data as any)?.payment?.paypal_client_id || (environment as any)?.payments?.paypal?.clientId || '';
+            return (response.data as any)?.payment?.paypal_client_id
+              || (this as any)?.runtime?.get?.('payments.paypal.clientId')
+              || (environment as any)?.payments?.paypal?.clientId || '';
           } else {
-            return (environment as any)?.payments?.paypal?.clientId || '';
+            return (this as any)?.runtime?.get?.('payments.paypal.clientId') || (environment as any)?.payments?.paypal?.clientId || '';
           }
         }),
         catchError(error => {
-          const fallback = (environment as any)?.payments?.paypal?.clientId || '';
+          const fallback = (this as any)?.runtime?.get?.('payments.paypal.clientId') || (environment as any)?.payments?.paypal?.clientId || '';
           return fallback ? new Observable(sub => { sub.next(fallback); sub.complete(); }) : throwError(() => error);
         })
       );

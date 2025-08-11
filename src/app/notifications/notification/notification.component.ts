@@ -78,13 +78,11 @@ export class NotificationComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (list: any) => {
-          // Service returns Notification[]; compute counts locally
-          const notifications = Array.isArray(list) ? list : (list?.data || []);
+          const notifications = Array.isArray(list) ? list : (list?.data?.notifications || list?.data || []);
           this.notifications = notifications;
-          this.unreadCount = notifications.filter((n: any) => !n.is_read).length;
-          // Pagination unknown from API; keep simple flags
-          this.totalPages = this.currentPage;
-          this.hasMore = false;
+          this.unreadCount = (list?.data?.unread_count) ?? notifications.filter((n: any) => !n.is_read).length;
+          this.totalPages = list?.data?.pagination?.last_page || this.currentPage;
+          this.hasMore = this.currentPage < this.totalPages;
           this.loading = false;
         },
         error: (error: any) => {
@@ -95,12 +93,10 @@ export class NotificationComponent implements OnInit, OnDestroy {
   }
 
   private setupRealTimeUpdates(): void {
-    // Poll for new notifications every 30 seconds
+    // Poll every 30 seconds; could also hook realtime toasts via WebSocketService
     interval(30000)
       .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.checkForNewNotifications();
-      });
+      .subscribe(() => this.checkForNewNotifications());
   }
 
   private checkForNewNotifications(): void {
@@ -138,10 +134,10 @@ export class NotificationComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (list: any) => {
-          const notifications = Array.isArray(list) ? list : (list?.data || []);
+          const notifications = Array.isArray(list) ? list : (list?.data?.notifications || list?.data || []);
           this.notifications = [...this.notifications, ...notifications];
-          this.totalPages = this.currentPage;
-          this.hasMore = false;
+          this.totalPages = list?.data?.pagination?.last_page || this.currentPage;
+          this.hasMore = this.currentPage < this.totalPages;
           this.loadingMore = false;
         },
         error: (error: any) => {

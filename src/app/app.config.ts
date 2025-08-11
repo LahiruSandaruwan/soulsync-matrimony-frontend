@@ -10,6 +10,7 @@ import { ServiceWorkerService } from './core/services/service-worker.service';
 import { SecurityService } from './core/services/security.service';
 import { NotificationService } from './core/services/notification.service';
 import { AdminSettingsService } from './core/services/admin-settings.service';
+import { RuntimeConfigService } from './core/services/runtime-config.service';
 import { environment } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {
@@ -26,8 +27,10 @@ export const appConfig: ApplicationConfig = {
         const sw = inject(ServiceWorkerService);
         const notifications = inject(NotificationService);
         const adminSettings = inject(AdminSettingsService);
+        const runtime = inject(RuntimeConfigService);
         return async () => {
           try {
+            await runtime.load();
             if (environment.performance.enablePWA) {
               await sw.registerServiceWorker();
               if (environment.notifications.enablePush && environment.notifications.vapidPublicKey) {

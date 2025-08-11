@@ -88,6 +88,10 @@ export const routes: Routes = [
         loadComponent: () => import('./settings/account-settings/account-settings.component').then(m => m.AccountSettingsComponent)
       },
       {
+        path: '2fa',
+        loadComponent: () => import('./auth/two-factor/two-factor.component').then(m => m.TwoFactorComponent)
+      },
+      {
         path: 'notifications',
         loadComponent: () => import('./notifications/notification/notification.component').then(m => m.NotificationComponent)
       },

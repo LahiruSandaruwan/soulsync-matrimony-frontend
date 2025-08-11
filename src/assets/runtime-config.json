@@ -1,0 +1,13 @@
+{
+  "payments": {
+    "stripe": { "publishableKey": "" },
+    "paypal": { "clientId": "" }
+  },
+  "analytics": {
+    "enableGoogleAnalytics": false,
+    "googleAnalyticsId": ""
+  },
+  "features": {}
+}
+
+
