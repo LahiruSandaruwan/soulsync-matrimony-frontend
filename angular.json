@@ -160,7 +160,8 @@
             "styles": [
               "src/styles.css"
             ],
-            "scripts": []
+            "scripts": [],
+            "browsers": "ChromeHeadless"
           }
         },
         "lint": {

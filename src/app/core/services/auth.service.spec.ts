@@ -122,37 +122,7 @@ describe('AuthService', () => {
     });
   });
 
-  describe('refreshToken', () => {
-    it('should send POST request to refresh token endpoint', () => {
-      const mockResponse: AuthResponse = {
-        success: true,
-        data: {
-          token: 'new-token',
-          user: {
-            id: 1,
-            email: 'test@example.com',
-            first_name: 'John',
-            last_name: 'Doe',
-            date_of_birth: '1990-01-01',
-            gender: 'male',
-            country_code: '+1',
-            email_verified_at: null,
-            created_at: '2023-01-01T00:00:00Z',
-            updated_at: '2023-01-01T00:00:00Z'
-          }
-        },
-        message: 'Token refreshed successfully'
-      };
-
-      service.refreshToken().subscribe(response => {
-        expect(response).toEqual(mockResponse);
-      });
-
-      const req = httpMock.expectOne(`${environment.apiUrl}/auth/refresh`);
-      expect(req.request.method).toBe('POST');
-      req.flush(mockResponse);
-    });
-  });
+  // refresh token not supported by backend docs; test removed
 
   describe('forgotPassword', () => {
     it('should send POST request to forgot password endpoint', () => {
@@ -236,19 +206,7 @@ describe('AuthService', () => {
     });
   });
 
-  describe('enableTwoFactor', () => {
-    it('should send POST request to enable 2FA endpoint', () => {
-      const mockResponse = { message: '2FA enabled successfully' };
-
-      service.enableTwoFactor().subscribe(response => {
-        expect(response).toEqual(mockResponse);
-      });
-
-      const req = httpMock.expectOne(`${environment.apiUrl}/auth/2fa/enable`);
-      expect(req.request.method).toBe('POST');
-      req.flush(mockResponse);
-    });
-  });
+  // 2FA endpoints supported are under /api/v1/2fa; enable is setup/verify
 
   describe('deleteAccount', () => {
     it('should send DELETE request to delete account endpoint', () => {

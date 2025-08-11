@@ -59,6 +59,8 @@ export const routes: Routes = [
         path: 'matches',
         loadComponent: () => import('./match/match-suggestions/match-suggestions.component').then(m => m.MatchSuggestionsComponent)
       },
+      { path: 'horoscope', loadComponent: () => import('./horoscope/horoscope.component').then(m => m.HoroscopeComponent) },
+      { path: 'insights', loadComponent: () => import('./insights/insights.component').then(m => m.InsightsComponent), canActivate: [FeatureFlagsGuard], data: { featureFlag: 'premiumFeatures' } },
       {
         path: 'chat',
         loadComponent: () => import('./chat/chat-list/chat-list.component').then(m => m.ChatListComponent),
