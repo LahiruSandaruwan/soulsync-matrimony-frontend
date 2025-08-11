@@ -307,7 +307,7 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy, AfterViewI
       const { paymentMethod, error } = await this.stripe.createPaymentMethod({ type: 'card', card: this.cardElement });
       if (error) throw new Error(error.message);
       const subscribeReq = {
-        plan_id: this.selectedPlan!.id,
+        plan_type: this.selectedPlan!.type,
         currency: this.currency,
         auto_renewal: true,
         payment_method: 'stripe' as const,
@@ -341,7 +341,7 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy, AfterViewI
         },
         onApprove: async (data: any) => {
           const subscribeReq = {
-            plan_id: this.selectedPlan!.id,
+            plan_type: this.selectedPlan!.type,
             currency: this.currency,
             auto_renewal: true,
             payment_method: 'paypal' as const,

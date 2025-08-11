@@ -83,14 +83,19 @@ export class WebSocketService {
 
   constructor() {}
 
-  connect(token: string): void {
+  async connect(token: string): Promise<void> {
     if (this.echo) return;
     this.connectionStateSubject.next('connecting');
-    import('laravel-echo').then(({ default: Echo }) => {
-      const Pusher = (window as any).Pusher || require('pusher-js');
+    try {
+      // Ensure Pusher is available
+      if (!(window as any).Pusher) {
+        const pusherMod: any = await import('pusher-js');
+        (window as any).Pusher = pusherMod.default || pusherMod;
+      }
+      const { default: Echo } = await import('laravel-echo');
       this.echo = new Echo({
         broadcaster: 'pusher',
-        key: (window as any).PUSHER_APP_KEY || 'local',
+        key: (window as any).PUSHER_APP_KEY || 'app-key',
         cluster: (window as any).PUSHER_APP_CLUSTER || 'mt1',
         wsHost: (window as any).WEBSOCKET_HOST || '127.0.0.1',
         wsPort: (window as any).WEBSOCKET_PORT || 6001,
@@ -110,10 +115,10 @@ export class WebSocketService {
         })
       });
       this.connectionStateSubject.next('connected');
-    }).catch(err => {
+    } catch (err) {
       console.error('Echo load error:', err);
       this.connectionStateSubject.next('error');
-    });
+    }
   }
 
   private scheduleReconnect(): void { /* handled by Echo/Pusher */ }
@@ -146,8 +151,7 @@ export class WebSocketService {
   // Laravel Echo channel helpers
   joinConversation(conversationId: number): void {
     if (!this.echo) return;
-    const channelName = `private-chat.${conversationId}`;
-    this.echo.private(channelName)
+    this.echo.private(`chat.${conversationId}`)
       .listen('MessageSent', (e: any) => {
         const msg: ChatMessage = {
           id: e.message.id,
@@ -177,15 +181,12 @@ export class WebSocketService {
 
   leaveConversation(conversationId: number): void {
     if (!this.echo) return;
-    const channelName = `private-chat.${conversationId}`;
-    try { this.echo.leave(channelName); } catch { /* ignore */ }
+    try { this.echo.leave(`chat.${conversationId}`); } catch { /* ignore */ }
   }
 
   subscribeUser(userId: number): void {
     if (!this.echo) return;
-    const userChannel = `private-user.${userId}`;
-    const notifChannel = `private-notifications.${userId}`;
-    this.echo.private(userChannel)
+    this.echo.private(`user.${userId}`)
       .listen('MatchCreated', (e: any) => {
         this.matchNotificationSubject.next({
           user_id: e.user_id,
@@ -197,7 +198,7 @@ export class WebSocketService {
       .listen('UserStatusChanged', (e: any) => {
         this.onlineStatusSubject.next({ user_id: e.user_id, is_online: e.status === 'online', last_seen: e.last_seen });
       });
-    this.echo.private(notifChannel)
+    this.echo.private(`notifications.${userId}`)
       .listen('NotificationSent', (e: any) => {
         const n = e.notification || e;
         this.notificationSubject.next(n);
