@@ -49,27 +49,13 @@ export class SearchService {
 
   searchUsers(filters: SearchFilters, page: number = 1, perPage: number = 20): Observable<SearchResponse> {
     const headers = this.getAuthHeaders();
-    
-    // Convert filters to query parameters
-    let params = new HttpParams()
-      .set('page', page.toString())
-      .set('per_page', perPage.toString());
-
-    // Add filter parameters
-    Object.keys(filters).forEach(key => {
-      const value = filters[key as keyof SearchFilters];
-      if (value !== undefined && value !== null && value !== '') {
-        if (Array.isArray(value)) {
-          value.forEach(item => {
-            params = params.append(key, item);
-          });
-        } else {
-          params = params.set(key, value.toString());
-        }
-      }
-    });
-
-    return this.http.post<SearchResponse>(`${environment.apiUrl}/search`, {}, { headers, params })
+    const body = {
+      query: '',
+      filters,
+      page,
+      per_page: perPage
+    };
+    return this.http.post<SearchResponse>(`${environment.apiUrl}/search`, body, { headers })
       .pipe(
         map(response => ({
           success: true,
@@ -85,26 +71,12 @@ export class SearchService {
 
   advancedSearch(filters: SearchFilters, page: number = 1, perPage: number = 20): Observable<SearchResponse> {
     const headers = this.getAuthHeaders();
-    
-    let params = new HttpParams()
-      .set('page', page.toString())
-      .set('per_page', perPage.toString());
-
-    // Add filter parameters
-    Object.keys(filters).forEach(key => {
-      const value = filters[key as keyof SearchFilters];
-      if (value !== undefined && value !== null && value !== '') {
-        if (Array.isArray(value)) {
-          value.forEach(item => {
-            params = params.append(key, item);
-          });
-        } else {
-          params = params.set(key, value.toString());
-        }
-      }
-    });
-
-    return this.http.post<SearchResponse>(`${environment.apiUrl}/search/advanced`, {}, { headers, params })
+    const body = {
+      ...filters,
+      page,
+      per_page: perPage
+    };
+    return this.http.post<SearchResponse>(`${environment.apiUrl}/search/advanced`, body, { headers })
       .pipe(
         map(response => ({
           success: true,
@@ -118,26 +90,7 @@ export class SearchService {
       );
   }
 
-  searchByLocation(location: string, radius: number = 50, page: number = 1): Observable<SearchResponse> {
-    const headers = this.getAuthHeaders();
-    const params = new HttpParams()
-      .set('location', location)
-      .set('radius', radius.toString())
-      .set('page', page.toString());
-
-    return this.http.get<SearchResponse>(`${environment.apiUrl}/search/location`, { headers, params })
-      .pipe(
-        map(response => ({
-          success: true,
-          data: response.data || [],
-          total: response.total || 0,
-          has_more: response.has_more || false,
-          current_page: response.current_page || page,
-          per_page: response.per_page || 20
-        })),
-        catchError(this.handleError)
-      );
-  }
+  // Remove unsupported search helpers (location/interests/suggestions/recent)
 
   searchByInterests(interests: string[], page: number = 1): Observable<SearchResponse> {
     const headers = this.getAuthHeaders();

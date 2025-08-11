@@ -3,28 +3,21 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
+import { ApiService } from '../../core/services/api.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 
 interface ContentItem {
   id: number;
-  user_id: number;
-  content_type: 'photo' | 'profile_text' | 'message' | 'comment';
-  content: string;
-  file_url?: string;
-  status: 'pending' | 'approved' | 'rejected';
-  flagged_count: number;
+  name: string;
+  category: string;
+  description?: string;
   created_at: string;
-  reviewed_at?: string;
-  reviewed_by?: string;
-  review_notes?: string;
-  user?: any;
+  updated_at: string;
 }
 
 interface ContentFilters {
   search: string;
-  content_type: string;
-  status: string;
-  date_range: string;
+  category: string;
 }
 
 @Component({
@@ -51,9 +44,7 @@ export class ContentManagementComponent implements OnInit, OnDestroy {
   
   filters: ContentFilters = {
     search: '',
-    content_type: '',
-    status: '',
-    date_range: ''
+    category: ''
   };
   
   filterForm: FormGroup;
@@ -69,30 +60,16 @@ export class ContentManagementComponent implements OnInit, OnDestroy {
   // Add Math property for template access
   Math = Math;
 
-  statusOptions = [
-    { value: '', label: 'All Status' },
-    { value: 'pending', label: 'Pending Review' },
-    { value: 'approved', label: 'Approved' },
-    { value: 'rejected', label: 'Rejected' }
-  ];
-  
-  contentTypeOptions = [
-    { value: '', label: 'All Types' },
-    { value: 'photo', label: 'Photos' },
-    { value: 'profile_text', label: 'Profile Text' },
-    { value: 'message', label: 'Messages' },
-    { value: 'comment', label: 'Comments' }
-  ];
+  categories = ['', 'hobbies', 'lifestyle', 'values', 'education', 'food'];
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService
+    private authService: AuthService,
+    private api: ApiService
   ) {
     this.filterForm = this.fb.group({
       search: [''],
-      content_type: [''],
-      status: [''],
-      date_range: ['']
+      category: ['']
     });
   }
 
@@ -122,65 +99,41 @@ export class ContentManagementComponent implements OnInit, OnDestroy {
   loadContent(): void {
     this.loading = true;
     this.error = '';
-
-    // Mock data - replace with actual API call
-    setTimeout(() => {
-      this.contentItems = [
-        {
-          id: 1,
-          user_id: 1,
-          content_type: 'photo',
-          content: 'Profile photo',
-          file_url: 'https://example.com/photo1.jpg',
-          status: 'pending',
-          flagged_count: 2,
-          created_at: new Date().toISOString(),
-          user: { first_name: 'Alice', last_name: 'Johnson', email: 'alice@example.com' }
+    this.api.get<any>('/admin/content/interests')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.contentItems = (res.data || []).map((i: any) => ({
+              id: i.id,
+              name: i.name,
+              category: i.category,
+              description: i.description,
+              created_at: i.created_at,
+              updated_at: i.updated_at
+            }));
+            this.totalItems = this.contentItems.length;
+            this.applyFilters();
+            this.loading = false;
+          } else {
+            this.error = res.message || 'Failed to load content';
+            this.loading = false;
+          }
         },
-        {
-          id: 2,
-          user_id: 2,
-          content_type: 'profile_text',
-          content: 'Looking for someone special to share life with...',
-          status: 'approved',
-          flagged_count: 0,
-          created_at: new Date(Date.now() - 86400000).toISOString(),
-          reviewed_at: new Date(Date.now() - 3600000).toISOString(),
-          reviewed_by: 'admin@example.com',
-          user: { first_name: 'Bob', last_name: 'Wilson', email: 'bob@example.com' }
-        },
-        {
-          id: 3,
-          user_id: 3,
-          content_type: 'message',
-          content: 'Hey, I think we have a lot in common!',
-          status: 'rejected',
-          flagged_count: 5,
-          created_at: new Date(Date.now() - 172800000).toISOString(),
-          reviewed_at: new Date(Date.now() - 86400000).toISOString(),
-          reviewed_by: 'admin@example.com',
-          review_notes: 'Inappropriate content - violates community guidelines',
-          user: { first_name: 'Charlie', last_name: 'Brown', email: 'charlie@example.com' }
+        error: (err) => {
+          this.error = err.message || 'Failed to load content';
+          this.loading = false;
         }
-      ];
-      
-      this.totalItems = this.contentItems.length;
-      this.applyFilters();
-      this.loading = false;
-    }, 1000);
+      });
   }
 
   applyFilters(): void {
     this.filteredContent = this.contentItems.filter(item => {
       const searchMatch = !this.filters.search || 
-        item.content.toLowerCase().includes(this.filters.search.toLowerCase()) ||
-        item.user?.first_name.toLowerCase().includes(this.filters.search.toLowerCase()) ||
-        item.user?.last_name.toLowerCase().includes(this.filters.search.toLowerCase());
-      
-      const statusMatch = !this.filters.status || item.status === this.filters.status;
-      const typeMatch = !this.filters.content_type || item.content_type === this.filters.content_type;
-      
-      return searchMatch && statusMatch && typeMatch;
+        item.name.toLowerCase().includes(this.filters.search.toLowerCase()) ||
+        (item.description || '').toLowerCase().includes(this.filters.search.toLowerCase());
+      const categoryMatch = !this.filters.category || item.category === this.filters.category;
+      return searchMatch && categoryMatch;
     });
     
     this.currentPage = 1;
@@ -224,28 +177,23 @@ export class ContentManagementComponent implements OnInit, OnDestroy {
     this.showContentModal = true;
   }
 
-  onApproveContent(itemId: number): void {
-    if (confirm('Are you sure you want to approve this content?')) {
-      // API call to approve content
-      console.log('Approving content:', itemId);
-      this.loadContent();
-    }
+  onCreateInterest(data: { name: string; category: string; description?: string }): void {
+    this.api.post<any>('/admin/content/interests', data)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({ next: () => this.loadContent(), error: () => this.loadContent() });
   }
 
-  onRejectContent(itemId: number, reason: string): void {
-    if (confirm('Are you sure you want to reject this content?')) {
-      // API call to reject content
-      console.log('Rejecting content:', itemId, reason);
-      this.loadContent();
-    }
+  onUpdateInterest(itemId: number, data: { name?: string; category?: string; description?: string }): void {
+    this.api.put<any>(`/admin/content/interests/${itemId}`, data)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({ next: () => this.loadContent(), error: () => this.loadContent() });
   }
 
-  onDeleteContent(itemId: number): void {
-    if (confirm('Are you sure you want to delete this content? This action cannot be undone.')) {
-      // API call to delete content
-      console.log('Deleting content:', itemId);
-      this.loadContent();
-    }
+  onDeleteInterest(itemId: number): void {
+    if (!confirm('Are you sure you want to delete this interest?')) return;
+    this.api.delete<any>(`/admin/content/interests/${itemId}`)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({ next: () => this.loadContent(), error: () => this.loadContent() });
   }
 
   onBulkAction(action: string): void {
@@ -297,10 +245,8 @@ export class ContentManagementComponent implements OnInit, OnDestroy {
     return option ? option.label : type;
   }
 
-  getContentPreview(content: string, type: string): string {
-    if (type === 'photo') {
-      return '📷 Photo';
-    }
+  getContentPreview(desc?: string): string {
+    const content = desc || '';
     return content.length > 50 ? content.substring(0, 50) + '...' : content;
   }
 
@@ -309,8 +255,12 @@ export class ContentManagementComponent implements OnInit, OnDestroy {
   }
 
   exportContent(): void {
-    // Export functionality
-    console.log('Exporting content');
+    const headers = ['ID','Name','Category','Description','Created At'];
+    const rows = this.filteredContent.map(i => [i.id, i.name, i.category, (i.description||'').replaceAll('"','""'), i.created_at]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${v ?? ''}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'interests.csv'; a.click(); URL.revokeObjectURL(url);
   }
 
   refreshData(): void {

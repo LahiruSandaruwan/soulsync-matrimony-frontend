@@ -75,7 +75,7 @@ export class ProfileService {
 
   // Get profile completion
   getProfileCompletion(): Observable<ProfileCompletion> {
-    return this.apiService.get<ProfileCompletion>('/profile/completion')
+    return this.apiService.get<ProfileCompletion>('/profile/completion-status')
       .pipe(
         map(response => {
           if (response.success) {
@@ -94,7 +94,7 @@ export class ProfileService {
 
   // Get profile statistics
   getProfileStats(): Observable<ProfileStats> {
-    return this.apiService.get<ProfileStats>('/profile/stats')
+    return this.apiService.get<ProfileStats>('/settings/stats')
       .pipe(
         map(response => {
           if (response.success) {
@@ -152,7 +152,8 @@ export class ProfileService {
 
   // Upload multiple photos
   uploadPhotos(files: File[]): Observable<UserPhoto[]> {
-    return this.apiService.uploadFiles<UserPhoto[]>('/profile/photos/batch', files)
+    // Backend supports single upload; optional: iterate client-side if batch not available
+    return this.apiService.uploadFiles<UserPhoto[]>('/profile/photos', files)
       .pipe(
         map(response => {
           if (response.success) {
@@ -172,7 +173,7 @@ export class ProfileService {
 
   // Set primary photo
   setPrimaryPhoto(photoId: number): Observable<UserPhoto> {
-    return this.apiService.patch<UserPhoto>(`/profile/photos/${photoId}/primary`)
+    return this.apiService.post<UserPhoto>(`/profile/photos/${photoId}/set-profile`)
       .pipe(
         map(response => {
           if (response.success) {
@@ -214,7 +215,7 @@ export class ProfileService {
 
   // Toggle photo privacy
   togglePhotoPrivacy(photoId: number): Observable<UserPhoto> {
-    return this.apiService.patch<UserPhoto>(`/profile/photos/${photoId}/privacy`)
+    return this.apiService.post<UserPhoto>(`/profile/photos/${photoId}/toggle-private`)
       .pipe(
         map(response => {
           if (response.success) {
@@ -236,7 +237,7 @@ export class ProfileService {
 
   // Get profile by user ID (for viewing other profiles)
   getProfileById(userId: number): Observable<UserProfile> {
-    return this.apiService.get<UserProfile>(`/profiles/${userId}`)
+    return this.apiService.get<UserProfile>(`/users/${userId}`)
       .pipe(
         map(response => {
           if (response.success) {
@@ -254,7 +255,7 @@ export class ProfileService {
 
   // Get user preferences
   getPreferences(): Observable<any> {
-    return this.apiService.get<any>('/profile/preferences')
+    return this.apiService.get<any>('/preferences')
       .pipe(
         map(response => {
           if (response.success) {
@@ -272,7 +273,7 @@ export class ProfileService {
 
   // Get user settings
   getSettings(): Observable<any> {
-    return this.apiService.get<any>('/profile/settings')
+    return this.apiService.get<any>('/settings')
       .pipe(
         map(response => {
           if (response.success) {
@@ -290,7 +291,7 @@ export class ProfileService {
 
   // Update notification settings
   updateNotificationSettings(settings: any): Observable<any> {
-    return this.apiService.put<any>('/profile/notification-settings', settings)
+    return this.apiService.put<any>('/settings/notifications', settings)
       .pipe(
         map(response => {
           if (response.success) {
@@ -308,7 +309,7 @@ export class ProfileService {
 
   // Update privacy settings
   updatePrivacySettings(settings: any): Observable<any> {
-    return this.apiService.put<any>('/profile/privacy-settings', settings)
+    return this.apiService.put<any>('/settings/privacy', settings)
       .pipe(
         map(response => {
           if (response.success) {
@@ -326,7 +327,7 @@ export class ProfileService {
 
   // Export user data
   exportData(): Observable<any> {
-    return this.apiService.get<any>('/profile/export-data')
+    return this.apiService.post<any>('/settings/export-data')
       .pipe(
         map(response => {
           if (response.success) {

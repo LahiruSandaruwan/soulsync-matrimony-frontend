@@ -89,9 +89,10 @@ export class NotificationService {
   }
 
   // Get unread notifications
+  // Optional: backend does not expose /notifications/unread in docs
   getUnreadNotifications(): Observable<Notification[]> {
     const headers = this.getAuthHeaders();
-    return this.http.get<NotificationResponse>(`${environment.apiUrl}/notifications/unread`, { headers })
+    return this.http.get<NotificationResponse>(`${environment.apiUrl}/notifications?type=unread`, { headers })
       .pipe(
         map(response => response.data),
         tap(notifications => {
@@ -104,7 +105,7 @@ export class NotificationService {
   // Get notification count
   getNotificationCount(): Observable<{ unread_count: number; total_count: number }> {
     const headers = this.getAuthHeaders();
-    return this.http.get<NotificationCountResponse>(`${environment.apiUrl}/notifications/count`, { headers })
+    return this.http.get<NotificationCountResponse>(`${environment.apiUrl}/notifications/unread-count`, { headers })
       .pipe(
         map(response => response.data),
         tap(counts => {
@@ -117,7 +118,7 @@ export class NotificationService {
   // Mark notification as read
   markAsRead(notificationId: number): Observable<any> {
     const headers = this.getAuthHeaders();
-    return this.http.put(`${environment.apiUrl}/notifications/${notificationId}/read`, {}, { headers })
+    return this.http.post(`${environment.apiUrl}/notifications/${notificationId}/read`, {}, { headers })
       .pipe(
         tap(() => {
           this.updateNotificationReadStatus(notificationId, true);
@@ -129,7 +130,7 @@ export class NotificationService {
   // Mark all notifications as read
   markAllAsRead(): Observable<any> {
     const headers = this.getAuthHeaders();
-    return this.http.put(`${environment.apiUrl}/notifications/mark-all-read`, {}, { headers })
+    return this.http.post(`${environment.apiUrl}/notifications/read-all`, {}, { headers })
       .pipe(
         tap(() => {
           this.markAllNotificationsAsRead();
@@ -162,10 +163,10 @@ export class NotificationService {
       );
   }
 
-  // Get notification settings
+  // Get notification settings (via /settings/notifications)
   getSettings(): Observable<NotificationSettings> {
     const headers = this.getAuthHeaders();
-    return this.http.get<{ success: boolean, data: NotificationSettings }>(`${environment.apiUrl}/notifications/settings`, { headers })
+    return this.http.get<{ success: boolean, data: NotificationSettings }>(`${environment.apiUrl}/settings/notifications`, { headers })
       .pipe(
         map(response => response.data),
         tap(settings => {
@@ -175,10 +176,10 @@ export class NotificationService {
       );
   }
 
-  // Update notification settings
+  // Update notification settings (via /settings/notifications)
   updateSettings(settings: Partial<NotificationSettings>): Observable<NotificationSettings> {
     const headers = this.getAuthHeaders();
-    return this.http.put<{ success: boolean, data: NotificationSettings }>(`${environment.apiUrl}/notifications/settings`, settings, { headers })
+    return this.http.put<{ success: boolean, data: NotificationSettings }>(`${environment.apiUrl}/settings/notifications`, settings, { headers })
       .pipe(
         map(response => response.data),
         tap(settings => {

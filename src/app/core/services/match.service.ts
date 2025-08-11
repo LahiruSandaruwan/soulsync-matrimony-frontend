@@ -21,15 +21,7 @@ export class MatchService {
 
   // Get match suggestions
   getSuggestions(filters?: MatchFilters): Observable<MatchSuggestion[]> {
-    const request: MatchRequest = {
-      filters,
-      page: 1,
-      limit: 20,
-      sort_by: 'compatibility',
-      sort_order: 'desc'
-    };
-
-    return this.apiService.post<MatchSuggestion[]>('/matches/suggestions', request)
+    return this.apiService.get<MatchSuggestion[]>('/matches/suggestions', filters as any)
       .pipe(
         map(response => {
           if (response.success) {
@@ -67,7 +59,7 @@ export class MatchService {
 
   // Like a user
   likeUser(userId: number): Observable<any> {
-    return this.apiService.post<any>('/matches/like', { user_id: userId })
+    return this.apiService.post<any>(`/matches/${userId}/like`)
       .pipe(
         map(response => {
           if (response.success) {
@@ -85,7 +77,7 @@ export class MatchService {
 
   // Dislike a user
   dislikeUser(userId: number): Observable<any> {
-    return this.apiService.post<any>('/matches/dislike', { user_id: userId })
+    return this.apiService.post<any>(`/matches/${userId}/dislike`)
       .pipe(
         map(response => {
           if (response.success) {
@@ -103,7 +95,7 @@ export class MatchService {
 
   // Super like a user
   superLikeUser(userId: number): Observable<any> {
-    return this.apiService.post<any>('/matches/super-like', { user_id: userId })
+    return this.apiService.post<any>(`/matches/${userId}/super-like`)
       .pipe(
         map(response => {
           if (response.success) {
@@ -121,7 +113,7 @@ export class MatchService {
 
   // Block a user
   blockUser(userId: number): Observable<any> {
-    return this.apiService.post<any>('/matches/block', { user_id: userId })
+    return this.apiService.post<any>(`/matches/${userId}/block`)
       .pipe(
         map(response => {
           if (response.success) {
@@ -139,7 +131,7 @@ export class MatchService {
 
   // Get match statistics
   getMatchStats(): Observable<MatchStats> {
-    return this.apiService.get<MatchStats>('/matches/stats')
+    return this.apiService.get<MatchStats>('/insights/match-analytics')
       .pipe(
         map(response => {
           if (response.success) {
@@ -157,22 +149,7 @@ export class MatchService {
   }
 
   // Get compatibility score
-  getCompatibilityScore(userId: number): Observable<{ score: number; factors: string[] }> {
-    return this.apiService.get<{ score: number; factors: string[] }>(`/matches/compatibility/${userId}`)
-      .pipe(
-        map(response => {
-          if (response.success) {
-            return response.data;
-          } else {
-            throw new Error(response.message);
-          }
-        }),
-        catchError(error => {
-          console.error('Get Compatibility Score Error:', error);
-          return throwError(() => error);
-        })
-      );
-  }
+  // Remove compatibility from Match; handled via Horoscope service
 
   // Get interaction status
   getInteractionStatus(userId: number): Observable<{

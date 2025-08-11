@@ -93,7 +93,7 @@ export class PaymentService {
 
   // Get current subscription
   getCurrentSubscription(): Observable<Subscription> {
-    return this.apiService.get<Subscription>('/subscription/current')
+    return this.apiService.get<Subscription>('/subscription')
       .pipe(
         map(response => {
           if (response.success) {
@@ -130,28 +130,10 @@ export class PaymentService {
   }
 
   // Create payment intent
-  createPaymentIntent(request: PaymentRequest): Observable<PaymentIntent> {
-    this.isProcessingSubject.next(true);
-    
-    return this.apiService.post<PaymentIntent>('/payment/create-intent', request)
-      .pipe(
-        map(response => {
-          if (response.success) {
-            return response.data;
-          } else {
-            throw new Error(response.message);
-          }
-        }),
-        catchError(error => {
-          console.error('Create Payment Intent Error:', error);
-          this.isProcessingSubject.next(false);
-          return throwError(() => error);
-        })
-      );
-  }
+  // Note: client tokens should be created server-side during subscribe
 
   // Subscribe to plan
-  subscribeToPlan(request: PaymentRequest): Observable<Subscription> {
+  subscribeToPlan(request: PaymentRequest & { payment_method?: 'stripe' | 'paypal' | 'payhere' | 'webxpay'; payment_token?: string; duration_months?: number; auto_renewal?: boolean; billing_details?: any }): Observable<Subscription> {
     this.isProcessingSubject.next(true);
     
     return this.apiService.post<Subscription>('/subscription/subscribe', request)
@@ -198,8 +180,8 @@ export class PaymentService {
   }
 
   // Update subscription
-  updateSubscription(request: { plan_id: number; auto_renewal?: boolean }): Observable<Subscription> {
-    return this.apiService.put<Subscription>('/subscription/update', request)
+  updateSubscription(request: { plan_type: 'basic' | 'premium' | 'platinum'; payment_method?: 'stripe'|'paypal'|'payhere'|'webxpay'; payment_token?: string }): Observable<Subscription> {
+    return this.apiService.post<Subscription>('/subscription/upgrade', request)
       .pipe(
         map(response => {
           if (response.success) {
@@ -217,70 +199,17 @@ export class PaymentService {
   }
 
   // Add payment method
-  addPaymentMethod(paymentMethodData: any): Observable<PaymentMethod> {
-    return this.apiService.post<PaymentMethod>('/payment/methods', paymentMethodData)
-      .pipe(
-        map(response => {
-          if (response.success) {
-            const currentMethods = this.paymentMethodsSubject.value;
-            this.paymentMethodsSubject.next([...currentMethods, response.data]);
-            return response.data;
-          } else {
-            throw new Error(response.message);
-          }
-        }),
-        catchError(error => {
-          console.error('Add Payment Method Error:', error);
-          return throwError(() => error);
-        })
-      );
-  }
+  // Remove unsupported stored payment methods endpoints for now
 
   // Remove payment method
-  removePaymentMethod(methodId: string): Observable<void> {
-    return this.apiService.delete<void>(`/payment/methods/${methodId}`)
-      .pipe(
-        map(response => {
-          if (response.success) {
-            const currentMethods = this.paymentMethodsSubject.value.filter(method => method.id !== methodId);
-            this.paymentMethodsSubject.next(currentMethods);
-          } else {
-            throw new Error(response.message);
-          }
-        }),
-        catchError(error => {
-          console.error('Remove Payment Method Error:', error);
-          return throwError(() => error);
-        })
-      );
-  }
+  removePaymentMethod(_methodId: string): Observable<void> { return throwError(() => new Error('Not supported')); }
 
   // Set default payment method
-  setDefaultPaymentMethod(methodId: string): Observable<PaymentMethod> {
-    return this.apiService.patch<PaymentMethod>(`/payment/methods/${methodId}/default`)
-      .pipe(
-        map(response => {
-          if (response.success) {
-            const currentMethods = this.paymentMethodsSubject.value.map(method => ({
-              ...method,
-              is_default: method.id === methodId
-            }));
-            this.paymentMethodsSubject.next(currentMethods);
-            return response.data;
-          } else {
-            throw new Error(response.message);
-          }
-        }),
-        catchError(error => {
-          console.error('Set Default Payment Method Error:', error);
-          return throwError(() => error);
-        })
-      );
-  }
+  setDefaultPaymentMethod(_methodId: string): Observable<PaymentMethod> { return throwError(() => new Error('Not supported')); }
 
   // Get payment history
   getPaymentHistory(): Observable<any[]> {
-    return this.apiService.get<any[]>('/payment/history')
+    return this.apiService.get<any[]>('/subscription/history')
       .pipe(
         map(response => {
           if (response.success) {
@@ -298,8 +227,9 @@ export class PaymentService {
 
   // Process Stripe payment
   processStripePayment(paymentIntentId: string, paymentMethodId: string): Observable<any> {
-    return this.apiService.post<any>('/payment/stripe/confirm', {
-      payment_intent_id: paymentIntentId,
+    return this.apiService.post<any>('/subscription/payment/verify', {
+      payment_id: paymentIntentId,
+      payment_method: 'stripe',
       payment_method_id: paymentMethodId
     })
       .pipe(
@@ -319,8 +249,9 @@ export class PaymentService {
 
   // Process PayPal payment
   processPayPalPayment(orderId: string): Observable<any> {
-    return this.apiService.post<any>('/payment/paypal/capture', {
-      order_id: orderId
+    return this.apiService.post<any>('/subscription/payment/verify', {
+      payment_id: orderId,
+      payment_method: 'paypal'
     })
       .pipe(
         map(response => {
@@ -339,11 +270,12 @@ export class PaymentService {
 
   // Get Stripe publishable key
   getStripePublishableKey(): Observable<string> {
-    return this.apiService.get<{ publishable_key: string }>('/payment/stripe/key')
+    // Should come from Admin settings; expose a placeholder here
+    return this.apiService.get<{ publishable_key: string }>(`/admin/settings`)
       .pipe(
         map(response => {
           if (response.success) {
-            return response.data.publishable_key;
+            return (response.data as any)?.payment?.stripe_public_key || '';
           } else {
             throw new Error(response.message);
           }
@@ -357,11 +289,11 @@ export class PaymentService {
 
   // Get PayPal client ID
   getPayPalClientId(): Observable<string> {
-    return this.apiService.get<{ client_id: string }>('/payment/paypal/client-id')
+    return this.apiService.get<{ client_id: string }>(`/admin/settings`)
       .pipe(
         map(response => {
           if (response.success) {
-            return response.data.client_id;
+            return (response.data as any)?.payment?.paypal_client_id || '';
           } else {
             throw new Error(response.message);
           }

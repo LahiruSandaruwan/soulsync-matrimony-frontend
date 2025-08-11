@@ -5,6 +5,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { ProfileService } from '../../core/services/profile.service';
 import { AuthService } from '../../core/services/auth.service';
 import { MatchService } from '../../core/services/match.service';
+import { HoroscopeService } from '../../core/services/horoscope.service';
 import { User, UserPhoto } from '../../core/models/match.model';
 import { UserProfile } from '../../core/models/user.model';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
@@ -64,7 +65,8 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private profileService: ProfileService,
     private authService: AuthService,
-    private matchService: MatchService
+    private matchService: MatchService,
+    private horoscopeService: HoroscopeService
   ) {}
 
   ngOnInit(): void {
@@ -121,16 +123,14 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
 
   loadUserPhotos(userId: number): void {
     this.loadingPhotos = true;
-    
-    // For viewing other users' photos, we'll use the same method
-    // The backend should handle permissions
-    this.profileService.getPhotos()
+    (this.profileService as any).apiService.get(`/users/${userId}/photos`)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (photos) => {
+        next: (res: any) => {
+          const photos = res?.data || res || [];
           this.userPhotos = photos;
           if (this.user) {
-            this.user.photos = photos;
+            (this.user as any).photos = photos;
           }
           this.loadingPhotos = false;
         },
@@ -143,13 +143,12 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
 
   private loadCompatibility(): void {
     if (!this.user) return;
-    // Use backend compatibility endpoint
-    this.matchService.getCompatibilityScore(this.user.id)
+    this.horoscopeService.checkCompatibility(this.user.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (res) => {
-          this.compatibilityScore = res.score;
-          this.matchingFactors = res.factors || [];
+        next: (data) => {
+          this.compatibilityScore = data?.score ?? 0;
+          this.matchingFactors = data?.factors || [];
         },
         error: () => {
           // fallback: keep defaults
@@ -267,9 +266,8 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
 
   onReport(): void {
     if (!this.user) return;
-    const description = 'Inappropriate behavior';
-    // POST /users/{user}/report per backend
-    (this.matchService as any).apiService.post(`/users/${this.user.id}/report`, { description })
+    const payload = { reason: 'other', description: 'Inappropriate behavior', evidence: '' };
+    (this.matchService as any).apiService.post(`/users/${this.user.id}/report`, payload)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {

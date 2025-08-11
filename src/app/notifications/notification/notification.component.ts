@@ -77,11 +77,14 @@ export class NotificationComponent implements OnInit, OnDestroy {
     this.notificationService.getNotifications(this.currentPage)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response: any) => {
-          this.notifications = response.data.notifications;
-          this.unreadCount = response.data.unread_count;
-          this.totalPages = response.data.total_pages;
-          this.hasMore = this.currentPage < this.totalPages;
+        next: (list: any) => {
+          // Service returns Notification[]; compute counts locally
+          const notifications = Array.isArray(list) ? list : (list?.data || []);
+          this.notifications = notifications;
+          this.unreadCount = notifications.filter((n: any) => !n.is_read).length;
+          // Pagination unknown from API; keep simple flags
+          this.totalPages = this.currentPage;
+          this.hasMore = false;
           this.loading = false;
         },
         error: (error: any) => {
@@ -134,10 +137,11 @@ export class NotificationComponent implements OnInit, OnDestroy {
     this.notificationService.getNotifications(this.currentPage)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response: any) => {
-          this.notifications = [...this.notifications, ...response.data.notifications];
-          this.totalPages = response.data.total_pages;
-          this.hasMore = this.currentPage < this.totalPages;
+        next: (list: any) => {
+          const notifications = Array.isArray(list) ? list : (list?.data || []);
+          this.notifications = [...this.notifications, ...notifications];
+          this.totalPages = this.currentPage;
+          this.hasMore = false;
           this.loadingMore = false;
         },
         error: (error: any) => {

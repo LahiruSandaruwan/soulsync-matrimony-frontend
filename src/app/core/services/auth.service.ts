@@ -128,23 +128,53 @@ export class AuthService {
     const headers = this.getAuthHeaders();
     return this.http.post(`${environment.apiUrl}/auth/change-password`, {
       current_password: currentPassword,
-      new_password: newPassword,
-      confirm_password: confirmPassword
+      password: newPassword,
+      password_confirmation: confirmPassword
     }, { headers })
       .pipe(catchError(this.handleError));
   }
 
-  // Enable two-factor authentication
-  enableTwoFactor(): Observable<any> {
+  // Two-Factor Authentication APIs
+  getTwoFactorStatus(): Observable<any> {
     const headers = this.getAuthHeaders();
-    return this.http.post(`${environment.apiUrl}/auth/2fa/enable`, {}, { headers })
+    return this.http.get(`${environment.apiUrl}/2fa/status`, { headers })
+      .pipe(catchError(this.handleError));
+  }
+
+  setupTwoFactor(): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.post(`${environment.apiUrl}/2fa/setup`, {}, { headers })
+      .pipe(catchError(this.handleError));
+  }
+
+  verifyTwoFactorSetup(code: string): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.post(`${environment.apiUrl}/2fa/verify-setup`, { code }, { headers })
+      .pipe(catchError(this.handleError));
+  }
+
+  disableTwoFactor(password?: string): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.post(`${environment.apiUrl}/2fa/disable`, { password }, { headers })
+      .pipe(catchError(this.handleError));
+  }
+
+  generateRecoveryCodes(): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.post(`${environment.apiUrl}/2fa/recovery-codes`, {}, { headers })
+      .pipe(catchError(this.handleError));
+  }
+
+  sendTwoFactorCode(method: 'email' | 'sms'): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.post(`${environment.apiUrl}/2fa/send-code`, { method }, { headers })
       .pipe(catchError(this.handleError));
   }
 
   // Delete account
   deleteAccount(password: string): Observable<any> {
     const headers = this.getAuthHeaders();
-    return this.http.delete(`${environment.apiUrl}/auth/account`, {
+    return this.http.delete(`${environment.apiUrl}/auth/delete-account`, {
       headers,
       body: { password }
     })
@@ -188,18 +218,7 @@ export class AuthService {
       );
   }
 
-  refreshToken(): Observable<AuthResponse> {
-    const headers = this.getAuthHeaders();
-    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/refresh`, {}, { headers })
-      .pipe(
-        tap(response => {
-          if (response.success) {
-            this.setAuth(response.data.token, response.data.user);
-          }
-        }),
-        catchError(this.handleError)
-      );
-  }
+  // Note: refresh token endpoint not provided by backend docs; avoid using unless added server-side
 
   private setAuth(token: string, user: User): void {
     if (typeof localStorage !== 'undefined') {

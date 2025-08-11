@@ -54,12 +54,8 @@ export interface OnlineStatus {
   providedIn: 'root'
 })
 export class WebSocketService {
-  private socket: WebSocket | null = null;
-  private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
-  private reconnectDelay = 1000;
-  private isConnecting = false;
-  private shouldReconnect = true;
+  // Placeholder for Echo instance type to avoid direct dependency
+  private echo: any | null = null;
 
   // Connection state
   private connectionStateSubject = new BehaviorSubject<'connecting' | 'connected' | 'disconnected' | 'error'>('disconnected');
@@ -88,62 +84,39 @@ export class WebSocketService {
   constructor() {}
 
   connect(token: string): void {
-    if (this.isConnecting || this.socket?.readyState === WebSocket.OPEN) {
-      return;
-    }
-
-    this.isConnecting = true;
+    if (this.echo) return;
     this.connectionStateSubject.next('connecting');
-
-    const wsUrl = environment.wsUrl || environment.apiUrl.replace('http', 'ws');
-    this.socket = new WebSocket(`${wsUrl}/ws?token=${token}`);
-
-    this.socket.onopen = () => {
-      console.log('WebSocket connected');
-      this.isConnecting = false;
-      this.reconnectAttempts = 0;
+    import('laravel-echo').then(({ default: Echo }) => {
+      const Pusher = (window as any).Pusher || require('pusher-js');
+      this.echo = new Echo({
+        broadcaster: 'pusher',
+        key: (window as any).PUSHER_APP_KEY || 'local',
+        cluster: (window as any).PUSHER_APP_CLUSTER || 'mt1',
+        wsHost: (window as any).WEBSOCKET_HOST || '127.0.0.1',
+        wsPort: (window as any).WEBSOCKET_PORT || 6001,
+        forceTLS: false,
+        disableStats: true,
+        authorizer: (channel: any) => ({
+          authorize: (socketId: string, callback: any) => {
+            fetch(`${environment.apiUrl.replace('/api/v1','')}/broadcasting/auth`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({ channel_name: channel.name, socket_id: socketId })
+            }).then(r => r.json()).then(data => callback(false, data)).catch(err => callback(true, err));
+          }
+        })
+      });
       this.connectionStateSubject.next('connected');
-    };
-
-    this.socket.onmessage = (event) => {
-      try {
-        const message: WebSocketMessage = JSON.parse(event.data);
-        this.handleMessage(message);
-      } catch (error) {
-        console.error('Error parsing WebSocket message:', error);
-      }
-    };
-
-    this.socket.onclose = (event) => {
-      console.log('WebSocket disconnected:', event.code, event.reason);
-      this.isConnecting = false;
-      this.connectionStateSubject.next('disconnected');
-
-      if (this.shouldReconnect && this.reconnectAttempts < this.maxReconnectAttempts) {
-        this.scheduleReconnect();
-      }
-    };
-
-    this.socket.onerror = (error) => {
-      console.error('WebSocket error:', error);
-      this.isConnecting = false;
+    }).catch(err => {
+      console.error('Echo load error:', err);
       this.connectionStateSubject.next('error');
-    };
+    });
   }
 
-  private scheduleReconnect(): void {
-    this.reconnectAttempts++;
-    const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
-    
-    setTimeout(() => {
-      if (this.shouldReconnect) {
-        const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
-        if (token) {
-          this.connect(token);
-        }
-      }
-    }, delay);
-  }
+  private scheduleReconnect(): void { /* handled by Echo/Pusher */ }
 
   private handleMessage(message: WebSocketMessage): void {
     this.messageSubject.next(message);
@@ -170,14 +143,70 @@ export class WebSocketService {
     }
   }
 
-  // Send methods
-  sendMessage(message: any): void {
-    if (this.socket?.readyState === WebSocket.OPEN) {
-      this.socket.send(JSON.stringify(message));
-    } else {
-      console.warn('WebSocket is not connected');
-    }
+  // Laravel Echo channel helpers
+  joinConversation(conversationId: number): void {
+    if (!this.echo) return;
+    const channelName = `private-chat.${conversationId}`;
+    this.echo.private(channelName)
+      .listen('MessageSent', (e: any) => {
+        const msg: ChatMessage = {
+          id: e.message.id,
+          conversation_id: e.message.conversation_id,
+          sender_id: e.message.sender_id,
+          content: e.message.content,
+          message_type: e.message.type || 'text',
+          file_url: e.message.file_url,
+          file_name: e.message.file_name,
+          is_read: e.message.is_read,
+          created_at: e.message.created_at
+        };
+        this.chatMessageSubject.next(msg);
+        this.messageSubject.next({ type: 'message', data: msg, timestamp: new Date().toISOString() });
+      })
+      .listen('UserTyping', (e: any) => {
+        const typing: TypingIndicator = {
+          conversation_id: e.conversation_id,
+          user_id: e.user_id,
+          is_typing: e.typing,
+          username: e.username || ''
+        };
+        this.typingIndicatorSubject.next(typing);
+        this.messageSubject.next({ type: 'typing', data: typing, timestamp: new Date().toISOString() });
+      });
   }
+
+  leaveConversation(conversationId: number): void {
+    if (!this.echo) return;
+    const channelName = `private-chat.${conversationId}`;
+    try { this.echo.leave(channelName); } catch { /* ignore */ }
+  }
+
+  subscribeUser(userId: number): void {
+    if (!this.echo) return;
+    const userChannel = `private-user.${userId}`;
+    const notifChannel = `private-notifications.${userId}`;
+    this.echo.private(userChannel)
+      .listen('MatchCreated', (e: any) => {
+        this.matchNotificationSubject.next({
+          user_id: e.user_id,
+          user_name: e.user_name,
+          user_photo: e.user_photo,
+          match_percentage: e.match?.compatibility_score || 0
+        });
+      })
+      .listen('UserStatusChanged', (e: any) => {
+        this.onlineStatusSubject.next({ user_id: e.user_id, is_online: e.status === 'online', last_seen: e.last_seen });
+      });
+    this.echo.private(notifChannel)
+      .listen('NotificationSent', (e: any) => {
+        const n = e.notification || e;
+        this.notificationSubject.next(n);
+        this.messageSubject.next({ type: 'notification', data: n, timestamp: new Date().toISOString() });
+      });
+  }
+
+  // Send methods
+  sendMessage(_message: any): void { /* use HTTP send or Echo whisper if configured */ }
 
   sendChatMessage(conversationId: number, content: string, messageType: string = 'text'): void {
     this.sendMessage({
@@ -257,13 +286,7 @@ export class WebSocketService {
   }
 
   // Connection management
-  disconnect(): void {
-    this.shouldReconnect = false;
-    if (this.socket) {
-      this.socket.close();
-      this.socket = null;
-    }
-  }
+  disconnect(): void { if (this.echo) { this.echo.disconnect(); this.echo = null; } }
 
   reconnect(): void {
     this.shouldReconnect = true;
@@ -274,9 +297,7 @@ export class WebSocketService {
   }
 
   // Utility methods
-  isConnected(): boolean {
-    return this.socket?.readyState === WebSocket.OPEN;
-  }
+  isConnected(): boolean { return !!this.echo; }
 
   getConnectionState(): 'connecting' | 'connected' | 'disconnected' | 'error' {
     return this.connectionStateSubject.value;

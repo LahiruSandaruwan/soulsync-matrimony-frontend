@@ -167,7 +167,7 @@ export class ChatBoxComponent implements OnInit, OnDestroy, AfterViewChecked {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
-          this.messages = response.data;
+          this.messages = response;
           this.markMessagesAsRead();
         },
         error: (error: any) => {
@@ -248,7 +248,7 @@ export class ChatBoxComponent implements OnInit, OnDestroy, AfterViewChecked {
       message_type: this.selectedFile ? 'file' as const : 'text' as const,
       file: this.selectedFile || undefined
     };
-    this.chatService.sendMessage(messageData)
+    this.chatService.sendMessage({ ...messageData, conversation_id: this.conversationId })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {

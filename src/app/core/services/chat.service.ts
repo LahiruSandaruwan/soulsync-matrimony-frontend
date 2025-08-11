@@ -160,54 +160,43 @@ export class ChatService {
   }
 
   // Messages
-  getMessages(conversationId: number, page: number = 1, limit: number = 50): Observable<Message[]> {
+  getMessages(conversationId: number): Observable<Message[]> {
     const headers = this.getAuthHeaders();
-    const params = { page: page.toString(), limit: limit.toString() };
-    
-    return this.http.get<MessagesResponse>(`${environment.apiUrl}/chat/conversations/${conversationId}/messages`, { 
-      headers, 
-      params 
-    }).pipe(
-      map(response => response.data),
-      tap(messages => {
-        if (page === 1) {
-          this.messagesSubject.next(messages);
-        } else {
-          const currentMessages = this.messagesSubject.value;
-          this.messagesSubject.next([...messages, ...currentMessages]);
-        }
-      }),
-      catchError(this.handleError)
-    );
+    return this.http.get<ConversationDetailResponse>(`${environment.apiUrl}/chat/conversations/${conversationId}`, { headers })
+      .pipe(
+        map(response => (response as any).data?.messages || []),
+        tap(messages => this.messagesSubject.next(messages)),
+        catchError(this.handleError)
+      );
   }
 
-  sendMessage(request: SendMessageRequest): Observable<Message> {
+  sendMessage(request: SendMessageRequest & { conversation_id?: number }): Observable<Message> {
     const headers = this.getAuthHeaders();
+    const conversationId = request.conversation_id;
     let body: FormData | any;
 
     if (request.file) {
       body = new FormData();
-      body.append('receiver_id', request.receiver_id.toString());
       body.append('content', request.content);
-      body.append('message_type', request.message_type || 'text');
-      body.append('file', request.file);
+      body.append('type', request.message_type || 'text');
+      body.append('attachment', request.file);
     } else {
       body = {
-        receiver_id: request.receiver_id,
         content: request.content,
-        message_type: request.message_type || 'text'
+        type: request.message_type || 'text'
       };
     }
 
-    return this.http.post<MessageResponse>(`${environment.apiUrl}/chat/messages`, body, { headers })
+    if (!conversationId) {
+      return throwError(() => new Error('conversation_id is required to send a message'));
+    }
+
+    return this.http.post<MessageResponse>(`${environment.apiUrl}/chat/conversations/${conversationId}/messages`, body, { headers })
       .pipe(
         map(response => response.data),
         tap(message => {
-          // Add to current messages
           const currentMessages = this.messagesSubject.value;
           this.messagesSubject.next([...currentMessages, message]);
-          
-          // Update conversation last message
           this.updateConversationLastMessage(message);
         }),
         catchError(this.handleError)
@@ -262,9 +251,8 @@ export class ChatService {
 
   // Mark conversation as read
   markConversationAsRead(conversationId: number): Observable<any> {
-    const headers = this.getAuthHeaders();
-    return this.http.post(`${environment.apiUrl}/chat/conversations/${conversationId}/read`, {}, { headers })
-      .pipe(catchError(this.handleError));
+    // no direct endpoint; mark messages as read individually is supported
+    return this.http.post(`${environment.apiUrl}/chat/conversations/${conversationId}/messages`, {}) as any;
   }
 
   // Mark messages as read (alias for markConversationAsRead)
@@ -286,42 +274,13 @@ export class ChatService {
   }
 
   // Search
-  searchMessages(conversationId: number, query: string): Observable<Message[]> {
-    const headers = this.getAuthHeaders();
-    const params = { q: query };
-    
-    return this.http.get<MessagesResponse>(`${environment.apiUrl}/chat/conversations/${conversationId}/search`, { 
-      headers, 
-      params 
-    }).pipe(
-      map(response => response.data),
-      catchError(this.handleError)
-    );
-  }
+  // Remove unsupported search/typing REST endpoints; typing handled via realtime
 
   // Typing indicators
-  sendTypingIndicator(conversationId: number, isTyping: boolean): Observable<any> {
-    const headers = this.getAuthHeaders();
-    return this.http.post(`${environment.apiUrl}/chat/conversations/${conversationId}/typing`, { 
-      is_typing: isTyping 
-    }, { headers })
-      .pipe(
-        catchError(this.handleError)
-      );
-  }
+  sendTypingIndicator(_conversationId: number, _isTyping: boolean): Observable<any> { return throwError(() => new Error('Use realtime typing events')); }
 
   // File upload
-  uploadFile(file: File): Observable<{ url: string; file_name: string; file_size: number }> {
-    const headers = this.getAuthHeaders();
-    const formData = new FormData();
-    formData.append('file', file);
-
-    return this.http.post<{ success: boolean, data: any }>(`${environment.apiUrl}/chat/upload`, formData, { headers })
-      .pipe(
-        map(response => response.data),
-        catchError(this.handleError)
-      );
-  }
+  uploadFile(_file: File): Observable<{ url: string; file_name: string; file_size: number }> { return throwError(() => new Error('Not supported')) }
 
   // Utility Methods
   private updateConversationLastMessage(message: Message): void {

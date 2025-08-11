@@ -302,17 +302,18 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy, AfterViewI
   private async handleStripeFlow(): Promise<void> {
     try {
       await this.initStripe();
-      const request = {
+      // Confirm card payment client-side (PaymentIntent should be created on server within subscribe request)
+      // For now, use a simplified flow: tokenize via Payment Element and pass token to subscribe
+      const { paymentMethod, error } = await this.stripe.createPaymentMethod({ type: 'card', card: this.cardElement });
+      if (error) throw new Error(error.message);
+      const subscribeReq = {
         plan_id: this.selectedPlan!.id,
         currency: this.currency,
-        auto_renewal: true
+        auto_renewal: true,
+        payment_method: 'stripe' as const,
+        payment_token: paymentMethod.id
       };
-      const intent = await firstValueFrom(this.paymentService.createPaymentIntent(request));
-      const { error, paymentIntent } = await this.stripe.confirmCardPayment(intent!.client_secret, {
-        payment_method: { card: this.cardElement }
-      });
-      if (error) throw new Error(error.message);
-      await firstValueFrom(this.paymentService.processStripePayment(paymentIntent.id, paymentIntent.payment_method));
+      await firstValueFrom(this.paymentService.subscribeToPlan(subscribeReq));
       this.processingPayment = false;
       this.successMessage = 'Subscription successful!';
       this.showPaymentModal = false;
@@ -339,7 +340,14 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy, AfterViewI
           });
         },
         onApprove: async (data: any) => {
-          await firstValueFrom(this.paymentService.processPayPalPayment(data.orderID));
+          const subscribeReq = {
+            plan_id: this.selectedPlan!.id,
+            currency: this.currency,
+            auto_renewal: true,
+            payment_method: 'paypal' as const,
+            payment_token: data.orderID
+          };
+          await firstValueFrom(this.paymentService.subscribeToPlan(subscribeReq));
           this.processingPayment = false;
           this.successMessage = 'Subscription successful!';
           this.showPaymentModal = false;

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
+import { ApiService } from '../../core/services/api.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 
 interface User {
@@ -95,7 +96,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService
+    private authService: AuthService,
+    private api: ApiService
   ) {
     this.filterForm = this.fb.group({
       search: [''],
@@ -132,58 +134,25 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   loadUsers(): void {
     this.loading = true;
     this.error = '';
-
-    // Mock data - replace with actual API call
-    setTimeout(() => {
-      this.users = [
-        {
-          id: 1,
-          first_name: 'Alice',
-          last_name: 'Johnson',
-          email: 'alice@example.com',
-          email_verified_at: new Date().toISOString(),
-          profile_completion: 95,
-          subscription_status: 'premium',
-          status: 'active',
-          last_active: new Date().toISOString(),
-          created_at: new Date(Date.now() - 86400000 * 30).toISOString(),
-          matches_count: 25,
-          reports_count: 0
+    this.api.get<any>('/admin/users')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.users = res.data || [];
+            this.totalItems = this.users.length;
+            this.applyFilters();
+            this.loading = false;
+          } else {
+            this.error = res.message || 'Failed to load users';
+            this.loading = false;
+          }
         },
-        {
-          id: 2,
-          first_name: 'Bob',
-          last_name: 'Wilson',
-          email: 'bob@example.com',
-          email_verified_at: null,
-          profile_completion: 45,
-          subscription_status: 'free',
-          status: 'active',
-          last_active: new Date(Date.now() - 86400000 * 7).toISOString(),
-          created_at: new Date(Date.now() - 86400000 * 15).toISOString(),
-          matches_count: 8,
-          reports_count: 2
-        },
-        {
-          id: 3,
-          first_name: 'Charlie',
-          last_name: 'Brown',
-          email: 'charlie@example.com',
-          email_verified_at: new Date().toISOString(),
-          profile_completion: 78,
-          subscription_status: 'basic',
-          status: 'suspended',
-          last_active: new Date(Date.now() - 86400000 * 2).toISOString(),
-          created_at: new Date(Date.now() - 86400000 * 60).toISOString(),
-          matches_count: 15,
-          reports_count: 1
+        error: (err) => {
+          this.error = err.message || 'Failed to load users';
+          this.loading = false;
         }
-      ];
-      
-      this.totalItems = this.users.length;
-      this.applyFilters();
-      this.loading = false;
-    }, 1000);
+      });
   }
 
   applyFilters(): void {
@@ -248,25 +217,25 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   onSuspendUser(userId: number): void {
     if (confirm('Are you sure you want to suspend this user?')) {
-      // API call to suspend user
-      console.log('Suspending user:', userId);
-      this.loadUsers();
+      this.api.post<any>(`/admin/users/${userId}/suspend`, { reason: 'policy_violation', duration_days: 7 })
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({ next: () => this.loadUsers(), error: () => this.loadUsers() });
     }
   }
 
   onBanUser(userId: number): void {
     if (confirm('Are you sure you want to ban this user? This action cannot be undone.')) {
-      // API call to ban user
-      console.log('Banning user:', userId);
-      this.loadUsers();
+      this.api.post<any>(`/admin/users/${userId}/ban`, { reason: 'policy_violation' })
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({ next: () => this.loadUsers(), error: () => this.loadUsers() });
     }
   }
 
   onDeleteUser(userId: number): void {
     if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
-      // API call to delete user
-      console.log('Deleting user:', userId);
-      this.loadUsers();
+      this.api.delete<any>(`/admin/users/${userId}`)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({ next: () => this.loadUsers(), error: () => this.loadUsers() });
     }
   }
 
@@ -277,11 +246,14 @@ export class UserManagementComponent implements OnInit, OnDestroy {
                       action === 'ban' ? 'ban' : 'delete';
     
     if (confirm(`Are you sure you want to ${actionText} ${this.selectedUsers.length} users?`)) {
-      // API call for bulk action
-      console.log(`Bulk ${action}:`, this.selectedUsers);
-      this.selectedUsers = [];
-      this.showBulkActions = false;
-      this.loadUsers();
+      const calls = this.selectedUsers.map(id => action === 'delete'
+        ? this.api.delete<any>(`/admin/users/${id}`)
+        : this.api.post<any>(`/admin/users/${id}/${action}`, { reason: 'bulk_action', duration_days: action === 'suspend' ? 7 : undefined }));
+      calls.reduce((p, req) => p.then(() => req.toPromise()), Promise.resolve()).finally(() => {
+        this.selectedUsers = [];
+        this.showBulkActions = false;
+        this.loadUsers();
+      });
     }
   }
 

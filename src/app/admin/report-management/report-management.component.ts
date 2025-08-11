@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
+import { ApiService } from '../../core/services/api.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 
 interface Report {
@@ -88,7 +89,8 @@ export class ReportManagementComponent implements OnInit, OnDestroy {
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService
+    private authService: AuthService,
+    private api: ApiService
   ) {
     this.filterForm = this.fb.group({
       search: [''],
@@ -124,57 +126,25 @@ export class ReportManagementComponent implements OnInit, OnDestroy {
   loadReports(): void {
     this.loading = true;
     this.error = '';
-
-    // Mock data - replace with actual API call
-    setTimeout(() => {
-      this.reports = [
-        {
-          id: 1,
-          reporter_id: 1,
-          reported_user_id: 2,
-          report_type: 'harassment',
-          reason: 'User sent inappropriate messages repeatedly',
-          evidence: 'Screenshots of messages provided',
-          status: 'pending',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          reporter: { first_name: 'Alice', last_name: 'Johnson', email: 'alice@example.com' },
-          reported_user: { first_name: 'Bob', last_name: 'Wilson', email: 'bob@example.com' }
+    this.api.get<any>('/admin/reports')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.reports = res.data || [];
+            this.totalItems = this.reports.length;
+            this.applyFilters();
+            this.loading = false;
+          } else {
+            this.error = res.message || 'Failed to load reports';
+            this.loading = false;
+          }
         },
-        {
-          id: 2,
-          reporter_id: 3,
-          reported_user_id: 4,
-          report_type: 'fake_profile',
-          reason: 'Profile photos appear to be fake or stolen',
-          evidence: 'Reverse image search results',
-          status: 'investigating',
-          admin_notes: 'Under investigation - checking image sources',
-          created_at: new Date(Date.now() - 86400000).toISOString(),
-          updated_at: new Date(Date.now() - 3600000).toISOString(),
-          reporter: { first_name: 'Charlie', last_name: 'Brown', email: 'charlie@example.com' },
-          reported_user: { first_name: 'Diana', last_name: 'Smith', email: 'diana@example.com' }
-        },
-        {
-          id: 3,
-          reporter_id: 5,
-          reported_user_id: 6,
-          report_type: 'spam',
-          reason: 'User sending promotional messages',
-          evidence: 'Multiple spam messages in chat',
-          status: 'resolved',
-          admin_notes: 'User warned and messages removed',
-          created_at: new Date(Date.now() - 172800000).toISOString(),
-          updated_at: new Date(Date.now() - 86400000).toISOString(),
-          reporter: { first_name: 'Eve', last_name: 'Davis', email: 'eve@example.com' },
-          reported_user: { first_name: 'Frank', last_name: 'Miller', email: 'frank@example.com' }
+        error: (err) => {
+          this.error = err.message || 'Failed to load reports';
+          this.loading = false;
         }
-      ];
-      
-      this.totalItems = this.reports.length;
-      this.applyFilters();
-      this.loading = false;
-    }, 1000);
+      });
   }
 
   applyFilters(): void {
@@ -232,15 +202,15 @@ export class ReportManagementComponent implements OnInit, OnDestroy {
   }
 
   onUpdateStatus(reportId: number, status: string): void {
-    // API call to update report status
-    console.log('Updating report status:', reportId, status);
-    this.loadReports();
+    this.api.put<any>(`/admin/reports/${reportId}/status`, { status })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({ next: () => this.loadReports(), error: () => this.loadReports() });
   }
 
   onAddNote(reportId: number, note: string): void {
-    // API call to add admin note
-    console.log('Adding note to report:', reportId, note);
-    this.loadReports();
+    this.api.post<any>(`/admin/reports/${reportId}/action`, { action: 'warn', action_details: note })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({ next: () => this.loadReports(), error: () => this.loadReports() });
   }
 
   onResolveReport(reportId: number): void {
@@ -261,11 +231,13 @@ export class ReportManagementComponent implements OnInit, OnDestroy {
     const actionText = action === 'resolve' ? 'resolve' : 'dismiss';
     
     if (confirm(`Are you sure you want to ${actionText} ${this.selectedReports.length} reports?`)) {
-      // API call for bulk action
-      console.log(`Bulk ${action}:`, this.selectedReports);
-      this.selectedReports = [];
-      this.showBulkActions = false;
-      this.loadReports();
+      const requests = this.selectedReports.map(id => this.api.put<any>(`/admin/reports/${id}/status`, { status: action === 'resolve' ? 'resolved' : 'dismissed' }));
+      // Execute sequentially
+      requests.reduce((p, req) => p.then(() => req.toPromise()), Promise.resolve()).finally(() => {
+        this.selectedReports = [];
+        this.showBulkActions = false;
+        this.loadReports();
+      });
     }
   }
 
@@ -310,8 +282,14 @@ export class ReportManagementComponent implements OnInit, OnDestroy {
   }
 
   exportReports(): void {
-    // Export functionality
-    console.log('Exporting reports');
+    // Simple CSV export client-side
+    const headers = ['ID','Type','Reason','Status','Reporter','Reported','Created At'];
+    const rows = this.filteredReports.map(r => [r.id, r.report_type, JSON.stringify(r.reason).replaceAll('"','""'), r.status, `${r.reporter?.first_name||''} ${r.reporter?.last_name||''}`, `${r.reported_user?.first_name||''} ${r.reported_user?.last_name||''}`, r.created_at]);
+    const csv = [headers, ...rows].map(row => row.map(v => `"${v ?? ''}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'reports.csv'; a.click(); URL.revokeObjectURL(url);
   }
 
   refreshData(): void {
