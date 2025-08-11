@@ -194,6 +194,7 @@ export class WebSocketService {
           user_photo: e.user_photo,
           match_percentage: e.match?.compatibility_score || 0
         });
+        this.messageSubject.next({ type: 'match', data: e, timestamp: new Date().toISOString() });
       })
       .listen('UserStatusChanged', (e: any) => {
         this.onlineStatusSubject.next({ user_id: e.user_id, is_online: e.status === 'online', last_seen: e.last_seen });
