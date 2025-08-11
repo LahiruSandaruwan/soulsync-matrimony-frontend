@@ -76,6 +76,10 @@ export const routes: Routes = [
         loadComponent: () => import('./search/search-users/search-users.component').then(m => m.SearchUsersComponent)
       },
       {
+        path: 'browse',
+        loadComponent: () => import('./browse/browse-list/browse-list.component').then(m => m.BrowseListComponent)
+      },
+      {
         path: 'subscription',
         loadComponent: () => import('./subscription/subscription-plans/subscription-plans.component').then(m => m.SubscriptionPlansComponent)
       },
