@@ -98,6 +98,12 @@ export const routes: Routes = [
         loadComponent: () => import('./notifications/notification/notification.component').then(m => m.NotificationComponent)
       },
       {
+        path: 'video-call/:callId',
+        loadComponent: () => import('./chat/video-call/video-call.component').then(m => m.VideoCallComponent),
+        canActivate: [FeatureFlagsGuard],
+        data: { featureFlag: 'videoCalls' }
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'

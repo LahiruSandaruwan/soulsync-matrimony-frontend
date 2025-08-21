@@ -289,19 +289,10 @@ export class AuthService {
       errorMessage = error.message;
     }
     
-    this.handleError('Authentication service error', error);
-    return throwError(() => new Error(errorMessage));
-  }
-
-  /**
-   * Handle authentication service errors
-   * @param message User-friendly error message
-   * @param error Technical error details
-   */
-  private handleError(message: string, error: any): void {
     if (!environment.production) {
-      console.error(`Auth Service Error: ${message}`, error);
+      console.error('Authentication service error:', error);
     }
-    // Could emit to error handling service or show notification
+    
+    return throwError(() => new Error(errorMessage));
   }
 } 
