@@ -1,368 +1,434 @@
 import { Injectable } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { ToastService } from './toast.service';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
-export interface AppError {
+export interface ErrorInfo {
   id: string;
-  type: 'error' | 'warning' | 'info';
-  title: string;
   message: string;
-  details?: string;
+  details?: any;
   timestamp: Date;
-  retryable: boolean;
-  action?: () => void;
-  dismissible: boolean;
+  context?: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  action?: string;
 }
 
-export interface ErrorConfig {
-  showToast?: boolean;
-  logToConsole?: boolean;
-  retryable?: boolean;
-  action?: () => void;
-  dismissible?: boolean;
+export interface NetworkError {
+  isOffline: boolean;
+  hasSlowConnection: boolean;
+  connectionType?: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class ErrorHandlingService {
-  private errorsSubject = new BehaviorSubject<AppError[]>([]);
+  private errorsSubject = new BehaviorSubject<ErrorInfo[]>([]);
   public errors$ = this.errorsSubject.asObservable();
 
-  private isOnlineSubject = new BehaviorSubject<boolean>(navigator.onLine);
-  public isOnline$ = this.isOnlineSubject.asObservable();
+  private networkErrorSubject = new BehaviorSubject<NetworkError>({ isOffline: false, hasSlowConnection: false });
+  public networkError$ = this.networkErrorSubject.asObservable();
 
-  constructor(private toastService: ToastService) {
-    this.setupOnlineStatusListener();
+  private maxStoredErrors = 50;
+
+  constructor() {
+    this.setupGlobalErrorHandlers();
+    this.monitorNetworkStatus();
   }
 
-  private setupOnlineStatusListener(): void {
-    window.addEventListener('online', () => {
-      this.isOnlineSubject.next(true);
-      this.toastService.success('You are back online', 'Connection restored');
-    });
+  /**
+   * Handle HTTP errors from API calls
+   */
+  handleHttpError(error: HttpErrorResponse, context?: string): void {
+    let message = 'An unexpected error occurred';
+    let severity: ErrorInfo['severity'] = 'medium';
+    let action = '';
 
-    window.addEventListener('offline', () => {
-      this.isOnlineSubject.next(false);
-      this.toastService.warning('Please check your internet connection', 'Connection lost');
-    });
-  }
-
-  // Handle HTTP errors
-  handleHttpError(error: HttpErrorResponse, context?: string): Observable<never> {
-    const errorMessage = this.getHttpErrorMessage(error);
-    const appError: AppError = {
-      id: this.generateErrorId(),
-      type: 'error',
-      title: this.getHttpErrorTitle(error),
-      message: errorMessage,
-      details: context ? `${context}: ${errorMessage}` : errorMessage,
-      timestamp: new Date(),
-      retryable: this.isRetryableError(error),
-      dismissible: true
-    };
-
-    this.addError(appError);
-    this.toastService.error(appError.message, appError.title);
-    
-    return throwError(() => error);
-  }
-
-  // Handle general application errors
-  handleError(error: any, context?: string, config?: ErrorConfig): void {
-    const appError: AppError = {
-      id: this.generateErrorId(),
-      type: 'error',
-      title: 'An error occurred',
-      message: this.getErrorMessage(error),
-      details: context ? `${context}: ${this.getErrorMessage(error)}` : this.getErrorMessage(error),
-      timestamp: new Date(),
-      retryable: config?.retryable ?? false,
-      action: config?.action,
-      dismissible: config?.dismissible ?? true
-    };
-
-    this.addError(appError);
-    
-    if (config?.showToast !== false) {
-      this.toastService.error(appError.message, appError.title);
+    switch (error.status) {
+      case 0:
+        message = 'Network connection failed. Please check your internet connection.';
+        severity = 'high';
+        action = 'Check your internet connection and try again';
+        this.updateNetworkStatus({ isOffline: true, hasSlowConnection: false });
+        break;
+      case 400:
+        message = 'Bad request. Please check your input and try again.';
+        severity = 'medium';
+        action = 'Verify your input data';
+        break;
+      case 401:
+        message = 'Authentication required. Please log in again.';
+        severity = 'high';
+        action = 'Please log in again';
+        // Trigger re-authentication
+        this.triggerReauthentication();
+        break;
+      case 403:
+        message = 'Access denied. You don\'t have permission for this action.';
+        severity = 'medium';
+        action = 'Contact support if you believe this is an error';
+        break;
+      case 404:
+        message = 'Requested resource not found.';
+        severity = 'low';
+        action = 'The requested item may have been removed';
+        break;
+      case 409:
+        message = 'Conflict detected. The resource may have been modified.';
+        severity = 'medium';
+        action = 'Refresh the page and try again';
+        break;
+      case 422:
+        message = 'Validation failed. Please check your input.';
+        severity = 'medium';
+        action = 'Please correct the highlighted fields';
+        if (error.error?.errors) {
+          message = this.formatValidationErrors(error.error.errors);
+        }
+        break;
+      case 429:
+        message = 'Too many requests. Please try again later.';
+        severity = 'medium';
+        action = `Wait ${error.headers.get('Retry-After') || 60} seconds before trying again`;
+        break;
+      case 500:
+        message = 'Server error occurred. Please try again later.';
+        severity = 'high';
+        action = 'Try again in a few moments or contact support if the problem persists';
+        break;
+      case 502:
+      case 503:
+      case 504:
+        message = 'Service temporarily unavailable. Please try again later.';
+        severity = 'high';
+        action = 'Service is temporarily down. Please try again in a few minutes';
+        break;
+      default:
+        if (error.error?.message) {
+          message = error.error.message;
+        }
+        severity = 'medium';
     }
 
-    if (config?.logToConsole !== false) {
-      console.error('Application Error:', error);
-    }
-  }
-
-  // Handle validation errors
-  handleValidationError(errors: any, context?: string): void {
-    const errorMessages = this.extractValidationMessages(errors);
-    
-    errorMessages.forEach(message => {
-      const appError: AppError = {
-        id: this.generateErrorId(),
-        type: 'warning',
-        title: 'Validation Error',
-        message: message,
-        details: context ? `${context}: ${message}` : message,
-        timestamp: new Date(),
-        retryable: false,
-        dismissible: true
-      };
-
-      this.addError(appError);
-      this.toastService.warning(message, 'Validation Error');
+    this.addError({
+      id: this.generateErrorId(),
+      message,
+      details: {
+        status: error.status,
+        statusText: error.statusText,
+        url: error.url,
+        error: error.error
+      },
+      timestamp: new Date(),
+      context: context || 'HTTP Request',
+      severity,
+      action
     });
+
+    this.logError('HTTP Error', error, context);
   }
 
-  // Handle network errors
+  /**
+   * Handle network errors (offline, slow connection, etc.)
+   */
   handleNetworkError(error: any): void {
-    const appError: AppError = {
-      id: this.generateErrorId(),
-      type: 'error',
-      title: 'Network Error',
-      message: 'Unable to connect to the server. Please check your internet connection.',
-      details: error?.message || 'Network connection failed',
-      timestamp: new Date(),
-      retryable: true,
-      dismissible: true
-    };
+    const networkInfo = this.getNetworkInfo();
+    
+    this.updateNetworkStatus({
+      isOffline: !navigator.onLine,
+      hasSlowConnection: networkInfo.downlink ? networkInfo.downlink < 1 : false,
+      connectionType: networkInfo.effectiveType
+    });
 
-    this.addError(appError);
-    this.toastService.error('Please check your internet connection', 'Network Error');
+    this.addError({
+      id: this.generateErrorId(),
+      message: 'Network connection issue detected',
+      details: {
+        online: navigator.onLine,
+        connectionType: networkInfo.effectiveType,
+        downlink: networkInfo.downlink,
+        error
+      },
+      timestamp: new Date(),
+      context: 'Network',
+      severity: 'high',
+      action: 'Check your internet connection'
+    });
+
+    this.logError('Network Error', error, 'Network');
   }
 
-  // Handle authentication errors
-  handleAuthError(error: any): void {
-    const appError: AppError = {
+  /**
+   * Handle application errors (unhandled exceptions, etc.)
+   */
+  handleApplicationError(error: Error, context?: string): void {
+    this.addError({
       id: this.generateErrorId(),
-      type: 'error',
-      title: 'Authentication Error',
-      message: 'Your session has expired. Please log in again.',
-      details: error?.message || 'Authentication failed',
+      message: error.message || 'An application error occurred',
+      details: {
+        name: error.name,
+        stack: error.stack,
+        error
+      },
       timestamp: new Date(),
-      retryable: false,
-      dismissible: true,
-      action: () => {
-        // Redirect to login
-        window.location.href = '/auth/login';
-      }
-    };
+      context: context || 'Application',
+      severity: 'high',
+      action: 'Refresh the page if the problem persists'
+    });
 
-    this.addError(appError);
-    this.toastService.error('Please log in again', 'Session Expired');
+    this.logError('Application Error', error, context);
   }
 
-  // Handle permission errors
-  handlePermissionError(error: any): void {
-    const appError: AppError = {
+  /**
+   * Handle user-facing errors with custom messages
+   */
+  handleUserError(message: string, details?: any, context?: string): void {
+    this.addError({
       id: this.generateErrorId(),
-      type: 'warning',
-      title: 'Access Denied',
-      message: 'You do not have permission to perform this action.',
-      details: error?.message || 'Insufficient permissions',
+      message,
+      details,
       timestamp: new Date(),
-      retryable: false,
-      dismissible: true
-    };
-
-    this.addError(appError);
-    this.toastService.warning('You do not have permission for this action', 'Access Denied');
+      context: context || 'User Action',
+      severity: 'low',
+      action: 'Please try a different approach'
+    });
   }
 
-  // Show toast notification (deprecated - use toastService directly)
-  showToast(title: string, message: string, type: 'success' | 'error' | 'warning' | 'info'): void {
-    switch (type) {
-      case 'success':
-        this.toastService.success(message, title);
-        break;
-      case 'error':
-        this.toastService.error(message, title);
-        break;
-      case 'warning':
-        this.toastService.warning(message, title);
-        break;
-      case 'info':
-        this.toastService.info(message, title);
-        break;
+  /**
+   * Add error to the error queue
+   */
+  private addError(error: ErrorInfo): void {
+    const currentErrors = this.errorsSubject.value;
+    const updatedErrors = [error, ...currentErrors].slice(0, this.maxStoredErrors);
+    this.errorsSubject.next(updatedErrors);
+
+    // Auto-clear low severity errors after 30 seconds
+    if (error.severity === 'low') {
+      setTimeout(() => {
+        this.removeError(error.id);
+      }, 30000);
     }
   }
 
-  // Add error to the list
-  private addError(error: AppError): void {
-    const currentErrors = this.errorsSubject.value;
-    this.errorsSubject.next([...currentErrors, error]);
-  }
-
-  // Remove error from the list
+  /**
+   * Remove specific error from queue
+   */
   removeError(errorId: string): void {
     const currentErrors = this.errorsSubject.value;
-    this.errorsSubject.next(currentErrors.filter(error => error.id !== errorId));
+    const updatedErrors = currentErrors.filter(error => error.id !== errorId);
+    this.errorsSubject.next(updatedErrors);
   }
 
-  // Clear all errors
-  clearErrors(): void {
+  /**
+   * Clear all errors
+   */
+  clearAllErrors(): void {
     this.errorsSubject.next([]);
   }
 
-  // Get current errors
-  getErrors(): AppError[] {
+  /**
+   * Clear errors by severity
+   */
+  clearErrorsBySeverity(severity: ErrorInfo['severity']): void {
+    const currentErrors = this.errorsSubject.value;
+    const updatedErrors = currentErrors.filter(error => error.severity !== severity);
+    this.errorsSubject.next(updatedErrors);
+  }
+
+  /**
+   * Get current errors
+   */
+  getCurrentErrors(): ErrorInfo[] {
     return this.errorsSubject.value;
   }
 
-  // Check if online
-  isOnline(): boolean {
-    return this.isOnlineSubject.value;
+  /**
+   * Get errors by severity
+   */
+  getErrorsBySeverity(severity: ErrorInfo['severity']): ErrorInfo[] {
+    return this.errorsSubject.value.filter(error => error.severity === severity);
   }
 
-  // Generate unique error ID
+  /**
+   * Check if there are critical errors
+   */
+  hasCriticalErrors(): boolean {
+    return this.errorsSubject.value.some(error => error.severity === 'critical');
+  }
+
+  /**
+   * Setup global error handlers
+   */
+  private setupGlobalErrorHandlers(): void {
+    // Handle unhandled promise rejections
+    window.addEventListener('unhandledrejection', (event) => {
+      this.handleApplicationError(
+        new Error(`Unhandled Promise Rejection: ${event.reason}`),
+        'Promise Rejection'
+      );
+      event.preventDefault();
+    });
+
+    // Handle JavaScript errors
+    window.addEventListener('error', (event) => {
+      this.handleApplicationError(
+        new Error(`${event.message} at ${event.filename}:${event.lineno}:${event.colno}`),
+        'JavaScript Error'
+      );
+    });
+  }
+
+  /**
+   * Monitor network status changes
+   */
+  private monitorNetworkStatus(): void {
+    window.addEventListener('online', () => {
+      this.updateNetworkStatus({ isOffline: false, hasSlowConnection: false });
+      this.clearErrorsBySeverity('high'); // Clear network-related errors
+    });
+
+    window.addEventListener('offline', () => {
+      this.updateNetworkStatus({ isOffline: true, hasSlowConnection: false });
+      this.handleNetworkError(new Error('Device went offline'));
+    });
+
+    // Monitor connection quality if supported
+    if ('connection' in navigator) {
+      const connection = (navigator as any).connection;
+      connection.addEventListener('change', () => {
+        this.updateNetworkStatus({
+          isOffline: !navigator.onLine,
+          hasSlowConnection: connection.downlink < 1,
+          connectionType: connection.effectiveType
+        });
+      });
+    }
+  }
+
+  /**
+   * Update network status
+   */
+  private updateNetworkStatus(status: NetworkError): void {
+    this.networkErrorSubject.next(status);
+  }
+
+  /**
+   * Get network information
+   */
+  private getNetworkInfo(): any {
+    if ('connection' in navigator) {
+      return (navigator as any).connection;
+    }
+    return {};
+  }
+
+  /**
+   * Format validation errors from API
+   */
+  private formatValidationErrors(errors: any): string {
+    if (typeof errors === 'object') {
+      const messages = Object.values(errors)
+        .flat()
+        .filter(msg => typeof msg === 'string');
+      return messages.length > 0 ? messages.join(', ') : 'Validation failed';
+    }
+    return 'Validation failed';
+  }
+
+  /**
+   * Trigger re-authentication
+   */
+  private triggerReauthentication(): void {
+    // Clear stored tokens
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
+
+    // Redirect to login (this could be done via router service injection)
+    if (typeof window !== 'undefined') {
+      window.location.href = '/auth/login';
+    }
+  }
+
+  /**
+   * Generate unique error ID
+   */
   private generateErrorId(): string {
     return `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  // Get HTTP error message
-  private getHttpErrorMessage(error: HttpErrorResponse): string {
-    if (error.error?.message) {
-      return error.error.message;
+  /**
+   * Log error details (only in development)
+   */
+  private logError(type: string, error: any, context?: string): void {
+    if (!environment.production) {
+      console.group(`🚨 ${type} ${context ? `(${context})` : ''}`);
+      console.error('Error:', error);
+      console.error('Timestamp:', new Date().toISOString());
+      if (context) {
+        console.error('Context:', context);
+      }
+      console.groupEnd();
     }
 
-    switch (error.status) {
-      case 400:
-        return 'Invalid request. Please check your input and try again.';
-      case 401:
-        return 'Authentication required. Please log in again.';
-      case 403:
-        return 'Access denied. You do not have permission for this action.';
-      case 404:
-        return 'The requested resource was not found.';
-      case 409:
-        return 'Conflict detected. The resource already exists or has been modified.';
-      case 422:
-        return 'Validation failed. Please check your input and try again.';
-      case 429:
-        return 'Too many requests. Please wait a moment and try again.';
-      case 500:
-        return 'Server error. Please try again later.';
-      case 502:
-        return 'Bad gateway. Please try again later.';
-      case 503:
-        return 'Service unavailable. Please try again later.';
-      case 504:
-        return 'Gateway timeout. Please try again later.';
-      default:
-        return 'An unexpected error occurred. Please try again.';
-    }
+    // In production, you might want to send errors to a monitoring service
+    // this.sendErrorToMonitoringService(type, error, context);
   }
 
-  // Get HTTP error title
-  private getHttpErrorTitle(error: HttpErrorResponse): string {
-    switch (error.status) {
-      case 400:
-        return 'Bad Request';
-      case 401:
-        return 'Unauthorized';
-      case 403:
-        return 'Forbidden';
-      case 404:
-        return 'Not Found';
-      case 409:
-        return 'Conflict';
-      case 422:
-        return 'Validation Error';
-      case 429:
-        return 'Too Many Requests';
-      case 500:
-        return 'Server Error';
-      case 502:
-        return 'Bad Gateway';
-      case 503:
-        return 'Service Unavailable';
-      case 504:
-        return 'Gateway Timeout';
-      default:
-        return 'Error';
-    }
+  /**
+   * Send error to external monitoring service (placeholder)
+   */
+  private sendErrorToMonitoringService(type: string, error: any, context?: string): void {
+    // Implementation for services like Sentry, Bugsnag, etc.
+    // Example:
+    // Sentry.captureException(error, {
+    //   tags: { type, context },
+    //   extra: { timestamp: new Date().toISOString() }
+    // });
   }
 
-  // Check if error is retryable
-  private isRetryableError(error: HttpErrorResponse): boolean {
-    return error.status >= 500 || error.status === 429;
-  }
-
-  // Get general error message
-  private getErrorMessage(error: any): string {
-    if (typeof error === 'string') {
-      return error;
-    }
-    
-    if (error?.message) {
-      return error.message;
-    }
-    
-    if (error?.error?.message) {
-      return error.error.message;
-    }
-    
-    return 'An unexpected error occurred';
-  }
-
-  // Extract validation messages from error object
-  private extractValidationMessages(errors: any): string[] {
-    const messages: string[] = [];
-    
-    if (typeof errors === 'string') {
-      messages.push(errors);
-      return messages;
-    }
-    
-    if (Array.isArray(errors)) {
-      errors.forEach(error => {
-        if (typeof error === 'string') {
-          messages.push(error);
-        } else if (error?.message) {
-          messages.push(error.message);
-        }
-      });
-      return messages;
-    }
-    
-    if (typeof errors === 'object') {
-      Object.keys(errors).forEach(key => {
-        const value = errors[key];
-        if (Array.isArray(value)) {
-          value.forEach((msg: string) => messages.push(msg));
-        } else if (typeof value === 'string') {
-          messages.push(value);
-        }
-      });
-    }
-    
-    return messages.length > 0 ? messages : ['Validation failed'];
-  }
-
-  // Retry mechanism
-  retry<T>(operation: () => Observable<T>, maxRetries: number = 3, delay: number = 1000): Observable<T> {
-    return new Observable(observer => {
-      let retries = 0;
-      
-      const attempt = () => {
-        operation().subscribe({
-          next: (value) => {
-            observer.next(value);
-            observer.complete();
-          },
-          error: (error) => {
-            retries++;
-            if (retries <= maxRetries && this.isRetryableError(error)) {
-              setTimeout(() => attempt(), delay * retries);
-            } else {
-              observer.error(error);
-            }
-          }
-        });
+  /**
+   * Report user feedback about an error
+   */
+  reportErrorFeedback(errorId: string, feedback: string, userEmail?: string): void {
+    const error = this.errorsSubject.value.find(e => e.id === errorId);
+    if (error) {
+      const report = {
+        errorId,
+        feedback,
+        userEmail,
+        error: error,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        url: window.location.href
       };
-      
-      attempt();
-    });
+
+      this.logError('Error Feedback', report);
+      // Send to monitoring service
+      // this.sendErrorToMonitoringService('user_feedback', report);
+    }
   }
-} 
+
+  /**
+   * Get error statistics
+   */
+  getErrorStatistics(): any {
+    const errors = this.errorsSubject.value;
+    return {
+      total: errors.length,
+      bySeverity: {
+        low: errors.filter(e => e.severity === 'low').length,
+        medium: errors.filter(e => e.severity === 'medium').length,
+        high: errors.filter(e => e.severity === 'high').length,
+        critical: errors.filter(e => e.severity === 'critical').length
+      },
+      byContext: errors.reduce((acc, error) => {
+        const context = error.context || 'Unknown';
+        acc[context] = (acc[context] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>),
+      recent: errors.filter(e => Date.now() - e.timestamp.getTime() < 300000) // Last 5 minutes
+    };
+  }
+}
