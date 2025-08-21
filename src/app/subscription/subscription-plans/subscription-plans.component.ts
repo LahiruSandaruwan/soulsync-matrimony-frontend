@@ -197,7 +197,7 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy, AfterViewI
           this.loading = false;
         },
         error: (error: any) => {
-          console.error('Error loading subscription plans:', error);
+          this.handleError('Failed to load subscription plans', error);
           // Fallback to default plans
           this.plans = this.defaultPlans;
           this.loading = false;
@@ -213,7 +213,7 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy, AfterViewI
           this.currentSubscription = response?.data || null;
         },
         error: (error: any) => {
-          console.error('Error loading current subscription:', error);
+          this.handleError('Failed to load current subscription', error);
         }
       });
   }
@@ -510,5 +510,17 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy, AfterViewI
       this.processingPayment = true;
       this.renderPayPalButtons();
     }
+  }
+
+  /**
+   * Handle component errors
+   * @param message User-friendly error message
+   * @param error Technical error details
+   */
+  private handleError(message: string, error: any): void {
+    if (!environment.production) {
+      console.error(`Subscription Plans Error: ${message}`, error);
+    }
+    // Could show toast notification or handle error display
   }
 }

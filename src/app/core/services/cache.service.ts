@@ -51,7 +51,7 @@ export class CacheService {
       localStorage.setItem(this.getCacheKey(key), JSON.stringify(entry));
     }
     } catch (error) {
-      console.warn('Cache storage failed:', error);
+      this.handleError('Cache storage failed', error);
       this.cleanOldEntries();
     }
   }
@@ -80,7 +80,7 @@ export class CacheService {
 
       return entry.data;
     } catch (error) {
-      console.warn('Cache retrieval failed:', error);
+      this.handleError('Cache retrieval failed', error);
       return null;
     }
   }
@@ -94,7 +94,7 @@ export class CacheService {
       localStorage.removeItem(this.getCacheKey(key));
     }
     } catch (error) {
-      console.warn('Cache deletion failed:', error);
+      this.handleError('Cache deletion failed', error);
     }
   }
 
@@ -112,7 +112,7 @@ export class CacheService {
         }
       });
     } catch (error) {
-      console.warn('Cache clear failed:', error);
+      this.handleError('Cache clear failed', error);
     }
   }
 
@@ -144,7 +144,7 @@ export class CacheService {
         ttl: Math.max(0, remainingTTL)
       };
     } catch (error) {
-      console.warn('Cache TTL retrieval failed:', error);
+      this.handleError('Cache TTL retrieval failed', error);
       return null;
     }
   }
@@ -333,7 +333,7 @@ export class CacheService {
         }
       });
     } catch (error) {
-      console.warn('Cache stats failed:', error);
+      this.handleError('Cache stats retrieval failed', error);
     }
 
     return { totalEntries, totalSize, expiredEntries };
@@ -366,7 +366,7 @@ export class CacheService {
         }
       });
     } catch (error) {
-      console.warn('Cache cleanup failed:', error);
+      this.handleError('Cache cleanup failed', error);
     }
   }
 
@@ -405,7 +405,7 @@ export class CacheService {
     }
       });
     } catch (error) {
-      console.warn('Cache cleanup failed:', error);
+      this.handleError('Cache cleanup failed', error);
     }
   }
 
@@ -421,5 +421,17 @@ export class CacheService {
    */
   private getCacheKey(key: string): string {
     return `${this.CACHE_PREFIX}${key}`;
+  }
+
+  /**
+   * Handle cache service errors
+   * @param message User-friendly error message  
+   * @param error Technical error details
+   */
+  private handleError(message: string, error: any): void {
+    if (!environment.production) {
+      console.warn(`Cache Service Warning: ${message}`, error);
+    }
+    // Could emit to error handling service or show notification
   }
 } 

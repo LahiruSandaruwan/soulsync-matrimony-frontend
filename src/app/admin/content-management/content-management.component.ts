@@ -204,7 +204,8 @@ export class ContentManagementComponent implements OnInit, OnDestroy {
     
     if (confirm(`Are you sure you want to ${actionText} ${this.selectedItems.length} content items?`)) {
       // API call for bulk action
-      console.log(`Bulk ${action}:`, this.selectedItems);
+      // Perform bulk action on selected items
+      // Implementation would depend on the specific action type
       this.selectedItems = [];
       this.showBulkActions = false;
       this.loadContent();

@@ -1,0 +1,44 @@
+/* Enhanced 404 Page Styles */
+.animate-bounce {
+  animation: gentle-bounce 2s ease-in-out infinite;
+}
+
+@keyframes gentle-bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Focus improvements for accessibility */
+button:focus,
+a:focus {
+  outline: 2px solid #ec4899;
+  outline-offset: 2px;
+}
+
+/* Hover effects */
+button {
+  transition: all 0.2s ease-in-out;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive improvements */
+@media (max-width: 480px) {
+  .text-8xl {
+    font-size: 4rem;
+  }
+  
+  .text-4xl {
+    font-size: 2rem;
+  }
+}

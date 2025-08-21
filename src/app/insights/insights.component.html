@@ -1,0 +1,190 @@
+<div class="min-h-screen bg-gradient-to-br from-rose-50 via-white to-pink-50 p-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold text-gradient mb-3">Premium Insights 💡</h1>
+      <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+        Understand your profile performance and improve your matching potential with detailed analytics.
+      </p>
+    </div>
+    
+    <app-loading-spinner *ngIf="loading"></app-loading-spinner>
+    
+    <div *ngIf="!loading" class="space-y-8">
+      <!-- Summary Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="insight-card">
+          <div class="insight-icon">👀</div>
+          <h3 class="insight-title">Profile Views</h3>
+          <div class="insight-value">{{ profileViews?.total || 0 }}</div>
+          <div class="insight-change positive" *ngIf="profileViews?.change > 0">
+            +{{ profileViews?.change }}% this week
+          </div>
+        </div>
+        
+        <div class="insight-card">
+          <div class="insight-icon">💞</div>
+          <h3 class="insight-title">Matches</h3>
+          <div class="insight-value">{{ matchAnalytics?.total || 0 }}</div>
+          <div class="insight-change positive" *ngIf="matchAnalytics?.change > 0">
+            +{{ matchAnalytics?.change }}% this week
+          </div>
+        </div>
+        
+        <div class="insight-card">
+          <div class="insight-icon">🔭</div>
+          <h3 class="insight-title">Compatibility Score</h3>
+          <div class="insight-value">{{ compatibilityReports?.avgScore || 0 }}%</div>
+          <div class="insight-change">Average across all matches</div>
+        </div>
+        
+        <div class="insight-card">
+          <div class="insight-icon">🛠️</div>
+          <h3 class="insight-title">Profile Completion</h3>
+          <div class="insight-value">{{ profileOptimization?.completionScore || 0 }}%</div>
+          <div class="insight-change" [class.positive]="profileOptimization?.completionScore >= 80">
+            {{ profileOptimization?.completionScore >= 80 ? 'Excellent!' : 'Room for improvement' }}
+          </div>
+        </div>
+      </div>
+      
+      <!-- Detailed Analytics -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Profile Views Detail -->
+        <div class="insight-card-large">
+          <h2 class="insight-card-title">
+            <span class="insight-icon-small">👀</span>
+            Profile Views Analytics
+          </h2>
+          <div class="insight-content">
+            <div *ngIf="profileViews?.data; else noData">
+              <div class="chart-placeholder">
+                <div class="text-center text-gray-500">
+                  <div class="text-4xl mb-2">📊</div>
+                  <p>Profile views chart would be rendered here</p>
+                  <p class="text-sm">Integration with charting library needed</p>
+                </div>
+              </div>
+              <div class="mt-4 space-y-2">
+                <div class="flex justify-between">
+                  <span>Daily Average:</span>
+                  <span class="font-semibold">{{ profileViews?.dailyAverage || 0 }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Peak Day:</span>
+                  <span class="font-semibold">{{ profileViews?.peakDay || 'N/A' }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Total This Month:</span>
+                  <span class="font-semibold">{{ profileViews?.monthlyTotal || 0 }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Match Analytics Detail -->
+        <div class="insight-card-large">
+          <h2 class="insight-card-title">
+            <span class="insight-icon-small">💞</span>
+            Match Analytics
+          </h2>
+          <div class="insight-content">
+            <div *ngIf="matchAnalytics?.data; else noData">
+              <div class="chart-placeholder">
+                <div class="text-center text-gray-500">
+                  <div class="text-4xl mb-2">💕</div>
+                  <p>Match success rate chart would be rendered here</p>
+                  <p class="text-sm">Integration with charting library needed</p>
+                </div>
+              </div>
+              <div class="mt-4 space-y-2">
+                <div class="flex justify-between">
+                  <span>Success Rate:</span>
+                  <span class="font-semibold">{{ matchAnalytics?.successRate || 0 }}%</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Mutual Likes:</span>
+                  <span class="font-semibold">{{ matchAnalytics?.mutualLikes || 0 }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Conversations Started:</span>
+                  <span class="font-semibold">{{ matchAnalytics?.conversations || 0 }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Compatibility Reports -->
+        <div class="insight-card-large">
+          <h2 class="insight-card-title">
+            <span class="insight-icon-small">🔭</span>
+            Compatibility Reports
+          </h2>
+          <div class="insight-content">
+            <div *ngIf="compatibilityReports?.data; else noData">
+              <div class="space-y-3">
+                <div class="compatibility-item" *ngFor="let factor of compatibilityReports?.topFactors">
+                  <div class="flex justify-between items-center">
+                    <span class="font-medium">{{ factor.name }}</span>
+                    <div class="compatibility-bar">
+                      <div class="compatibility-fill" [style.width.%]="factor.score"></div>
+                    </div>
+                    <span class="text-sm font-semibold">{{ factor.score }}%</span>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-4 p-3 bg-blue-50 rounded-lg">
+                <p class="text-sm text-blue-800">
+                  <strong>Tip:</strong> {{ compatibilityReports?.tip || 'Complete your profile to improve compatibility matching!' }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Profile Optimization -->
+        <div class="insight-card-large">
+          <h2 class="insight-card-title">
+            <span class="insight-icon-small">🛠️</span>
+            Profile Optimization
+          </h2>
+          <div class="insight-content">
+            <div *ngIf="profileOptimization?.data; else noData">
+              <div class="space-y-3">
+                <div class="optimization-item" *ngFor="let item of profileOptimization?.recommendations">
+                  <div class="flex items-center space-x-3">
+                    <div class="optimization-status" [class.completed]="item.completed">
+                      <span *ngIf="item.completed">✅</span>
+                      <span *ngIf="!item.completed">⚠️</span>
+                    </div>
+                    <div class="flex-1">
+                      <div class="font-medium">{{ item.title }}</div>
+                      <div class="text-sm text-gray-600">{{ item.description }}</div>
+                    </div>
+                    <div class="text-sm font-semibold" [class.text-green-600]="item.completed" [class.text-orange-600]="!item.completed">
+                      {{ item.completed ? 'Complete' : 'Pending' }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-4">
+                <button class="btn-primary">
+                  Complete Profile Optimization
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <ng-template #noData>
+      <div class="text-center py-8">
+        <div class="text-4xl mb-4">📊</div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">No data available yet</h3>
+        <p class="text-gray-600">Use the platform more to see your insights!</p>
+      </div>
+    </ng-template>
+  </div>
+</div>

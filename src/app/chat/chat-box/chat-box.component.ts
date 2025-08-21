@@ -7,6 +7,7 @@ import { ChatService } from '../../core/services/chat.service';
 import { AuthService } from '../../core/services/auth.service';
 import { WebSocketService } from '../../core/services/websocket.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
+import { environment } from '../../../environments/environment';
 
 interface Message {
   id: number;
@@ -221,7 +222,7 @@ export class ChatBoxComponent implements OnInit, OnDestroy, AfterViewChecked {
             // Messages marked as read
           },
           error: (error: any) => {
-            console.error('Failed to mark messages as read:', error);
+            this.handleError('Failed to mark messages as read', error);
           }
         });
     }
@@ -399,5 +400,17 @@ export class ChatBoxComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   trackByMessageId(index: number, message: Message): number {
     return message.id;
+  }
+
+  /**
+   * Handle component errors
+   * @param message User-friendly error message
+   * @param error Technical error details
+   */
+  private handleError(message: string, error: any): void {
+    if (!environment.production) {
+      console.error(`Chat Box Error: ${message}`, error);
+    }
+    // Could show toast notification or handle error display
   }
 }

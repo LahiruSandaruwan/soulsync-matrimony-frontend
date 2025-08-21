@@ -1,13 +1,95 @@
-<div class="min-h-screen bg-gradient-romantic flex items-center justify-center">
-  <div class="text-center">
-    <div class="text-6xl mb-4">🚫</div>
-    <h1 class="text-4xl font-romantic text-gray-900 mb-4">Access Denied</h1>
-    <p class="text-gray-600 mb-8">You don't have permission to access this page.</p>
-    <a 
-      routerLink="/dashboard" 
-      class="btn-primary"
-    >
-      Go to Dashboard
-    </a>
+<div class="min-h-screen bg-gradient-to-br from-red-50 via-white to-orange-50 flex items-center justify-center px-4" role="main">
+  <div class="max-w-lg w-full text-center">
+    <!-- Error Illustration -->
+    <div class="text-8xl mb-6 animate-pulse" role="img" aria-label="Access denied icon">🔒</div>
+    
+    <!-- Error Message -->
+    <h1 class="text-4xl font-bold text-gray-900 mb-4" id="error-title">
+      Access Denied
+    </h1>
+    
+    <div *ngIf="isLoggedIn; else notLoggedInMessage">
+      <p class="text-lg text-gray-600 mb-2" aria-describedby="error-title">
+        Sorry <span class="font-semibold text-rose-600">{{ userEmail }}</span>, you don't have permission to access this page.
+      </p>
+      
+      <p class="text-sm text-gray-500 mb-8">
+        This area might be restricted to certain user roles or subscription levels. 🔐
+      </p>
+    </div>
+    
+    <ng-template #notLoggedInMessage>
+      <p class="text-lg text-gray-600 mb-2" aria-describedby="error-title">
+        You need to be logged in to access this page.
+      </p>
+      
+      <p class="text-sm text-gray-500 mb-8">
+        Please sign in to continue your journey to find your soulmate! 💕
+      </p>
+    </ng-template>
+    
+    <!-- Action Buttons -->
+    <div class="space-y-4">
+      <button 
+        (click)="goHome()" 
+        class="w-full bg-gradient-to-r from-rose-500 to-pink-500 text-white px-6 py-3 rounded-lg font-semibold hover:from-rose-600 hover:to-pink-600 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2"
+        [attr.aria-label]="isLoggedIn ? 'Navigate to dashboard' : 'Navigate to login page'"
+      >
+        {{ isLoggedIn ? '🏠 Go to Dashboard' : '🔑 Sign In' }}
+      </button>
+      
+      <button 
+        (click)="goBack()" 
+        class="w-full bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+        aria-label="Go back to previous page"
+      >
+        ← Go Back
+      </button>
+      
+      <!-- Logout button for logged in users -->
+      <button 
+        *ngIf="isLoggedIn"
+        (click)="logout()" 
+        class="w-full bg-gray-100 border border-gray-300 text-gray-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+        aria-label="Logout and return to login page"
+      >
+        🚪 Logout
+      </button>
+    </div>
+    
+    <!-- Help Section -->
+    <div class="mt-8 pt-6 border-t border-gray-200">
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">Need Help?</h2>
+      
+      <div class="space-y-3">
+        <button 
+          (click)="contactSupport()" 
+          class="block w-full text-rose-600 hover:text-rose-700 underline focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 rounded py-2"
+          aria-label="Contact support team for access issues"
+        >
+          📧 Contact Support
+        </button>
+        
+        <button 
+          *ngIf="isLoggedIn"
+          (click)="requestAdminAccess()" 
+          class="block w-full text-blue-600 hover:text-blue-700 underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded py-2"
+          aria-label="Request admin access from administrators"
+        >
+          👑 Request Admin Access
+        </button>
+      </div>
+      
+      <!-- Additional Info -->
+      <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <h3 class="text-sm font-semibold text-blue-900 mb-2">Common Reasons for Access Denial:</h3>
+        <ul class="text-xs text-blue-800 space-y-1 text-left">
+          <li>• Your account doesn't have the required permissions</li>
+          <li>• This feature requires a premium subscription</li>
+          <li>• You're trying to access admin-only content</li>
+          <li>• Your session may have expired</li>
+        </ul>
+      </div>
+    </div>
   </div>
 </div>

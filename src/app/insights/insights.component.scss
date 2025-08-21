@@ -1,0 +1,140 @@
+/* Insights Component Styles */
+
+.text-gradient {
+  background: linear-gradient(135deg, #f43f5e, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.insight-card {
+  @apply bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1;
+}
+
+.insight-card-large {
+  @apply bg-white rounded-xl p-6 shadow-lg border border-gray-100;
+}
+
+.insight-icon {
+  @apply text-4xl mb-3;
+}
+
+.insight-icon-small {
+  @apply text-2xl mr-2;
+}
+
+.insight-title {
+  @apply text-sm font-medium text-gray-600 mb-2;
+}
+
+.insight-card-title {
+  @apply text-xl font-bold text-gray-900 mb-4 flex items-center;
+}
+
+.insight-value {
+  @apply text-3xl font-bold text-gray-900 mb-1;
+}
+
+.insight-change {
+  @apply text-sm text-gray-500;
+  
+  &.positive {
+    @apply text-green-600;
+  }
+  
+  &.negative {
+    @apply text-red-600;
+  }
+}
+
+.insight-content {
+  @apply mt-4;
+}
+
+.chart-placeholder {
+  @apply bg-gray-50 rounded-lg p-8 mb-4;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.compatibility-item {
+  @apply py-2;
+}
+
+.compatibility-bar {
+  @apply w-24 h-2 bg-gray-200 rounded-full mx-3;
+  position: relative;
+}
+
+.compatibility-fill {
+  @apply h-full bg-gradient-to-r from-rose-400 to-pink-500 rounded-full;
+  transition: width 0.3s ease;
+}
+
+.optimization-item {
+  @apply p-3 bg-gray-50 rounded-lg;
+}
+
+.optimization-status {
+  @apply w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm;
+  
+  &.completed {
+    @apply bg-green-100;
+  }
+}
+
+.btn-primary {
+  @apply bg-gradient-to-r from-rose-500 to-pink-500 text-white px-6 py-2 rounded-lg font-semibold hover:from-rose-600 hover:to-pink-600 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 transition-all duration-200;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .insight-card {
+    @apply p-4;
+  }
+  
+  .insight-card-large {
+    @apply p-4;
+  }
+  
+  .insight-value {
+    @apply text-2xl;
+  }
+  
+  .chart-placeholder {
+    @apply p-4;
+    min-height: 150px;
+  }
+}
+
+/* Loading states */
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Accessibility improvements */
+.insight-card:focus {
+  @apply outline-none ring-2 ring-rose-500 ring-offset-2;
+}
+
+.btn-primary:focus {
+  @apply outline-none;
+}
+
+/* Premium badge */
+.premium-badge {
+  @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-400 to-orange-500 text-white;
+}

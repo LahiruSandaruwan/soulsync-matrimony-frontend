@@ -116,7 +116,7 @@ export class WebSocketService {
       });
       this.connectionStateSubject.next('connected');
     } catch (err) {
-      console.error('Echo load error:', err);
+      this.handleError('Failed to initialize Echo WebSocket connection', err);
       this.connectionStateSubject.next('error');
     }
   }
@@ -143,7 +143,7 @@ export class WebSocketService {
         this.onlineStatusSubject.next(message.data as OnlineStatus);
         break;
       case 'error':
-        console.error('WebSocket error message:', message.data);
+        this.handleError('WebSocket error received', message.data);
         break;
     }
   }
@@ -324,5 +324,17 @@ export class WebSocketService {
 
   sendTyping(conversationId: number, isTyping: boolean): void {
     this.sendTypingIndicator(conversationId, isTyping);
+  }
+
+  /**
+   * Handle WebSocket service errors
+   * @param message User-friendly error message
+   * @param error Technical error details
+   */
+  private handleError(message: string, error: any): void {
+    if (!environment.production) {
+      console.error(`WebSocket Service Error: ${message}`, error);
+    }
+    // Could emit to error handling service or show notification
   }
 } 

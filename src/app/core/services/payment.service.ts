@@ -85,7 +85,7 @@ export class PaymentService {
           }
         }),
         catchError(error => {
-          console.error('Get Plans Error:', error);
+          this.handleError('Failed to load subscription plans', error);
           return throwError(() => error);
         })
       );
@@ -104,7 +104,7 @@ export class PaymentService {
           }
         }),
         catchError(error => {
-          console.error('Get Subscription Error:', error);
+          this.handleError('Failed to load current subscription', error);
           return throwError(() => error);
         })
       );
@@ -123,7 +123,7 @@ export class PaymentService {
           }
         }),
         catchError(error => {
-          console.error('Get Payment Methods Error:', error);
+          this.handleError('Failed to load payment methods', error);
           return throwError(() => error);
         })
       );
@@ -148,7 +148,7 @@ export class PaymentService {
           }
         }),
         catchError(error => {
-          console.error('Subscribe Error:', error);
+          this.handleError('Failed to process subscription', error);
           this.isProcessingSubject.next(false);
           return throwError(() => error);
         })
@@ -173,7 +173,7 @@ export class PaymentService {
           }
         }),
         catchError(error => {
-          console.error('Cancel Subscription Error:', error);
+          this.handleError('Failed to cancel subscription', error);
           return throwError(() => error);
         })
       );
@@ -192,7 +192,7 @@ export class PaymentService {
           }
         }),
         catchError(error => {
-          console.error('Update Subscription Error:', error);
+          this.handleError('Failed to update subscription', error);
           return throwError(() => error);
         })
       );
@@ -219,7 +219,7 @@ export class PaymentService {
           }
         }),
         catchError(error => {
-          console.error('Get Payment History Error:', error);
+          this.handleError('Failed to load payment history', error);
           return throwError(() => error);
         })
       );
@@ -241,7 +241,7 @@ export class PaymentService {
           }
         }),
         catchError(error => {
-          console.error('Stripe Payment Error:', error);
+          this.handleError('Failed to process Stripe payment', error);
           return throwError(() => error);
         })
       );
@@ -262,7 +262,7 @@ export class PaymentService {
           }
         }),
         catchError(error => {
-          console.error('PayPal Payment Error:', error);
+          this.handleError('Failed to process PayPal payment', error);
           return throwError(() => error);
         })
       );
@@ -335,5 +335,24 @@ export class PaymentService {
     this.paymentMethodsSubject.next([]);
     this.plansSubject.next([]);
     this.isProcessingSubject.next(false);
+  }
+
+  /**
+   * Handle service errors in a standardized way
+   * @param message User-friendly error message
+   * @param error Technical error details
+   */
+  private handleError(message: string, error: any): void {
+    // In production, you might want to send errors to a logging service
+    // For now, we'll suppress console logging for production build
+    if (!environment.production) {
+      console.error(`Payment Service Error: ${message}`, error);
+    }
+    
+    // You could emit to an error handling service here
+    // this.errorHandlingService.handleError(message, error);
+    
+    // Or show a toast notification
+    // this.toastService.showError(message);
   }
 } 

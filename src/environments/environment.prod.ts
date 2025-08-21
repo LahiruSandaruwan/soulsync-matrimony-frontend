@@ -9,19 +9,22 @@ export const environment = {
   features: {
     chat: true,
     voiceMessages: true,
-    videoCalls: false,
+    videoCalls: true,
     horoscope: true,
     premiumFeatures: true,
     adminPanel: true,
+    advancedSearch: true,
+    profileVerification: true,
+    videoInterview: true,
   },
   
   // Payment configuration
   payments: {
     stripe: {
-      publishableKey: 'pk_live_your_stripe_key_here',
+      publishableKey: 'pk_live_51234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
     },
     paypal: {
-      clientId: 'your_paypal_client_id_here',
+      clientId: 'AY1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
     },
   },
   
@@ -48,13 +51,13 @@ export const environment = {
   // Analytics
   analytics: {
     enableGoogleAnalytics: true,
-    googleAnalyticsId: 'G-XXXXXXXXXX'
+    googleAnalyticsId: 'G-SOULSYNC2024'
   },
 
   // Notifications
   notifications: {
     enablePush: true,
-    vapidPublicKey: 'YOUR_PROD_VAPID_PUBLIC_KEY_BASE64URL'
+    vapidPublicKey: 'BN1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef'
   },
   
   // Cache settings

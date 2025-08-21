@@ -1,0 +1,77 @@
+<div class="max-w-2xl mx-auto p-6">
+  <h1 class="text-3xl font-bold text-gradient mb-2">Your Horoscope ✨</h1>
+  <p class="text-gray-600 mb-4">Complete your astrological profile to improve match suggestions.</p>
+  
+  <app-loading-spinner *ngIf="loading"></app-loading-spinner>
+  
+  <form *ngIf="!loading" (ngSubmit)="onSave()" class="space-y-4">
+    <div>
+      <label class="form-label" for="sun-sign">Sun Sign</label>
+      <select 
+        id="sun-sign"
+        [(ngModel)]="model.sun_sign" 
+        name="sun_sign" 
+        class="input-field"
+        aria-describedby="sun-sign-help"
+      >
+        <option value="">Select your sun sign</option>
+        <option *ngFor="let sign of signs; trackBy: trackBySign" [value]="sign">{{ sign | titlecase }}</option>
+      </select>
+      <div id="sun-sign-help" class="text-sm text-gray-500 mt-1">Your primary zodiac sign based on birth date</div>
+    </div>
+    
+    <div>
+      <label class="form-label" for="moon-sign">Moon Sign</label>
+      <input 
+        id="moon-sign"
+        [(ngModel)]="model.moon_sign" 
+        name="moon_sign" 
+        class="input-field"
+        placeholder="Enter your moon sign (optional)"
+        aria-describedby="moon-sign-help"
+      />
+      <div id="moon-sign-help" class="text-sm text-gray-500 mt-1">Your emotional zodiac sign (optional)</div>
+    </div>
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label class="form-label" for="birth-time">Birth Time</label>
+        <input 
+          id="birth-time"
+          [(ngModel)]="model.birth_time" 
+          name="birth_time" 
+          type="time"
+          class="input-field"
+          placeholder="HH:MM"
+          aria-describedby="birth-time-help"
+        />
+        <div id="birth-time-help" class="text-sm text-gray-500 mt-1">Time of birth (24-hour format)</div>
+      </div>
+      
+      <div>
+        <label class="form-label" for="birth-place">Birth Place</label>
+        <input 
+          id="birth-place"
+          [(ngModel)]="model.birth_place" 
+          name="birth_place" 
+          class="input-field"
+          placeholder="City, Country"
+          aria-describedby="birth-place-help"
+        />
+        <div id="birth-place-help" class="text-sm text-gray-500 mt-1">Your place of birth</div>
+      </div>
+    </div>
+    
+    <div class="pt-4">
+      <button 
+        type="submit"
+        class="btn-primary w-full sm:w-auto"
+        [disabled]="loading || !model.sun_sign"
+        aria-label="Save horoscope information"
+      >
+        <span *ngIf="loading" class="loading-spinner mr-2"></span>
+        {{ loading ? 'Saving...' : 'Save Horoscope' }}
+      </button>
+    </div>
+  </form>
+</div>

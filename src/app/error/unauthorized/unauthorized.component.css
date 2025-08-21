@@ -1,0 +1,81 @@
+/* Enhanced Unauthorized Page Styles */
+.animate-pulse {
+  animation: soft-pulse 3s ease-in-out infinite;
+}
+
+@keyframes soft-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+/* Focus improvements for accessibility */
+button:focus,
+a:focus {
+  outline: 2px solid #f43f5e;
+  outline-offset: 2px;
+}
+
+/* Enhanced hover effects */
+button {
+  transition: all 0.2s ease-in-out;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Gradient text effect */
+.text-gradient {
+  background: linear-gradient(135deg, #f43f5e, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Help section styling */
+.help-section {
+  background: linear-gradient(135deg, #fef7ff, #fdf2f8);
+  border: 1px solid #f9a8d4;
+}
+
+/* Responsive improvements */
+@media (max-width: 480px) {
+  .text-8xl {
+    font-size: 4rem;
+  }
+  
+  .text-4xl {
+    font-size: 2rem;
+  }
+  
+  .text-lg {
+    font-size: 1rem;
+  }
+}
+
+/* Animation for the lock icon */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse {
+    animation: none;
+  }
+}
+
+/* Enhanced accessibility for screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

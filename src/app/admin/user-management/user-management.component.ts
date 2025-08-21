@@ -300,7 +300,8 @@ export class UserManagementComponent implements OnInit, OnDestroy {
 
   exportUsers(): void {
     // Export functionality
-    console.log('Exporting users');
+    // Export users to CSV or Excel format
+    // Implementation would generate and download user data
   }
 
   refreshData(): void {

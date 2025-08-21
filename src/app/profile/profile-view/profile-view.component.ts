@@ -8,6 +8,7 @@ import { MatchService } from '../../core/services/match.service';
 import { HoroscopeService } from '../../core/services/horoscope.service';
 import { User, UserPhoto } from '../../core/models/match.model';
 import { UserProfile } from '../../core/models/user.model';
+import { environment } from '../../../environments/environment';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 
 @Component({
@@ -135,7 +136,7 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
           this.loadingPhotos = false;
         },
         error: (error: any) => {
-          console.error('Failed to load photos:', error);
+          this.handleError('Failed to load user photos', error);
           this.loadingPhotos = false;
         }
       });
@@ -370,5 +371,17 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
 
   onImageError(event: any): void {
     event.target.src = '/assets/images/default-avatar.png';
+  }
+
+  /**
+   * Handle component errors
+   * @param message User-friendly error message
+   * @param error Technical error details
+   */
+  private handleError(message: string, error: any): void {
+    if (!environment.production) {
+      console.error(`Profile View Error: ${message}`, error);
+    }
+    // Could show toast notification or handle error display
   }
 } 

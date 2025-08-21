@@ -227,12 +227,28 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
       const settings = this.siteForm.value;
       
       // API call to save site settings
-      setTimeout(() => {
-        this.siteSettings = { ...this.siteSettings, ...settings };
-        this.success = 'Site settings saved successfully!';
-        this.saving = false;
-        setTimeout(() => this.success = '', 3000);
-      }, 1000);
+      this.api.put<any>('/admin/settings', {
+        category: 'site',
+        settings: settings
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.siteSettings = { ...this.siteSettings, ...settings };
+            this.success = 'Site settings saved successfully!';
+          } else {
+            this.error = res.message || 'Failed to save site settings';
+          }
+          this.saving = false;
+          setTimeout(() => { this.success = ''; this.error = ''; }, 3000);
+        },
+        error: (err) => {
+          this.error = err.message || 'Failed to save site settings';
+          this.saving = false;
+          setTimeout(() => this.error = '', 3000);
+        }
+      });
     }
   }
 
@@ -244,12 +260,28 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
       const settings = this.emailForm.value;
       
       // API call to save email settings
-      setTimeout(() => {
-        this.emailSettings = { ...this.emailSettings, ...settings };
-        this.success = 'Email settings saved successfully!';
-        this.saving = false;
-        setTimeout(() => this.success = '', 3000);
-      }, 1000);
+      this.api.put<any>('/admin/settings', {
+        category: 'email',
+        settings: settings
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.emailSettings = { ...this.emailSettings, ...settings };
+            this.success = 'Email settings saved successfully!';
+          } else {
+            this.error = res.message || 'Failed to save email settings';
+          }
+          this.saving = false;
+          setTimeout(() => { this.success = ''; this.error = ''; }, 3000);
+        },
+        error: (err) => {
+          this.error = err.message || 'Failed to save email settings';
+          this.saving = false;
+          setTimeout(() => this.error = '', 3000);
+        }
+      });
     }
   }
 
@@ -296,12 +328,28 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
       const settings = this.securityForm.value;
       
       // API call to save security settings
-      setTimeout(() => {
-        this.securitySettings = { ...this.securitySettings, ...settings };
-        this.success = 'Security settings saved successfully!';
-        this.saving = false;
-        setTimeout(() => this.success = '', 3000);
-      }, 1000);
+      this.api.put<any>('/admin/settings', {
+        category: 'security',
+        settings: settings
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.securitySettings = { ...this.securitySettings, ...settings };
+            this.success = 'Security settings saved successfully!';
+          } else {
+            this.error = res.message || 'Failed to save security settings';
+          }
+          this.saving = false;
+          setTimeout(() => { this.success = ''; this.error = ''; }, 3000);
+        },
+        error: (err) => {
+          this.error = err.message || 'Failed to save security settings';
+          this.saving = false;
+          setTimeout(() => this.error = '', 3000);
+        }
+      });
     }
   }
 
@@ -311,11 +359,24 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
       this.error = '';
       
       // API call to test email configuration
-      setTimeout(() => {
-        this.success = 'Test email sent successfully!';
-        this.saving = false;
-        setTimeout(() => this.success = '', 3000);
-      }, 2000);
+      this.api.post<any>('/admin/settings/test-email', this.emailForm.value)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.success = 'Test email sent successfully!';
+          } else {
+            this.error = res.message || 'Failed to send test email';
+          }
+          this.saving = false;
+          setTimeout(() => { this.success = ''; this.error = ''; }, 3000);
+        },
+        error: (err) => {
+          this.error = err.message || 'Failed to send test email';
+          this.saving = false;
+          setTimeout(() => this.error = '', 3000);
+        }
+      });
     }
   }
 
@@ -325,11 +386,24 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
       this.error = '';
       
       // API call to clear cache
-      setTimeout(() => {
-        this.success = 'Cache cleared successfully!';
-        this.saving = false;
-        setTimeout(() => this.success = '', 3000);
-      }, 2000);
+      this.api.post<any>('/admin/cache/clear', {})
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.success = 'Cache cleared successfully!';
+          } else {
+            this.error = res.message || 'Failed to clear cache';
+          }
+          this.saving = false;
+          setTimeout(() => { this.success = ''; this.error = ''; }, 3000);
+        },
+        error: (err) => {
+          this.error = err.message || 'Failed to clear cache';
+          this.saving = false;
+          setTimeout(() => this.error = '', 3000);
+        }
+      });
     }
   }
 
@@ -338,11 +412,31 @@ export class AdminSettingsComponent implements OnInit, OnDestroy {
     this.error = '';
     
     // API call to backup database
-    setTimeout(() => {
-      this.success = 'Database backup completed successfully!';
-      this.saving = false;
-      setTimeout(() => this.success = '', 3000);
-    }, 3000);
+    this.api.post<any>('/admin/database/backup', {})
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.success = 'Database backup completed successfully!';
+          // If there's a download URL, trigger download
+          if (res.downloadUrl) {
+            const link = document.createElement('a');
+            link.href = res.downloadUrl;
+            link.download = res.filename || 'database-backup.sql';
+            link.click();
+          }
+        } else {
+          this.error = res.message || 'Failed to backup database';
+        }
+        this.saving = false;
+        setTimeout(() => { this.success = ''; this.error = ''; }, 3000);
+      },
+      error: (err) => {
+        this.error = err.message || 'Failed to backup database';
+        this.saving = false;
+        setTimeout(() => this.error = '', 3000);
+      }
+    });
   }
 
   onToggleMaintenanceMode(): void {
