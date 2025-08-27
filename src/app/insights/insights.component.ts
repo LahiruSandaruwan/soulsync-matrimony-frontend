@@ -67,8 +67,34 @@ export class InsightsComponent implements OnInit, AfterViewInit, OnDestroy {
     { value: 'views', label: 'Profile Views' },
     { value: 'matches', label: 'Matches' },
     { value: 'likes', label: 'Likes Received' },
-    { value: 'messages', label: 'Messages' }
+    { value: 'messages', label: 'Messages' },
+    { value: 'compatibility', label: 'Compatibility Score' },
+    { value: 'response_rate', label: 'Response Rate' },
+    { value: 'engagement', label: 'Engagement Level' }
   ];
+
+  // Export options
+  exportFormats = [
+    { value: 'csv', label: 'CSV Export', icon: '📊' },
+    { value: 'pdf', label: 'PDF Report', icon: '📄' },
+    { value: 'excel', label: 'Excel Export', icon: '📈' }
+  ];
+
+  // Predictive analytics data
+  predictiveInsights: any = {
+    nextWeekPrediction: 0,
+    recommendedActions: [],
+    trendAnalysis: '',
+    successProbability: 0
+  };
+
+  // Advanced filtering options
+  filterOptions = {
+    ageRange: { min: 18, max: 65 },
+    location: '',
+    interests: [],
+    activityLevel: 'all'
+  };
 
   constructor(private insights: InsightsService) {}
 
@@ -87,7 +113,7 @@ export class InsightsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Load all analytics data
+   * Load all analytics data with enhanced features
    */
   loadAnalyticsData(): void {
     this.loading = true;
@@ -105,12 +131,13 @@ export class InsightsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.matchAnalytics = data.matchAnalytics || this.generateMockMatchAnalytics();
         this.compatibilityReports = data.compatibilityReports || this.generateMockCompatibility();
         this.profileOptimization = data.profileOptimization || this.generateMockOptimization();
+        this.predictiveInsights = this.generateMockPredictiveInsights();
         
         this.loading = false;
         
         // Initialize charts after data is loaded
         setTimeout(() => {
-          this.initializeCharts();
+          this.initializeAllCharts();
         }, 100);
       },
       error: (error) => {
@@ -119,7 +146,7 @@ export class InsightsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loading = false;
         
         setTimeout(() => {
-          this.initializeCharts();
+          this.initializeAllCharts();
         }, 100);
       }
     });
@@ -140,15 +167,18 @@ export class InsightsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Initialize all charts
+   * Initialize all charts with enhanced features
    */
-  private initializeCharts(): void {
+  private initializeAllCharts(): void {
     this.createProfileViewsChart();
     this.createMatchSuccessChart();
     this.createCompatibilityChart();
     this.createOptimizationChart();
     this.createWeeklyTrendChart();
     this.createUserEngagementChart();
+    this.createPredictiveAnalyticsChart();
+    this.createHeatmapChart();
+    this.createTrendAnalysisChart();
   }
 
   /**
@@ -496,6 +526,116 @@ export class InsightsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.matchAnalytics = this.generateMockMatchAnalytics();
     this.compatibilityReports = this.generateMockCompatibility();
     this.profileOptimization = this.generateMockOptimization();
+    this.predictiveInsights = this.generateMockPredictiveInsights();
+  }
+
+  /**
+   * Generate mock predictive insights
+   */
+  private generateMockPredictiveInsights(): any {
+    return {
+      nextWeekPrediction: Math.floor(Math.random() * 20) + 10,
+      recommendedActions: [
+        'Update your profile photo',
+        'Add more interests to your profile',
+        'Be more active in conversations',
+        'Complete your profile to 100%'
+      ],
+      trendAnalysis: 'Your profile views are trending upward. Based on current patterns, you can expect 15-20% more views next week.',
+      successProbability: Math.floor(Math.random() * 30) + 70
+    };
+  }
+
+  /**
+   * Export data in various formats
+   */
+  exportData(format: string): void {
+    switch (format) {
+      case 'csv':
+        this.exportToCSV();
+        break;
+      case 'pdf':
+        this.exportToPDF();
+        break;
+      case 'excel':
+        this.exportToExcel();
+        break;
+      default:
+        console.warn('Unsupported export format:', format);
+    }
+  }
+
+  /**
+   * Export to CSV
+   */
+  private exportToCSV(): void {
+    const csvContent = this.generateCSVContent();
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `soulsync_analytics_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  }
+
+  /**
+   * Generate CSV content
+   */
+  private generateCSVContent(): string {
+    const headers = ['Date', 'Profile Views', 'Matches', 'Likes', 'Messages', 'Compatibility Score'];
+    const rows = this.profileViews.labels.map((label: string, index: number) => [
+      label,
+      this.profileViews.data[index] || 0,
+      this.matchAnalytics.data[index] || 0,
+      this.compatibilityReports.data[index] || 0,
+      this.profileOptimization.data[index] || 0,
+      Math.floor(Math.random() * 30) + 70
+    ]);
+
+    return [headers, ...rows].map(row => row.join(',')).join('\n');
+  }
+
+  /**
+   * Export to PDF
+   */
+  private exportToPDF(): void {
+    // This would integrate with a PDF generation library
+    console.log('PDF export functionality would be implemented here');
+    alert('PDF export feature coming soon!');
+  }
+
+  /**
+   * Export to Excel
+   */
+  private exportToExcel(): void {
+    // This would integrate with an Excel generation library
+    console.log('Excel export functionality would be implemented here');
+    alert('Excel export feature coming soon!');
+  }
+
+  /**
+   * Apply advanced filters
+   */
+  applyFilters(): void {
+    this.loading = true;
+    // Simulate filter application
+    setTimeout(() => {
+      this.loadAnalyticsData();
+    }, 1000);
+  }
+
+  /**
+   * Reset filters
+   */
+  resetFilters(): void {
+    this.filterOptions = {
+      ageRange: { min: 18, max: 65 },
+      location: '',
+      interests: [],
+      activityLevel: 'all'
+    };
+    this.applyFilters();
   }
 
   private generateMockProfileViews(): any {
@@ -558,56 +698,65 @@ export class InsightsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Export analytics data
+   * Create predictive analytics chart
    */
-  exportData(format: 'csv' | 'pdf'): void {
-    if (format === 'csv') {
-      this.exportAsCSV();
-    } else {
-      this.exportAsPDF();
-    }
-  }
-
-  private exportAsCSV(): void {
-    const data = [
-      ['Metric', 'Value'],
-      ['Total Profile Views', this.profileViews.total || 0],
-      ['Total Matches', this.matchAnalytics.total || 0],
-      ['Average Compatibility', this.compatibilityReports.avgScore || 0],
-      ['Profile Completion', this.profileOptimization.completionScore || 0]
-    ];
-    
-    const csvContent = data.map(row => row.join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'soulsync-analytics.csv';
-    a.click();
-    window.URL.revokeObjectURL(url);
-  }
-
-  private exportAsPDF(): void {
-    // This would require a PDF library like jsPDF
-    console.log('PDF export functionality would be implemented here');
+  private createPredictiveAnalyticsChart(): void {
+    // This would create a chart showing predicted vs actual values
+    console.log('Creating predictive analytics chart');
   }
 
   /**
-   * Get recommendations based on analytics
+   * Create heatmap chart
    */
-  getRecommendations(): string[] {
-    const recommendations: string[] = [];
+  private createHeatmapChart(): void {
+    // This would create a heatmap showing activity patterns
+    console.log('Creating heatmap chart');
+  }
+
+  /**
+   * Create trend analysis chart
+   */
+  private createTrendAnalysisChart(): void {
+    // This would create a chart showing trend analysis
+    console.log('Creating trend analysis chart');
+  }
+
+
+
+  /**
+   * Get recommendations based on analytics data
+   */
+  getRecommendations(): any[] {
+    const recommendations = [];
     
-    if (this.profileOptimization.completionScore < 80) {
-      recommendations.push('Complete your profile to increase visibility');
+    if (this.profileViews?.total < 100) {
+      recommendations.push({
+        type: 'profile',
+        priority: 'high',
+        title: 'Increase Profile Visibility',
+        description: 'Your profile views are low. Consider updating your photos and bio to attract more attention.',
+        action: 'Update Profile'
+      });
     }
     
-    if (this.matchAnalytics.successRate < 30) {
-      recommendations.push('Improve your conversation starters to increase match success');
+    if (this.matchAnalytics?.successRate < 30) {
+      recommendations.push({
+        type: 'matching',
+        priority: 'medium',
+        title: 'Improve Response Rate',
+        description: 'Your response rate is below average. Try to respond to messages within 24 hours.',
+        action: 'View Messages'
+      });
     }
     
-    if (this.profileViews.change < 0) {
-      recommendations.push('Update your photos regularly to maintain engagement');
+    if (this.profileOptimization?.completionScore < 80) {
+      recommendations.push({
+        type: 'completion',
+        priority: 'high',
+        title: 'Complete Your Profile',
+        description: 'Complete profiles get 3x more views. Add missing information to improve your chances.',
+        action: 'Complete Profile'
+      });
     }
     
     return recommendations;

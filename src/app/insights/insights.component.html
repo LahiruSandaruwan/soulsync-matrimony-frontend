@@ -43,16 +43,12 @@
         
         <div class="flex gap-2">
           <button 
-            (click)="exportData('csv')"
-            class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm"
+            *ngFor="let format of exportFormats"
+            (click)="exportData(format.value)"
+            class="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all text-sm flex items-center gap-2"
           >
-            📥 Export CSV
-          </button>
-          <button 
-            (click)="exportData('pdf')"
-            class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
-          >
-            📄 Export PDF
+            <span>{{ format.icon }}</span>
+            {{ format.label }}
           </button>
         </div>
       </div>
@@ -266,7 +262,11 @@
             <div *ngIf="getRecommendations().length > 0; else noRecommendations" class="recommendation-list">
               <div *ngFor="let recommendation of getRecommendations()" class="recommendation-item">
                 <div class="recommendation-icon">💡</div>
-                <div class="recommendation-text">{{ recommendation }}</div>
+                <div class="recommendation-content">
+                  <h4 class="recommendation-title">{{ recommendation.title }}</h4>
+                  <p class="recommendation-description">{{ recommendation.description }}</p>
+                  <button class="recommendation-action">{{ recommendation.action }}</button>
+                </div>
               </div>
             </div>
             <ng-template #noRecommendations>
@@ -301,6 +301,55 @@
               <span>🔄</span>
               Refresh Data
             </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Predictive Analytics Section -->
+      <div class="predictive-analytics-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span class="section-icon">🔮</span>
+            Predictive Analytics
+          </h2>
+          <p class="section-subtitle">AI-powered insights and predictions for your dating success</p>
+        </div>
+        
+        <div class="predictive-grid">
+          <div class="prediction-card">
+            <div class="prediction-icon">📈</div>
+            <div class="prediction-content">
+              <h3 class="prediction-title">Next Week Prediction</h3>
+              <div class="prediction-value">{{ predictiveInsights?.nextWeekPrediction || 0 }}</div>
+              <p class="prediction-description">Expected profile views</p>
+            </div>
+          </div>
+          
+          <div class="prediction-card">
+            <div class="prediction-icon">🎯</div>
+            <div class="prediction-content">
+              <h3 class="prediction-title">Success Probability</h3>
+              <div class="prediction-value">{{ predictiveInsights?.successProbability || 0 }}%</div>
+              <p class="prediction-description">Chance of finding a match</p>
+            </div>
+          </div>
+          
+          <div class="prediction-card">
+            <div class="prediction-icon">📊</div>
+            <div class="prediction-content">
+              <h3 class="prediction-title">Trend Analysis</h3>
+              <div class="prediction-description">{{ predictiveInsights?.trendAnalysis || 'Analyzing your patterns...' }}</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="recommended-actions">
+          <h3 class="actions-title">🎯 Recommended Actions</h3>
+          <div class="actions-list">
+            <div *ngFor="let action of predictiveInsights?.recommendedActions" class="action-item">
+              <span class="action-icon">✅</span>
+              <span class="action-text">{{ action }}</span>
+            </div>
           </div>
         </div>
       </div>
