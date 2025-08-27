@@ -1,0 +1,276 @@
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 px-4 py-6">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header Section -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center gap-2 mb-4">
+        <span class="text-4xl">✅</span>
+        <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          Verified Members
+        </h1>
+        <span class="text-4xl">🔒</span>
+      </div>
+      <p class="text-lg text-gray-600 max-w-2xl mx-auto mb-4">
+        Connect with confidence! Browse profiles that have been verified for authenticity and security
+      </p>
+      <div class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full">
+        <span class="text-sm font-medium text-blue-800">{{ getVerifiedBadgeText() }}</span>
+      </div>
+    </div>
+
+    <!-- Verification Benefits Banner -->
+    <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-6 text-white mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-xl font-bold mb-2">Why Choose Verified Members? 🛡️</h3>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+            <div class="flex items-center gap-2">
+              <span>📸</span>
+              <span>Real Photos</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span>📄</span>
+              <span>Identity Verified</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span>📱</span>
+              <span>Phone Confirmed</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span>🛡️</span>
+              <span>Safe & Secure</span>
+            </div>
+          </div>
+        </div>
+        <div class="hidden md:block text-6xl opacity-20">✅</div>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="bg-white rounded-2xl shadow-lg border border-blue-100 p-6 mb-8">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <!-- Sort Options -->
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700">Sort by:</label>
+          <select 
+            [(ngModel)]="filters.sortBy" 
+            (change)="onSortChange(filters.sortBy)"
+            class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option *ngFor="let option of sortOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Verification Type -->
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700">Verification:</label>
+          <select 
+            [(ngModel)]="filters.verificationType" 
+            (change)="onVerificationTypeChange(filters.verificationType)"
+            class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option *ngFor="let option of verificationTypeOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Age Range -->
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700">Age:</label>
+          <input 
+            type="number" 
+            [(ngModel)]="filters.ageMin" 
+            (change)="onFilterChange()"
+            placeholder="Min" 
+            min="18" 
+            max="80"
+            class="w-20 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+          <span class="text-gray-500">-</span>
+          <input 
+            type="number" 
+            [(ngModel)]="filters.ageMax" 
+            (change)="onFilterChange()"
+            placeholder="Max" 
+            min="18" 
+            max="80"
+            class="w-20 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+        </div>
+
+        <!-- Profession Filter -->
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700">Profession:</label>
+          <input 
+            type="text" 
+            [(ngModel)]="filters.profession" 
+            (input)="onFilterChange()"
+            placeholder="Enter profession" 
+            class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+        </div>
+
+        <!-- Reset Filters -->
+        <button 
+          (click)="resetFilters()"
+          class="px-4 py-2 text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
+        >
+          Reset Filters
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <app-loading-spinner *ngIf="loading" class="my-12"></app-loading-spinner>
+
+    <!-- No Results -->
+    <div *ngIf="!loading && users.length === 0" class="text-center py-16">
+      <div class="text-8xl mb-6">✅</div>
+      <h3 class="text-2xl font-bold text-gray-900 mb-4">No Verified Members Found</h3>
+      <p class="text-gray-600 mb-8 max-w-md mx-auto">
+        We couldn't find any verified members matching your criteria. Try adjusting your filters or check back later.
+      </p>
+      <button 
+        (click)="resetFilters()"
+        class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200"
+      >
+        <span>🔄</span>
+        Reset Filters
+      </button>
+    </div>
+
+    <!-- Verified Members Grid -->
+    <div *ngIf="!loading && users.length > 0" class="space-y-8">
+      <!-- Users Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div *ngFor="let user of users; trackBy: trackByUserId" class="relative">
+          <!-- Verification Level Badge -->
+          <div class="absolute top-3 right-3 z-10 flex items-center gap-1">
+            <div 
+              class="verification-level-badge"
+              [ngClass]="{
+                'bg-green-500': getVerificationLevel(user) === 'complete',
+                'bg-blue-500': getVerificationLevel(user) === 'advanced',
+                'bg-yellow-500': getVerificationLevel(user) === 'basic'
+              }"
+            >
+              <span *ngIf="getVerificationLevel(user) === 'complete'">🌟</span>
+              <span *ngIf="getVerificationLevel(user) === 'advanced'">✅</span>
+              <span *ngIf="getVerificationLevel(user) === 'basic'">🔰</span>
+              <span class="text-xs font-bold text-white ml-1">
+                {{ getVerificationLevel(user).toUpperCase() }}
+              </span>
+            </div>
+          </div>
+          
+          <!-- Verification Badges -->
+          <div class="absolute top-3 left-3 z-10 flex flex-col gap-1">
+            <div 
+              *ngFor="let badge of getVerificationBadges(user)" 
+              class="verification-badge text-white px-2 py-1 rounded-full text-xs font-bold shadow-md flex items-center gap-1"
+              [ngClass]="getVerificationBadgeColor(badge)"
+            >
+              <span>{{ getVerificationBadgeIcon(badge) }}</span>
+              <span class="hidden sm:inline">{{ badge.charAt(0).toUpperCase() + badge.slice(1) }}</span>
+            </div>
+          </div>
+          
+          <app-user-card
+            [user]="user"
+            [showActions]="true"
+            [showMatchPercentage]="true"
+            (like)="onLike($event)"
+            (dislike)="onDislike($event)"
+            (superLike)="onSuperLike($event)"
+            (viewProfile)="onViewProfile($event)"
+            class="verified-card"
+          ></app-user-card>
+        </div>
+      </div>
+
+      <!-- Load More / Pagination -->
+      <div class="flex justify-center mt-8" *ngIf="totalPages > 1">
+        <app-pagination
+          [currentPage]="currentPage"
+          [totalPages]="totalPages"
+          [totalItems]="totalUsers"
+          [itemsPerPage]="pageSize"
+          (pageChange)="onPageChange($event)"
+        ></app-pagination>
+      </div>
+
+      <!-- Load More Button (Alternative to pagination) -->
+      <div class="text-center mt-8" *ngIf="hasMoreUsers && totalPages <= 1">
+        <button 
+          (click)="loadVerifiedProfiles()"
+          [disabled]="loadingMore"
+          class="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 disabled:opacity-50 transition-all duration-200"
+        >
+          <app-loading-spinner *ngIf="loadingMore" [size]="16"></app-loading-spinner>
+          <span *ngIf="!loadingMore">Load More Verified Members</span>
+          <span *ngIf="loadingMore">Loading...</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Verification Process Information -->
+    <div class="mt-12 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-2xl p-8 border border-blue-200">
+      <div class="text-center mb-6">
+        <div class="text-6xl mb-4">🔒</div>
+        <h3 class="text-2xl font-bold text-blue-800 mb-4">Get Your Profile Verified</h3>
+        <p class="text-blue-700 mb-6 max-w-2xl mx-auto">
+          Increase your chances of finding meaningful connections by getting your profile verified. 
+          Verified members receive 5x more profile views and matches!
+        </p>
+      </div>
+
+      <!-- Verification Steps -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="verification-step">
+          <div class="bg-white rounded-lg p-6 text-center shadow-md border border-blue-200">
+            <div class="text-3xl mb-3">📸</div>
+            <h4 class="font-bold text-blue-800 mb-2">Photo Verification</h4>
+            <p class="text-sm text-blue-600">Upload a clear selfie to verify your photos are real</p>
+          </div>
+        </div>
+        
+        <div class="verification-step">
+          <div class="bg-white rounded-lg p-6 text-center shadow-md border border-blue-200">
+            <div class="text-3xl mb-3">📄</div>
+            <h4 class="font-bold text-blue-800 mb-2">Document Verification</h4>
+            <p class="text-sm text-blue-600">Submit government ID to verify your identity</p>
+          </div>
+        </div>
+        
+        <div class="verification-step">
+          <div class="bg-white rounded-lg p-6 text-center shadow-md border border-blue-200">
+            <div class="text-3xl mb-3">📱</div>
+            <h4 class="font-bold text-blue-800 mb-2">Phone Verification</h4>
+            <p class="text-sm text-blue-600">Verify your phone number with SMS code</p>
+          </div>
+        </div>
+        
+        <div class="verification-step">
+          <div class="bg-white rounded-lg p-6 text-center shadow-md border border-blue-200">
+            <div class="text-3xl mb-3">🌟</div>
+            <h4 class="font-bold text-blue-800 mb-2">Complete Profile</h4>
+            <p class="text-sm text-blue-600">Fill out your profile 100% for full verification</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center mt-8">
+        <button 
+          routerLink="/profile/verification"
+          class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 text-lg font-semibold"
+        >
+          <span>✅</span>
+          Start Verification Process
+          <span>→</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

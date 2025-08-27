@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { map, catchError, tap } from 'rxjs/operators';
+import { map, catchError, tap, switchMap } from 'rxjs/operators';
 import { ApiService, ApiResponse } from './api.service';
+import { PublicConfigService } from './public-config.service';
 import { environment } from '../../../environments/environment';
 import { of } from 'rxjs';
 
@@ -71,7 +72,10 @@ export class PaymentService {
   private isProcessingSubject = new BehaviorSubject<boolean>(false);
   public isProcessing$ = this.isProcessingSubject.asObservable();
 
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private apiService: ApiService,
+    private publicConfigService: PublicConfigService
+  ) {}
 
   // Get subscription plans
   getSubscriptionPlans(): Observable<SubscriptionPlan[]> {
@@ -271,23 +275,7 @@ export class PaymentService {
 
   // Get Stripe publishable key
   getStripePublishableKey(): Observable<string> {
-    // Prefer admin settings; fallback to environment
-    return this.apiService.get<{ publishable_key: string }>(`/admin/settings`)
-      .pipe(
-        map(response => {
-          if (response.success) {
-            return (response.data as any)?.payment?.stripe_public_key
-              || (this as any)?.runtime?.get?.('payments.stripe.publishableKey')
-              || (environment as any)?.payments?.stripe?.publishableKey || '';
-          } else {
-            return (this as any)?.runtime?.get?.('payments.stripe.publishableKey') || (environment as any)?.payments?.stripe?.publishableKey || '';
-          }
-        }),
-        catchError(error => {
-          const fallback = (this as any)?.runtime?.get?.('payments.stripe.publishableKey') || (environment as any)?.payments?.stripe?.publishableKey || '';
-          return fallback ? of(fallback) : throwError(() => error);
-        })
-      );
+    return this.publicConfigService.getStripePublishableKey();
   }
 
   // Get PayPal client ID

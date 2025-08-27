@@ -18,32 +18,40 @@ export interface PaginationInfo {
   styleUrls: ['./pagination.component.scss']
 })
 export class PaginationComponent {
-  @Input() pagination!: PaginationInfo;
+  // Original interface support
+  @Input() pagination?: PaginationInfo;
+  
+  // New interface support (for browse components)
+  @Input() currentPage: number = 1;
+  @Input() totalPages: number = 1;
+  @Input() totalItems: number = 0;
+  @Input() itemsPerPage: number = 20;
+  
   @Input() showInfo: boolean = true;
   @Input() maxVisiblePages: number = 5;
   
   @Output() pageChange = new EventEmitter<number>();
 
-  get totalPages(): number {
-    return this.pagination?.last_page || 0;
+  get totalPagesCount(): number {
+    return this.pagination?.last_page || this.totalPages;
   }
 
-  get currentPage(): number {
-    return this.pagination?.current_page || 1;
+  get currentPageNumber(): number {
+    return this.pagination?.current_page || this.currentPage;
   }
 
   get hasPreviousPage(): boolean {
-    return this.currentPage > 1;
+    return this.currentPageNumber > 1;
   }
 
   get hasNextPage(): boolean {
-    return this.currentPage < this.totalPages;
+    return this.currentPageNumber < this.totalPagesCount;
   }
 
   get visiblePages(): number[] {
     const pages: number[] = [];
-    const totalPages = this.totalPages;
-    const currentPage = this.currentPage;
+    const totalPages = this.totalPagesCount;
+    const currentPage = this.currentPageNumber;
     const maxVisible = this.maxVisiblePages;
 
     if (totalPages <= maxVisible) {
@@ -74,7 +82,7 @@ export class PaginationComponent {
   }
 
   get showLastPage(): boolean {
-    return this.visiblePages[this.visiblePages.length - 1] < this.totalPages;
+    return this.visiblePages[this.visiblePages.length - 1] < this.totalPagesCount;
   }
 
   get showLeftEllipsis(): boolean {
@@ -82,24 +90,24 @@ export class PaginationComponent {
   }
 
   get showRightEllipsis(): boolean {
-    return this.visiblePages[this.visiblePages.length - 1] < this.totalPages - 1;
+    return this.visiblePages[this.visiblePages.length - 1] < this.totalPagesCount - 1;
   }
 
   onPageChange(page: number): void {
-    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
+    if (page >= 1 && page <= this.totalPagesCount && page !== this.currentPageNumber) {
       this.pageChange.emit(page);
     }
   }
 
   onPreviousPage(): void {
     if (this.hasPreviousPage) {
-      this.onPageChange(this.currentPage - 1);
+      this.onPageChange(this.currentPageNumber - 1);
     }
   }
 
   onNextPage(): void {
     if (this.hasNextPage) {
-      this.onPageChange(this.currentPage + 1);
+      this.onPageChange(this.currentPageNumber + 1);
     }
   }
 
@@ -108,20 +116,26 @@ export class PaginationComponent {
   }
 
   onLastPage(): void {
-    this.onPageChange(this.totalPages);
+    this.onPageChange(this.totalPagesCount);
   }
 
   getPageInfoText(): string {
-    if (!this.pagination) return '';
-    
-    const { from, to, total } = this.pagination;
-    return `Showing ${from} to ${to} of ${total} results`;
+    if (this.pagination) {
+      const { from, to, total } = this.pagination;
+      return `Showing ${from} to ${to} of ${total} results`;
+    } else {
+      const from = (this.currentPageNumber - 1) * this.itemsPerPage + 1;
+      const to = Math.min(this.currentPageNumber * this.itemsPerPage, this.totalItems);
+      return `Showing ${from} to ${to} of ${this.totalItems} results`;
+    }
   }
 
   getPageRangeText(): string {
-    if (!this.pagination) return '';
-    
-    const { current_page, last_page } = this.pagination;
-    return `Page ${current_page} of ${last_page}`;
+    if (this.pagination) {
+      const { current_page, last_page } = this.pagination;
+      return `Page ${current_page} of ${last_page}`;
+    } else {
+      return `Page ${this.currentPageNumber} of ${this.totalPagesCount}`;
+    }
   }
 } 

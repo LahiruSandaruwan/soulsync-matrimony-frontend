@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { map, catchError, tap } from 'rxjs/operators';
+import { map, catchError, tap, switchMap } from 'rxjs/operators';
 import { ApiService } from './api.service';
+import { PublicConfigService } from './public-config.service';
 
 export interface SystemSettings {
   general?: any;
@@ -19,7 +20,10 @@ export class AdminSettingsService {
   private settingsSubject = new BehaviorSubject<SystemSettings | null>(null);
   public settings$ = this.settingsSubject.asObservable();
 
-  constructor(private api: ApiService) {}
+  constructor(
+    private api: ApiService,
+    private publicConfigService: PublicConfigService
+  ) {}
 
   fetch(): Observable<SystemSettings> {
     return this.api.get<SystemSettings>('/admin/settings').pipe(
@@ -44,6 +48,41 @@ export class AdminSettingsService {
   }
 
   get value(): SystemSettings | null { return this.settingsSubject.value; }
+
+  /**
+   * Get feature flags from public config
+   */
+  getFeatureFlags(): Observable<any> {
+    return this.publicConfigService.getFeatureFlags();
+  }
+
+  /**
+   * Get payment configuration from public config
+   */
+  getPaymentConfig(): Observable<any> {
+    return this.publicConfigService.getPaymentConfig();
+  }
+
+  /**
+   * Get public app configuration
+   */
+  getPublicConfig(): Observable<any> {
+    return this.publicConfigService.config$;
+  }
+
+  /**
+   * Check if a specific feature is enabled
+   */
+  isFeatureEnabled(feature: string): Observable<boolean> {
+    return this.publicConfigService.isFeatureEnabled(feature as any);
+  }
+
+  /**
+   * Refresh public configuration
+   */
+  refreshPublicConfig(): Observable<any> {
+    return this.publicConfigService.refreshConfig();
+  }
 }
 
 

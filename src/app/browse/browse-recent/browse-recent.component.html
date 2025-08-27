@@ -1,0 +1,219 @@
+<div class="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 px-4 py-6">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header Section -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center gap-2 mb-4">
+        <span class="text-4xl">🆕</span>
+        <h1 class="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+          New Members
+        </h1>
+        <span class="text-4xl">✨</span>
+      </div>
+      <p class="text-lg text-gray-600 max-w-2xl mx-auto mb-4">
+        Discover recently joined members who are actively looking for their perfect match
+      </p>
+      <div class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-100 to-emerald-100 rounded-full">
+        <span class="text-sm font-medium text-green-800">{{ getRecentBadgeText() }}</span>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="bg-white rounded-2xl shadow-lg border border-green-100 p-6 mb-8">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <!-- Time Period -->
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700">Joined:</label>
+          <select 
+            [(ngModel)]="filters.period" 
+            (change)="onPeriodChange(filters.period)"
+            class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+          >
+            <option *ngFor="let option of periodOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Gender Filter -->
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700">Gender:</label>
+          <select 
+            [(ngModel)]="filters.gender" 
+            (change)="onFilterChange()"
+            class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+          >
+            <option *ngFor="let option of genderOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Age Range -->
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700">Age:</label>
+          <input 
+            type="number" 
+            [(ngModel)]="filters.ageMin" 
+            (change)="onFilterChange()"
+            placeholder="Min" 
+            min="18" 
+            max="80"
+            class="w-20 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500"
+          >
+          <span class="text-gray-500">-</span>
+          <input 
+            type="number" 
+            [(ngModel)]="filters.ageMax" 
+            (change)="onFilterChange()"
+            placeholder="Max" 
+            min="18" 
+            max="80"
+            class="w-20 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500"
+          >
+        </div>
+
+        <!-- Location Filter -->
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700">Location:</label>
+          <input 
+            type="text" 
+            [(ngModel)]="filters.location" 
+            (input)="onFilterChange()"
+            placeholder="City or Country" 
+            class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+          >
+        </div>
+
+        <!-- Reset Filters -->
+        <button 
+          (click)="resetFilters()"
+          class="px-4 py-2 text-green-600 border border-green-300 rounded-lg hover:bg-green-50 transition-colors"
+        >
+          Reset Filters
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <app-loading-spinner *ngIf="loading" class="my-12"></app-loading-spinner>
+
+    <!-- No Results -->
+    <div *ngIf="!loading && users.length === 0" class="text-center py-16">
+      <div class="text-8xl mb-6">🆕</div>
+      <h3 class="text-2xl font-bold text-gray-900 mb-4">No New Members Found</h3>
+      <p class="text-gray-600 mb-8 max-w-md mx-auto">
+        We couldn't find any new members matching your criteria. Try adjusting your filters or check back later for new joins!
+      </p>
+      <button 
+        (click)="resetFilters()"
+        class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all duration-200"
+      >
+        <span>🔄</span>
+        Reset Filters
+      </button>
+    </div>
+
+    <!-- New Members Grid -->
+    <div *ngIf="!loading && users.length > 0" class="space-y-8">
+      <!-- New Member Welcome -->
+      <div class="bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl p-6 text-white">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-xl font-bold mb-2">Welcome New Members! 🎉</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div class="flex items-center gap-2">
+                <span>👋</span>
+                <span>Fresh Profiles</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span>💚</span>
+                <span>Active & Engaged</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span>🎯</span>
+                <span>Looking for Love</span>
+              </div>
+            </div>
+          </div>
+          <div class="hidden md:block text-6xl opacity-20">🆕</div>
+        </div>
+      </div>
+
+      <!-- Users Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div *ngFor="let user of users; trackBy: trackByUserId" class="relative">
+          <!-- New Member Badge -->
+          <div class="absolute top-3 right-3 z-10 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-lg">
+            🆕 NEW
+          </div>
+          
+          <!-- Join Date Badge -->
+          <div class="absolute top-3 left-3 z-10 bg-white/90 backdrop-blur-sm text-green-700 px-2 py-1 rounded-full text-xs font-medium shadow-md">
+            {{ getJoinDateText(user) }}
+          </div>
+          
+          <app-user-card
+            [user]="user"
+            [showActions]="true"
+            [showMatchPercentage]="false"
+            (like)="onLike($event)"
+            (dislike)="onDislike($event)"
+            (superLike)="onSuperLike($event)"
+            (viewProfile)="onViewProfile($event)"
+            class="new-member-card"
+          ></app-user-card>
+        </div>
+      </div>
+
+      <!-- Load More / Pagination -->
+      <div class="flex justify-center mt-8" *ngIf="totalPages > 1">
+        <app-pagination
+          [currentPage]="currentPage"
+          [totalPages]="totalPages"
+          [totalItems]="totalUsers"
+          [itemsPerPage]="pageSize"
+          (pageChange)="onPageChange($event)"
+        ></app-pagination>
+      </div>
+
+      <!-- Load More Button (Alternative to pagination) -->
+      <div class="text-center mt-8" *ngIf="hasMoreUsers && totalPages <= 1">
+        <button 
+          (click)="loadRecentProfiles()"
+          [disabled]="loadingMore"
+          class="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 disabled:opacity-50 transition-all duration-200"
+        >
+          <app-loading-spinner *ngIf="loadingMore" [size]="16"></app-loading-spinner>
+          <span *ngIf="!loadingMore">Load More New Members</span>
+          <span *ngIf="loadingMore">Loading...</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- First Impression Tips -->
+    <div class="mt-12 bg-gradient-to-r from-green-100 to-emerald-100 rounded-2xl p-8 text-center border border-green-200">
+      <div class="text-6xl mb-4">💡</div>
+      <h3 class="text-2xl font-bold text-green-800 mb-4">Make a Great First Impression!</h3>
+      <p class="text-green-700 mb-6 max-w-2xl mx-auto">
+        New members are more likely to respond. Be welcoming, genuine, and make them feel part of our community.
+      </p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+        <div class="bg-white/50 rounded-lg p-4">
+          <div class="text-2xl mb-2">👋</div>
+          <div class="font-semibold text-green-800">Be Welcoming</div>
+          <div class="text-green-600">Send a friendly first message</div>
+        </div>
+        <div class="bg-white/50 rounded-lg p-4">
+          <div class="text-2xl mb-2">💬</div>
+          <div class="font-semibold text-green-800">Start Conversations</div>
+          <div class="text-green-600">Ask about their interests</div>
+        </div>
+        <div class="bg-white/50 rounded-lg p-4">
+          <div class="text-2xl mb-2">🤝</div>
+          <div class="font-semibold text-green-800">Be Genuine</div>
+          <div class="text-green-600">Share authentic interests</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

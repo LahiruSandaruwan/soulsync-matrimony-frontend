@@ -1,190 +1,352 @@
-<div class="min-h-screen bg-gradient-to-br from-rose-50 via-white to-pink-50 p-6">
-  <div class="max-w-6xl mx-auto">
+<div class="min-h-screen bg-gradient-to-br from-purple-50 via-white to-rose-50 p-6">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header Section -->
     <div class="text-center mb-8">
-      <h1 class="text-4xl font-bold text-gradient mb-3">Premium Insights 💡</h1>
-      <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-        Understand your profile performance and improve your matching potential with detailed analytics.
+      <div class="inline-flex items-center gap-3 mb-4">
+        <span class="text-5xl">📊</span>
+        <h1 class="text-4xl font-bold bg-gradient-to-r from-purple-600 to-rose-600 bg-clip-text text-transparent">
+          Premium Insights
+        </h1>
+        <span class="text-5xl">💡</span>
+      </div>
+      <p class="text-lg text-gray-600 max-w-3xl mx-auto mb-6">
+        Get deep insights into your profile performance and discover actionable tips to improve your matching success.
       </p>
-    </div>
-    
-    <app-loading-spinner *ngIf="loading"></app-loading-spinner>
-    
-    <div *ngIf="!loading" class="space-y-8">
-      <!-- Summary Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div class="insight-card">
-          <div class="insight-icon">👀</div>
-          <h3 class="insight-title">Profile Views</h3>
-          <div class="insight-value">{{ profileViews?.total || 0 }}</div>
-          <div class="insight-change positive" *ngIf="profileViews?.change > 0">
-            +{{ profileViews?.change }}% this week
-          </div>
-        </div>
-        
-        <div class="insight-card">
-          <div class="insight-icon">💞</div>
-          <h3 class="insight-title">Matches</h3>
-          <div class="insight-value">{{ matchAnalytics?.total || 0 }}</div>
-          <div class="insight-change positive" *ngIf="matchAnalytics?.change > 0">
-            +{{ matchAnalytics?.change }}% this week
-          </div>
-        </div>
-        
-        <div class="insight-card">
-          <div class="insight-icon">🔭</div>
-          <h3 class="insight-title">Compatibility Score</h3>
-          <div class="insight-value">{{ compatibilityReports?.avgScore || 0 }}%</div>
-          <div class="insight-change">Average across all matches</div>
-        </div>
-        
-        <div class="insight-card">
-          <div class="insight-icon">🛠️</div>
-          <h3 class="insight-title">Profile Completion</h3>
-          <div class="insight-value">{{ profileOptimization?.completionScore || 0 }}%</div>
-          <div class="insight-change" [class.positive]="profileOptimization?.completionScore >= 80">
-            {{ profileOptimization?.completionScore >= 80 ? 'Excellent!' : 'Room for improvement' }}
-          </div>
-        </div>
-      </div>
       
-      <!-- Detailed Analytics -->
+      <!-- Filters -->
+      <div class="flex flex-wrap justify-center gap-4 mb-6">
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700">Time Period:</label>
+          <select 
+            [(ngModel)]="selectedTimeRange" 
+            (change)="onTimeRangeChange()"
+            class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+          >
+            <option *ngFor="let option of timeRangeOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700">Focus Metric:</label>
+          <select 
+            [(ngModel)]="selectedMetric" 
+            (change)="onMetricChange()"
+            class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+          >
+            <option *ngFor="let option of metricOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+        
+        <div class="flex gap-2">
+          <button 
+            (click)="exportData('csv')"
+            class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm"
+          >
+            📥 Export CSV
+          </button>
+          <button 
+            (click)="exportData('pdf')"
+            class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
+          >
+            📄 Export PDF
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Loading State -->
+    <app-loading-spinner *ngIf="loading" class="my-12"></app-loading-spinner>
+    
+    <!-- Analytics Dashboard -->
+    <div *ngIf="!loading" class="space-y-8">
+      <!-- Key Metrics Summary -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="metric-card views">
+          <div class="metric-icon">👁️</div>
+          <div class="metric-content">
+            <h3 class="metric-title">Profile Views</h3>
+            <div class="metric-value">{{ profileViews?.total || 0 }}</div>
+            <div class="metric-change" [ngClass]="{'positive': (profileViews?.change || 0) > 0, 'negative': (profileViews?.change || 0) < 0}">
+              <span *ngIf="(profileViews?.change || 0) > 0">📈 +{{ profileViews?.change }}%</span>
+              <span *ngIf="(profileViews?.change || 0) < 0">📉 {{ profileViews?.change }}%</span>
+              <span *ngIf="(profileViews?.change || 0) === 0">📊 No change</span>
+              <small>vs last period</small>
+            </div>
+          </div>
+        </div>
+        
+        <div class="metric-card matches">
+          <div class="metric-icon">💕</div>
+          <div class="metric-content">
+            <h3 class="metric-title">Total Matches</h3>
+            <div class="metric-value">{{ matchAnalytics?.total || 0 }}</div>
+            <div class="metric-change" [ngClass]="{'positive': (matchAnalytics?.change || 0) > 0, 'negative': (matchAnalytics?.change || 0) < 0}">
+              <span *ngIf="(matchAnalytics?.change || 0) > 0">📈 +{{ matchAnalytics?.change }}%</span>
+              <span *ngIf="(matchAnalytics?.change || 0) < 0">📉 {{ matchAnalytics?.change }}%</span>
+              <span *ngIf="(matchAnalytics?.change || 0) === 0">📊 No change</span>
+              <small>vs last period</small>
+            </div>
+          </div>
+        </div>
+        
+        <div class="metric-card compatibility">
+          <div class="metric-icon">🎯</div>
+          <div class="metric-content">
+            <h3 class="metric-title">Avg Compatibility</h3>
+            <div class="metric-value">{{ compatibilityReports?.avgScore || 0 }}%</div>
+            <div class="metric-change">
+              <span>🔍 Based on {{ matchAnalytics?.total || 0 }} matches</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="metric-card completion">
+          <div class="metric-icon">⭐</div>
+          <div class="metric-content">
+            <h3 class="metric-title">Profile Score</h3>
+            <div class="metric-value">{{ profileOptimization?.completionScore || 0 }}%</div>
+            <div class="metric-change" [ngClass]="{'positive': (profileOptimization?.completionScore || 0) >= 80, 'warning': (profileOptimization?.completionScore || 0) >= 60 && (profileOptimization?.completionScore || 0) < 80, 'negative': (profileOptimization?.completionScore || 0) < 60}">
+              <span *ngIf="(profileOptimization?.completionScore || 0) >= 80">🎉 Excellent!</span>
+              <span *ngIf="(profileOptimization?.completionScore || 0) >= 60 && (profileOptimization?.completionScore || 0) < 80">⚡ Good progress</span>
+              <span *ngIf="(profileOptimization?.completionScore || 0) < 60">📈 Needs improvement</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Analytics Charts -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Profile Views Detail -->
-        <div class="insight-card-large">
-          <h2 class="insight-card-title">
-            <span class="insight-icon-small">👀</span>
-            Profile Views Analytics
-          </h2>
-          <div class="insight-content">
-            <div *ngIf="profileViews?.data; else noData">
-              <div class="chart-placeholder">
-                <div class="text-center text-gray-500">
-                  <div class="text-4xl mb-2">📊</div>
-                  <p>Profile views chart would be rendered here</p>
-                  <p class="text-sm">Integration with charting library needed</p>
-                </div>
+        <!-- Profile Views Trend -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h2 class="chart-title">
+              <span class="chart-icon">📈</span>
+              Profile Views Trend
+            </h2>
+            <div class="chart-subtitle">Daily profile views over time</div>
+          </div>
+          <div class="chart-container">
+            <canvas #profileViewsChart></canvas>
+          </div>
+          <div class="chart-footer">
+            <div class="chart-stats">
+              <div class="stat-item">
+                <span class="stat-label">Daily Average:</span>
+                <span class="stat-value">{{ profileViews?.dailyAverage || 0 }}</span>
               </div>
-              <div class="mt-4 space-y-2">
-                <div class="flex justify-between">
-                  <span>Daily Average:</span>
-                  <span class="font-semibold">{{ profileViews?.dailyAverage || 0 }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span>Peak Day:</span>
-                  <span class="font-semibold">{{ profileViews?.peakDay || 'N/A' }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span>Total This Month:</span>
-                  <span class="font-semibold">{{ profileViews?.monthlyTotal || 0 }}</span>
-                </div>
+              <div class="stat-item">
+                <span class="stat-label">Peak Day:</span>
+                <span class="stat-value">{{ profileViews?.peakDay || 'N/A' }}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Monthly Total:</span>
+                <span class="stat-value">{{ profileViews?.monthlyTotal || 0 }}</span>
               </div>
             </div>
           </div>
         </div>
-        
-        <!-- Match Analytics Detail -->
-        <div class="insight-card-large">
-          <h2 class="insight-card-title">
-            <span class="insight-icon-small">💞</span>
-            Match Analytics
-          </h2>
-          <div class="insight-content">
-            <div *ngIf="matchAnalytics?.data; else noData">
-              <div class="chart-placeholder">
-                <div class="text-center text-gray-500">
-                  <div class="text-4xl mb-2">💕</div>
-                  <p>Match success rate chart would be rendered here</p>
-                  <p class="text-sm">Integration with charting library needed</p>
-                </div>
+
+        <!-- Match Success Analysis -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h2 class="chart-title">
+              <span class="chart-icon">💖</span>
+              Match Success Rate
+            </h2>
+            <div class="chart-subtitle">How your likes are performing</div>
+          </div>
+          <div class="chart-container">
+            <canvas #matchSuccessChart></canvas>
+          </div>
+          <div class="chart-footer">
+            <div class="match-insights">
+              <div class="insight-item success">
+                <div class="insight-value">{{ matchAnalytics?.mutualMatches || 0 }}</div>
+                <div class="insight-label">Mutual Matches</div>
               </div>
-              <div class="mt-4 space-y-2">
-                <div class="flex justify-between">
-                  <span>Success Rate:</span>
-                  <span class="font-semibold">{{ matchAnalytics?.successRate || 0 }}%</span>
-                </div>
-                <div class="flex justify-between">
-                  <span>Mutual Likes:</span>
-                  <span class="font-semibold">{{ matchAnalytics?.mutualLikes || 0 }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span>Conversations Started:</span>
-                  <span class="font-semibold">{{ matchAnalytics?.conversations || 0 }}</span>
-                </div>
+              <div class="insight-item warning">
+                <div class="insight-value">{{ matchAnalytics?.oneSidedLikes || 0 }}</div>
+                <div class="insight-label">One-sided Likes</div>
+              </div>
+              <div class="insight-item danger">
+                <div class="insight-value">{{ matchAnalytics?.noResponse || 0 }}</div>
+                <div class="insight-label">No Response</div>
               </div>
             </div>
           </div>
         </div>
-        
-        <!-- Compatibility Reports -->
-        <div class="insight-card-large">
-          <h2 class="insight-card-title">
-            <span class="insight-icon-small">🔭</span>
-            Compatibility Reports
-          </h2>
-          <div class="insight-content">
-            <div *ngIf="compatibilityReports?.data; else noData">
-              <div class="space-y-3">
-                <div class="compatibility-item" *ngFor="let factor of compatibilityReports?.topFactors">
-                  <div class="flex justify-between items-center">
-                    <span class="font-medium">{{ factor.name }}</span>
-                    <div class="compatibility-bar">
-                      <div class="compatibility-fill" [style.width.%]="factor.score"></div>
-                    </div>
-                    <span class="text-sm font-semibold">{{ factor.score }}%</span>
-                  </div>
-                </div>
-              </div>
-              <div class="mt-4 p-3 bg-blue-50 rounded-lg">
-                <p class="text-sm text-blue-800">
-                  <strong>Tip:</strong> {{ compatibilityReports?.tip || 'Complete your profile to improve compatibility matching!' }}
-                </p>
-              </div>
-            </div>
+      </div>
+
+      <!-- Secondary Analytics -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Compatibility Distribution -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h2 class="chart-title">
+              <span class="chart-icon">🎯</span>
+              Compatibility Scores
+            </h2>
+            <div class="chart-subtitle">Distribution of match compatibility</div>
+          </div>
+          <div class="chart-container">
+            <canvas #compatibilityChart></canvas>
           </div>
         </div>
-        
+
         <!-- Profile Optimization -->
-        <div class="insight-card-large">
-          <h2 class="insight-card-title">
-            <span class="insight-icon-small">🛠️</span>
-            Profile Optimization
-          </h2>
-          <div class="insight-content">
-            <div *ngIf="profileOptimization?.data; else noData">
-              <div class="space-y-3">
-                <div class="optimization-item" *ngFor="let item of profileOptimization?.recommendations">
-                  <div class="flex items-center space-x-3">
-                    <div class="optimization-status" [class.completed]="item.completed">
-                      <span *ngIf="item.completed">✅</span>
-                      <span *ngIf="!item.completed">⚠️</span>
-                    </div>
-                    <div class="flex-1">
-                      <div class="font-medium">{{ item.title }}</div>
-                      <div class="text-sm text-gray-600">{{ item.description }}</div>
-                    </div>
-                    <div class="text-sm font-semibold" [class.text-green-600]="item.completed" [class.text-orange-600]="!item.completed">
-                      {{ item.completed ? 'Complete' : 'Pending' }}
-                    </div>
-                  </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <h2 class="chart-title">
+              <span class="chart-icon">⚙️</span>
+              Profile Completion
+            </h2>
+            <div class="chart-subtitle">Your profile strength</div>
+          </div>
+          <div class="chart-container">
+            <canvas #optimizationChart></canvas>
+          </div>
+          <div class="chart-footer">
+            <div class="optimization-suggestions" *ngIf="profileOptimization?.suggestions?.length">
+              <h4 class="suggestions-title">💡 Quick Improvements:</h4>
+              <div class="suggestion-list">
+                <div *ngFor="let suggestion of profileOptimization.suggestions" 
+                     class="suggestion-item" 
+                     [ngClass]="'priority-' + suggestion.priority">
+                  <div class="suggestion-title">{{ suggestion.title }}</div>
+                  <div class="suggestion-desc">{{ suggestion.description }}</div>
                 </div>
               </div>
-              <div class="mt-4">
-                <button class="btn-primary">
-                  Complete Profile Optimization
-                </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Engagement Radar -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h2 class="chart-title">
+              <span class="chart-icon">🕸️</span>
+              Performance Radar
+            </h2>
+            <div class="chart-subtitle">Your overall performance</div>
+          </div>
+          <div class="chart-container">
+            <canvas #userEngagementChart></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Weekly Trend Analysis -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h2 class="chart-title">
+              <span class="chart-icon">📅</span>
+              Weekly Activity Trends
+            </h2>
+            <div class="chart-subtitle">Views and likes by day of week</div>
+          </div>
+          <div class="chart-container">
+            <canvas #weeklyTrendChart></canvas>
+          </div>
+        </div>
+
+        <!-- Recommendations Panel -->
+        <div class="recommendations-card">
+          <div class="recommendations-header">
+            <h2 class="recommendations-title">
+              <span class="recommendations-icon">🎯</span>
+              Personalized Recommendations
+            </h2>
+          </div>
+          <div class="recommendations-content">
+            <div *ngIf="getRecommendations().length > 0; else noRecommendations" class="recommendation-list">
+              <div *ngFor="let recommendation of getRecommendations()" class="recommendation-item">
+                <div class="recommendation-icon">💡</div>
+                <div class="recommendation-text">{{ recommendation }}</div>
               </div>
+            </div>
+            <ng-template #noRecommendations>
+              <div class="no-recommendations">
+                <div class="success-icon">🎉</div>
+                <div class="success-text">Great job! Your profile is performing well.</div>
+                <div class="success-subtext">Keep engaging with the community to maintain your success.</div>
+              </div>
+            </ng-template>
+          </div>
+          
+          <!-- Action Buttons -->
+          <div class="recommendations-actions">
+            <button 
+              routerLink="/profile/edit"
+              class="action-btn primary"
+            >
+              <span>✏️</span>
+              Edit Profile
+            </button>
+            <button 
+              routerLink="/subscription/plans"
+              class="action-btn secondary"
+            >
+              <span>⭐</span>
+              Upgrade Plan
+            </button>
+            <button 
+              (click)="loadAnalyticsData()"
+              class="action-btn outline"
+            >
+              <span>🔄</span>
+              Refresh Data
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Insights Summary -->
+      <div class="insights-summary">
+        <div class="summary-header">
+          <h2 class="summary-title">📝 Your Analytics Summary</h2>
+          <p class="summary-subtitle">Key takeaways from your {{ selectedTimeRange }} days of activity</p>
+        </div>
+        
+        <div class="summary-grid">
+          <div class="summary-item">
+            <div class="summary-icon success">📈</div>
+            <div class="summary-content">
+              <h3 class="summary-metric">Profile Growth</h3>
+              <p class="summary-description">
+                Your profile views increased by {{ profileViews?.change || 0 }}% this period. 
+                {{ (profileViews?.change || 0) > 10 ? 'Excellent momentum!' : 'Keep updating your profile regularly.' }}
+              </p>
+            </div>
+          </div>
+          
+          <div class="summary-item">
+            <div class="summary-icon info">💕</div>
+            <div class="summary-content">
+              <h3 class="summary-metric">Match Quality</h3>
+              <p class="summary-description">
+                Your average compatibility score is {{ compatibilityReports?.avgScore || 0 }}%. 
+                {{ (compatibilityReports?.avgScore || 0) > 70 ? 'Great compatibility with your matches!' : 'Consider refining your preferences for better matches.' }}
+              </p>
+            </div>
+          </div>
+          
+          <div class="summary-item">
+            <div class="summary-icon warning">⚡</div>
+            <div class="summary-content">
+              <h3 class="summary-metric">Engagement Rate</h3>
+              <p class="summary-description">
+                Your match success rate is {{ matchAnalytics?.successRate || 0 }}%. 
+                {{ (matchAnalytics?.successRate || 0) > 25 ? 'Above average performance!' : 'Focus on improving your conversation starters.' }}
+              </p>
             </div>
           </div>
         </div>
       </div>
     </div>
-    
-    <ng-template #noData>
-      <div class="text-center py-8">
-        <div class="text-4xl mb-4">📊</div>
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">No data available yet</h3>
-        <p class="text-gray-600">Use the platform more to see your insights!</p>
-      </div>
-    </ng-template>
   </div>
 </div>

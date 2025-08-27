@@ -82,6 +82,18 @@ export const routes: Routes = [
         loadComponent: () => import('./browse/browse-list/browse-list.component').then(m => m.BrowseListComponent)
       },
       {
+        path: 'browse/premium',
+        loadComponent: () => import('./browse/browse-premium/browse-premium.component').then(m => m.BrowsePremiumComponent)
+      },
+      {
+        path: 'browse/recent',
+        loadComponent: () => import('./browse/browse-recent/browse-recent.component').then(m => m.BrowseRecentComponent)
+      },
+      {
+        path: 'browse/verified',
+        loadComponent: () => import('./browse/browse-verified/browse-verified.component').then(m => m.BrowseVerifiedComponent)
+      },
+      {
         path: 'subscription',
         loadComponent: () => import('./subscription/subscription-plans/subscription-plans.component').then(m => m.SubscriptionPlansComponent)
       },

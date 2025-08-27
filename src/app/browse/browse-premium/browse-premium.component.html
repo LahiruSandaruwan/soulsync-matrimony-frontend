@@ -1,0 +1,191 @@
+<div class="min-h-screen bg-gradient-to-br from-amber-50 via-white to-yellow-50 px-4 py-6">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header Section -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center gap-2 mb-4">
+        <span class="text-4xl">💎</span>
+        <h1 class="text-4xl font-bold bg-gradient-to-r from-amber-600 to-yellow-600 bg-clip-text text-transparent">
+          Premium Members
+        </h1>
+        <span class="text-4xl">💎</span>
+      </div>
+      <p class="text-lg text-gray-600 max-w-2xl mx-auto mb-4">
+        Discover verified premium members with complete profiles and enhanced features
+      </p>
+      <div class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-100 to-yellow-100 rounded-full">
+        <span class="text-sm font-medium text-amber-800">{{ getPremiumBadgeText() }}</span>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="bg-white rounded-2xl shadow-lg border border-amber-100 p-6 mb-8">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <!-- Sort Options -->
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700">Sort by:</label>
+          <select 
+            [(ngModel)]="filters.sortBy" 
+            (change)="onSortChange(filters.sortBy)"
+            class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+          >
+            <option *ngFor="let option of sortOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Age Range -->
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700">Age:</label>
+          <input 
+            type="number" 
+            [(ngModel)]="filters.ageMin" 
+            (change)="onFilterChange()"
+            placeholder="Min" 
+            min="18" 
+            max="80"
+            class="w-20 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+          >
+          <span class="text-gray-500">-</span>
+          <input 
+            type="number" 
+            [(ngModel)]="filters.ageMax" 
+            (change)="onFilterChange()"
+            placeholder="Max" 
+            min="18" 
+            max="80"
+            class="w-20 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+          >
+        </div>
+
+        <!-- Location Filter -->
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700">Location:</label>
+          <input 
+            type="text" 
+            [(ngModel)]="filters.location" 
+            (input)="onFilterChange()"
+            placeholder="City or Country" 
+            class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+          >
+        </div>
+
+        <!-- Reset Filters -->
+        <button 
+          (click)="resetFilters()"
+          class="px-4 py-2 text-amber-600 border border-amber-300 rounded-lg hover:bg-amber-50 transition-colors"
+        >
+          Reset Filters
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <app-loading-spinner *ngIf="loading" class="my-12"></app-loading-spinner>
+
+    <!-- No Results -->
+    <div *ngIf="!loading && users.length === 0" class="text-center py-16">
+      <div class="text-8xl mb-6">💎</div>
+      <h3 class="text-2xl font-bold text-gray-900 mb-4">No Premium Members Found</h3>
+      <p class="text-gray-600 mb-8 max-w-md mx-auto">
+        We couldn't find any premium members matching your criteria. Try adjusting your filters or check back later.
+      </p>
+      <button 
+        (click)="resetFilters()"
+        class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-lg hover:from-amber-600 hover:to-yellow-600 transition-all duration-200"
+      >
+        <span>🔄</span>
+        Reset Filters
+      </button>
+    </div>
+
+    <!-- Premium Members Grid -->
+    <div *ngIf="!loading && users.length > 0" class="space-y-8">
+      <!-- Premium Features Info -->
+      <div class="bg-gradient-to-r from-amber-500 to-yellow-500 rounded-2xl p-6 text-white">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-xl font-bold mb-2">Premium Member Benefits</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div class="flex items-center gap-2">
+                <span>✅</span>
+                <span>Verified Profiles</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span>📞</span>
+                <span>Video Calling</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span>💬</span>
+                <span>Priority Support</span>
+              </div>
+            </div>
+          </div>
+          <div class="hidden md:block text-6xl opacity-20">💎</div>
+        </div>
+      </div>
+
+      <!-- Users Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div *ngFor="let user of users; trackBy: trackByUserId" class="relative">
+          <!-- Premium Badge -->
+          <div class="absolute top-3 right-3 z-10 bg-gradient-to-r from-amber-500 to-yellow-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-lg">
+            💎 PREMIUM
+          </div>
+          
+          <app-user-card
+            [user]="user"
+            [showActions]="true"
+            [showMatchPercentage]="true"
+            (like)="onLike($event)"
+            (dislike)="onDislike($event)"
+            (superLike)="onSuperLike($event)"
+            (viewProfile)="onViewProfile($event)"
+            class="premium-card"
+          ></app-user-card>
+        </div>
+      </div>
+
+      <!-- Load More / Pagination -->
+      <div class="flex justify-center mt-8" *ngIf="totalPages > 1">
+        <app-pagination
+          [currentPage]="currentPage"
+          [totalPages]="totalPages"
+          [totalItems]="totalUsers"
+          [itemsPerPage]="pageSize"
+          (pageChange)="onPageChange($event)"
+        ></app-pagination>
+      </div>
+
+      <!-- Load More Button (Alternative to pagination) -->
+      <div class="text-center mt-8" *ngIf="hasMoreUsers && totalPages <= 1">
+        <button 
+          (click)="loadPremiumProfiles()"
+          [disabled]="loadingMore"
+          class="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-lg hover:from-amber-600 hover:to-yellow-600 disabled:opacity-50 transition-all duration-200"
+        >
+          <app-loading-spinner *ngIf="loadingMore" [size]="16"></app-loading-spinner>
+          <span *ngIf="!loadingMore">Load More Premium Members</span>
+          <span *ngIf="loadingMore">Loading...</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Upgrade to Premium CTA (for non-premium users) -->
+    <div class="mt-12 bg-gradient-to-r from-amber-100 to-yellow-100 rounded-2xl p-8 text-center border border-amber-200">
+      <div class="text-6xl mb-4">🌟</div>
+      <h3 class="text-2xl font-bold text-amber-800 mb-4">Want to Connect with Premium Members?</h3>
+      <p class="text-amber-700 mb-6 max-w-2xl mx-auto">
+        Upgrade to Premium to unlock unlimited access to verified profiles, advanced search filters, and priority matching.
+      </p>
+      <button 
+        routerLink="/subscription/plans"
+        class="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-lg hover:from-amber-600 hover:to-yellow-600 transition-all duration-200 text-lg font-semibold"
+      >
+        <span>💎</span>
+        Upgrade to Premium
+        <span>→</span>
+      </button>
+    </div>
+  </div>
+</div>

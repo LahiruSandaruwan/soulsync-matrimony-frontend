@@ -28,6 +28,21 @@ export const environment = {
     },
   },
   
+  // Individual payment gateway configs (for PublicConfigService)
+  stripe: {
+    publishableKey: 'pk_test_51234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+  },
+  paypal: {
+    clientId: 'AY1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+    environment: 'sandbox',
+  },
+  payhere: {
+    merchantId: 'payhere_test_merchant_id',
+  },
+  webxpay: {
+    merchantId: 'webxpay_test_merchant_id',
+  },
+  
   // File upload limits
   upload: {
     maxImageSize: 5 * 1024 * 1024, // 5MB
@@ -96,5 +111,16 @@ export const environment = {
       appId: '123456789012345',
       enabled: true,
     },
+  },
+  
+  // Individual social login configs (for PublicConfigService)
+  google: {
+    clientId: '1234567890-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com',
+  },
+  facebook: {
+    appId: '123456789012345',
+  },
+  apple: {
+    clientId: 'com.soulsync.matrimony',
   },
 }; 
