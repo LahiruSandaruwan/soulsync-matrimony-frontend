@@ -306,7 +306,17 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy, AfterViewI
       // For now, use a simplified flow: tokenize via Payment Element and pass token to subscribe
       const { paymentMethod, error } = await this.stripe.createPaymentMethod({ type: 'card', card: this.cardElement });
       if (error) throw new Error(error.message);
+      await this.processStripePayment(paymentMethod);
+    } catch (e: any) {
+      this.processingPayment = false;
+      this.errorMessage = e.message || 'Stripe payment failed';
+    }
+  }
+
+  private async processStripePayment(paymentMethod: any): Promise<void> {
+    try {
       const subscribeReq = {
+        plan_id: this.selectedPlan!.id,
         plan_type: this.selectedPlan!.type,
         currency: this.currency,
         auto_renewal: true,
@@ -341,6 +351,7 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy, AfterViewI
         },
         onApprove: async (data: any) => {
           const subscribeReq = {
+            plan_id: this.selectedPlan!.id,
             plan_type: this.selectedPlan!.type,
             currency: this.currency,
             auto_renewal: true,

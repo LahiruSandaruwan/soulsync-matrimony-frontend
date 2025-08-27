@@ -66,4 +66,35 @@ export const environment = {
     matches: 2 * 60 * 1000, // 2 minutes
     conversations: 1 * 60 * 1000, // 1 minute
   },
+
+  // Performance settings
+  performance: {
+    enablePWA: true,
+    enableServiceWorker: true,
+    enableImageOptimization: true,
+    enableLazyLoading: true,
+    enableCaching: true,
+  },
+
+  // Security settings
+  security: {
+    enableContentSecurityPolicy: true,
+    enableHttpsRedirect: false,
+    enableXSSProtection: true,
+    enableCSRFProtection: true,
+    maxLoginAttempts: 5,
+    lockoutDuration: 15 * 60 * 1000, // 15 minutes
+  },
+
+  // Social login settings
+  social: {
+    google: {
+      clientId: '1234567890-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com',
+      enabled: true,
+    },
+    facebook: {
+      appId: '123456789012345',
+      enabled: true,
+    },
+  },
 }; 

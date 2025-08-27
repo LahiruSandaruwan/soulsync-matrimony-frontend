@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
-import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
+import { Subject, takeUntil, debounceTime, distinctUntilChanged, forkJoin } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { ApiService } from '../../core/services/api.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
@@ -231,12 +231,24 @@ export class ReportManagementComponent implements OnInit, OnDestroy {
     const actionText = action === 'resolve' ? 'resolve' : 'dismiss';
     
     if (confirm(`Are you sure you want to ${actionText} ${this.selectedReports.length} reports?`)) {
-      const requests = this.selectedReports.map(id => this.api.put<any>(`/admin/reports/${id}/status`, { status: action === 'resolve' ? 'resolved' : 'dismissed' }));
-      // Execute sequentially
-      requests.reduce((p, req) => p.then(() => req.toPromise()), Promise.resolve()).finally(() => {
-        this.selectedReports = [];
-        this.showBulkActions = false;
-        this.loadReports();
+      const requests = this.selectedReports.map(id => 
+        this.api.put<any>(`/admin/reports/${id}/status`, { 
+          status: action === 'resolve' ? 'resolved' : 'dismissed' 
+        })
+      );
+      
+      // Execute all requests in parallel
+      forkJoin(requests).subscribe({
+        next: () => {
+          this.selectedReports = [];
+          this.showBulkActions = false;
+          this.loadReports();
+        },
+        error: () => {
+          this.selectedReports = [];
+          this.showBulkActions = false;
+          this.loadReports();
+        }
       });
     }
   }

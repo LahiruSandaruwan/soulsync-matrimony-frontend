@@ -2,6 +2,9 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { ToastContainerComponent } from '../../shared/components/toast-container/toast-container.component';
+import { WebSocketService } from '../../core/services/websocket.service';
+import { ToastService } from '../../core/services/toast.service';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-main-layout',
@@ -10,10 +13,6 @@ import { ToastContainerComponent } from '../../shared/components/toast-container
   templateUrl: './main-layout.component.html',
   styleUrls: ['./main-layout.component.scss']
 })
-import { WebSocketService } from '../../core/services/websocket.service';
-import { ToastService } from '../../core/services/toast.service';
-import { Subject, takeUntil } from 'rxjs';
-
 export class MainLayoutComponent implements OnInit, OnDestroy {
   isSidebarOpen = true;
   private destroy$ = new Subject<void>();
@@ -30,7 +29,9 @@ export class MainLayoutComponent implements OnInit, OnDestroy {
       this.toast.info(n?.message || 'You have a new notification', title);
     });
     this.ws.matchNotification$.pipe(takeUntil(this.destroy$)).subscribe(m => {
-      this.toast.success('It\'s a match! 💕', `Match ${m.match_percentage || 0}%`);
+      if (m) {
+        this.toast.success('It\'s a match! 💕', `Match ${m.match_percentage || 0}%`);
+      }
     });
   }
 

@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
-import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
+import { Subject, takeUntil, debounceTime, distinctUntilChanged, forkJoin } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { ApiService } from '../../core/services/api.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
@@ -242,17 +242,35 @@ export class UserManagementComponent implements OnInit, OnDestroy {
   onBulkAction(action: string): void {
     if (this.selectedUsers.length === 0) return;
 
-    const actionText = action === 'suspend' ? 'suspend' : 
-                      action === 'ban' ? 'ban' : 'delete';
+    const actionText = action === 'activate' ? 'activate' : 
+                      action === 'deactivate' ? 'deactivate' : 'delete';
     
     if (confirm(`Are you sure you want to ${actionText} ${this.selectedUsers.length} users?`)) {
-      const calls = this.selectedUsers.map(id => action === 'delete'
-        ? this.api.delete<any>(`/admin/users/${id}`)
-        : this.api.post<any>(`/admin/users/${id}/${action}`, { reason: 'bulk_action', duration_days: action === 'suspend' ? 7 : undefined }));
-      calls.reduce((p, req) => p.then(() => req.toPromise()), Promise.resolve()).finally(() => {
-        this.selectedUsers = [];
-        this.showBulkActions = false;
-        this.loadUsers();
+      const requests = this.selectedUsers.map(id => {
+        switch (action) {
+          case 'activate':
+            return this.api.put<any>(`/admin/users/${id}/status`, { status: 'active' });
+          case 'deactivate':
+            return this.api.put<any>(`/admin/users/${id}/status`, { status: 'inactive' });
+          case 'delete':
+            return this.api.delete<any>(`/admin/users/${id}`);
+          default:
+            return this.api.get<any>(`/admin/users/${id}`);
+        }
+      });
+      
+      // Execute all requests in parallel
+      forkJoin(requests).subscribe({
+        next: () => {
+          this.selectedUsers = [];
+          this.showBulkActions = false;
+          this.loadUsers();
+        },
+        error: () => {
+          this.selectedUsers = [];
+          this.showBulkActions = false;
+          this.loadUsers();
+        }
       });
     }
   }

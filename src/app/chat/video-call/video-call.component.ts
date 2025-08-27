@@ -206,7 +206,7 @@ export class VideoCallComponent implements OnInit, OnDestroy {
       // Get call details
       const call = await this.videoCallService.getCallDetails(parseInt(this.callId)).toPromise();
       if (call) {
-        this.remoteUserName = call.remote_user?.name || 'Remote User';
+        this.remoteUserName = call.caller?.first_name + ' ' + call.caller?.last_name || 'Remote User';
         this.callStatus = 'Connected';
         this.startCallTimer();
         this.initializeWebRTC();

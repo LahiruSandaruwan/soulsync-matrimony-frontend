@@ -178,8 +178,8 @@
               </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              <span [class]="'inline-flex px-2 py-1 text-xs font-semibold rounded-full ' + (item.flagged_count > 0 ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800')">
-                {{ item.flagged_count }} flag(s)
+              <span [class]="'inline-flex px-2 py-1 text-xs font-semibold rounded-full ' + ((item.flagged_count || 0) > 0 ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800')">
+                {{ item.flagged_count || 0 }} flag(s)
               </span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { filter } from 'rxjs/operators';
 
 export interface WebSocketMessage {
-  type: 'message' | 'typing' | 'notification' | 'match' | 'like' | 'online_status' | 'error';
+  type: string;
   data: any;
   timestamp: string;
 }
@@ -13,7 +14,7 @@ export interface ChatMessage {
   conversation_id: number;
   sender_id: number;
   content: string;
-  message_type: 'text' | 'image' | 'voice' | 'file';
+  message_type: string;
   file_url?: string;
   file_name?: string;
   is_read: boolean;
@@ -29,18 +30,17 @@ export interface TypingIndicator {
 
 export interface Notification {
   id: number;
-  type: 'match' | 'like' | 'message' | 'super_like' | 'profile_view';
+  type: string;
   title: string;
   message: string;
-  data: any;
-  is_read: boolean;
+  data?: any;
   created_at: string;
 }
 
 export interface MatchNotification {
   user_id: number;
   user_name: string;
-  user_photo: string;
+  user_photo?: string;
   match_percentage: number;
 }
 
@@ -50,101 +50,83 @@ export interface OnlineStatus {
   last_seen?: string;
 }
 
+declare global {
+  interface Window {
+    Echo: any;
+    Pusher: any;
+  }
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class WebSocketService {
-  // Placeholder for Echo instance type to avoid direct dependency
-  private echo: any | null = null;
-
-  // Connection state
+  private echo: any = null;
   private connectionStateSubject = new BehaviorSubject<'connecting' | 'connected' | 'disconnected' | 'error'>('disconnected');
+  private messageSubject = new BehaviorSubject<WebSocketMessage | null>(null);
+  private chatMessageSubject = new BehaviorSubject<ChatMessage | null>(null);
+  private typingIndicatorSubject = new BehaviorSubject<TypingIndicator | null>(null);
+  private notificationSubject = new BehaviorSubject<Notification | null>(null);
+  private matchNotificationSubject = new BehaviorSubject<MatchNotification | null>(null);
+  private onlineStatusSubject = new BehaviorSubject<OnlineStatus | null>(null);
+
+  // Public observables
   public connectionState$ = this.connectionStateSubject.asObservable();
-
-  // Message streams
-  private messageSubject = new Subject<WebSocketMessage>();
   public message$ = this.messageSubject.asObservable();
-
-  // Specific message type streams
-  private chatMessageSubject = new Subject<ChatMessage>();
   public chatMessage$ = this.chatMessageSubject.asObservable();
-
-  private typingIndicatorSubject = new Subject<TypingIndicator>();
   public typingIndicator$ = this.typingIndicatorSubject.asObservable();
-
-  private notificationSubject = new Subject<Notification>();
   public notification$ = this.notificationSubject.asObservable();
-
-  private matchNotificationSubject = new Subject<MatchNotification>();
   public matchNotification$ = this.matchNotificationSubject.asObservable();
-
-  private onlineStatusSubject = new Subject<OnlineStatus>();
   public onlineStatus$ = this.onlineStatusSubject.asObservable();
 
-  constructor() {}
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = environment.realtime.maxReconnectAttempts;
+  private reconnectInterval = environment.realtime.reconnectInterval;
 
-  async connect(token: string): Promise<void> {
-    if (this.echo) return;
-    this.connectionStateSubject.next('connecting');
-    try {
-      // Ensure Pusher is available
-      if (!(window as any).Pusher) {
-        const pusherMod: any = await import('pusher-js');
-        (window as any).Pusher = pusherMod.default || pusherMod;
-      }
-      const { default: Echo } = await import('laravel-echo');
-      this.echo = new Echo({
-        broadcaster: 'pusher',
-        key: (window as any).PUSHER_APP_KEY || 'app-key',
-        cluster: (window as any).PUSHER_APP_CLUSTER || 'mt1',
-        wsHost: (window as any).WEBSOCKET_HOST || '127.0.0.1',
-        wsPort: (window as any).WEBSOCKET_PORT || 6001,
-        forceTLS: false,
-        disableStats: true,
-        authorizer: (channel: any) => ({
-          authorize: (socketId: string, callback: any) => {
-            fetch(`${environment.apiUrl.replace('/api/v1','')}/broadcasting/auth`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              },
-              body: JSON.stringify({ channel_name: channel.name, socket_id: socketId })
-            }).then(r => r.json()).then(data => callback(false, data)).catch(err => callback(true, err));
-          }
-        })
-      });
-      this.connectionStateSubject.next('connected');
-    } catch (err) {
-      this.handleError('Failed to initialize Echo WebSocket connection', err);
-      this.connectionStateSubject.next('error');
+  constructor() {
+    this.initializeEcho();
+  }
+
+  private initializeEcho(): void {
+    if (typeof window !== 'undefined' && window.Echo) {
+      this.echo = window.Echo;
     }
   }
 
-  private scheduleReconnect(): void { /* handled by Echo/Pusher */ }
+  connect(token: string): void {
+    if (this.echo) {
+      this.connectionStateSubject.next('connecting');
+      
+      // Configure Echo with authentication
+      this.echo.connector.options.auth = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      };
 
-  private handleMessage(message: WebSocketMessage): void {
-    this.messageSubject.next(message);
+      this.echo.connector.connect()
+        .then(() => {
+          this.connectionStateSubject.next('connected');
+          this.reconnectAttempts = 0;
+        })
+        .catch((error: any) => {
+          console.error('WebSocket connection failed:', error);
+          this.connectionStateSubject.next('error');
+          this.scheduleReconnect();
+        });
+    }
+  }
 
-    switch (message.type) {
-      case 'message':
-        this.chatMessageSubject.next(message.data as ChatMessage);
-        break;
-      case 'typing':
-        this.typingIndicatorSubject.next(message.data as TypingIndicator);
-        break;
-      case 'notification':
-        this.notificationSubject.next(message.data as Notification);
-        break;
-      case 'match':
-        this.matchNotificationSubject.next(message.data as MatchNotification);
-        break;
-      case 'online_status':
-        this.onlineStatusSubject.next(message.data as OnlineStatus);
-        break;
-      case 'error':
-        this.handleError('WebSocket error received', message.data);
-        break;
+  private scheduleReconnect(): void {
+    if (this.reconnectAttempts < this.maxReconnectAttempts) {
+      this.reconnectAttempts++;
+      setTimeout(() => {
+        const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
+        if (token) {
+          this.connect(token);
+        }
+      }, this.reconnectInterval);
     }
   }
 
@@ -231,12 +213,20 @@ export class WebSocketService {
     });
   }
 
-  sendLike(userId: number, isSuperLike: boolean = false): void {
+  sendLike(userId: number): void {
     this.sendMessage({
       type: 'like',
       data: {
-        user_id: userId,
-        is_super_like: isSuperLike
+        user_id: userId
+      }
+    });
+  }
+
+  sendSuperLike(userId: number): void {
+    this.sendMessage({
+      type: 'super_like',
+      data: {
+        user_id: userId
       }
     });
   }
@@ -268,30 +258,11 @@ export class WebSocketService {
     });
   }
 
-  // Join/Leave conversation rooms
-  joinConversation(conversationId: number): void {
-    this.sendMessage({
-      type: 'join_conversation',
-      data: {
-        conversation_id: conversationId
-      }
-    });
-  }
-
-  leaveConversation(conversationId: number): void {
-    this.sendMessage({
-      type: 'leave_conversation',
-      data: {
-        conversation_id: conversationId
-      }
-    });
-  }
-
   // Connection management
   disconnect(): void { if (this.echo) { this.echo.disconnect(); this.echo = null; } }
 
   reconnect(): void {
-    this.shouldReconnect = true;
+    this.reconnectAttempts = 0;
     const token = typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
     if (token) {
       this.connect(token);
@@ -307,19 +278,27 @@ export class WebSocketService {
 
   // Compatibility methods for existing components
   onMessage(): Observable<WebSocketMessage> {
-    return this.message$;
+    return this.message$.pipe(
+      filter((message): message is WebSocketMessage => message !== null)
+    );
   }
 
   onTyping(): Observable<TypingIndicator> {
-    return this.typingIndicator$;
+    return this.typingIndicator$.pipe(
+      filter((typing): typing is TypingIndicator => typing !== null)
+    );
   }
 
   getMessages(): Observable<WebSocketMessage> {
-    return this.message$;
+    return this.message$.pipe(
+      filter((message): message is WebSocketMessage => message !== null)
+    );
   }
 
   getOnlineStatusUpdates(): Observable<OnlineStatus> {
-    return this.onlineStatus$;
+    return this.onlineStatus$.pipe(
+      filter((status): status is OnlineStatus => status !== null)
+    );
   }
 
   sendTyping(conversationId: number, isTyping: boolean): void {

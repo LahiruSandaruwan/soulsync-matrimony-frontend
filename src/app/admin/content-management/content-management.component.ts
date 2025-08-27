@@ -11,6 +11,17 @@ interface ContentItem {
   name: string;
   category: string;
   description?: string;
+  content?: string;
+  content_type?: string;
+  status?: string;
+  review_notes?: string;
+  reviewed_at?: string;
+  flagged_count?: number;
+  user?: {
+    first_name: string;
+    last_name: string;
+    email: string;
+  };
   created_at: string;
   updated_at: string;
 }
@@ -62,6 +73,23 @@ export class ContentManagementComponent implements OnInit, OnDestroy {
 
   categories = ['', 'hobbies', 'lifestyle', 'values', 'education', 'food'];
 
+  // Add missing properties
+  contentTypeOptions = [
+    { value: 'text', label: 'Text' },
+    { value: 'image', label: 'Image' },
+    { value: 'video', label: 'Video' },
+    { value: 'audio', label: 'Audio' },
+    { value: 'document', label: 'Document' }
+  ];
+
+  statusOptions = [
+    { value: 'pending', label: 'Pending' },
+    { value: 'approved', label: 'Approved' },
+    { value: 'rejected', label: 'Rejected' },
+    { value: 'flagged', label: 'Flagged' },
+    { value: 'under_review', label: 'Under Review' }
+  ];
+
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
@@ -99,45 +127,162 @@ export class ContentManagementComponent implements OnInit, OnDestroy {
   loadContent(): void {
     this.loading = true;
     this.error = '';
-    this.api.get<any>('/admin/content/interests')
-      .pipe(takeUntil(this.destroy$))
+
+    this.api.get<any>('/admin/content')
       .subscribe({
-        next: (res) => {
-          if (res.success) {
-            this.contentItems = (res.data || []).map((i: any) => ({
-              id: i.id,
-              name: i.name,
-              category: i.category,
-              description: i.description,
-              created_at: i.created_at,
-              updated_at: i.updated_at
-            }));
-            this.totalItems = this.contentItems.length;
-            this.applyFilters();
-            this.loading = false;
-          } else {
-            this.error = res.message || 'Failed to load content';
-            this.loading = false;
-          }
-        },
-        error: (err) => {
-          this.error = err.message || 'Failed to load content';
+        next: (response) => {
+          this.contentItems = response.data || [];
+          this.totalItems = this.contentItems.length;
+          this.applyFilters();
           this.loading = false;
+        },
+        error: (error) => {
+          this.error = 'Failed to load content';
+          this.loading = false;
+          console.error('Error loading content:', error);
         }
       });
   }
 
   applyFilters(): void {
-    this.filteredContent = this.contentItems.filter(item => {
-      const searchMatch = !this.filters.search || 
-        item.name.toLowerCase().includes(this.filters.search.toLowerCase()) ||
-        (item.description || '').toLowerCase().includes(this.filters.search.toLowerCase());
-      const categoryMatch = !this.filters.category || item.category === this.filters.category;
-      return searchMatch && categoryMatch;
-    });
-    
+    let filtered = [...this.contentItems];
+
+    if (this.filters.search) {
+      const search = this.filters.search.toLowerCase();
+      filtered = filtered.filter(item => 
+        item.name.toLowerCase().includes(search) ||
+        item.description?.toLowerCase().includes(search) ||
+        item.content?.toLowerCase().includes(search)
+      );
+    }
+
+    if (this.filters.category) {
+      filtered = filtered.filter(item => item.category === this.filters.category);
+    }
+
+    this.filteredContent = filtered;
     this.currentPage = 1;
-    this.totalItems = this.filteredContent.length;
+  }
+
+  formatDate(date: string): string {
+    return new Date(date).toLocaleDateString();
+  }
+
+  onApproveContent(contentId: number): void {
+    this.api.put(`/admin/content/${contentId}/approve`, {})
+      .subscribe({
+        next: () => {
+          this.loadContent();
+        },
+        error: (error) => {
+          console.error('Error approving content:', error);
+        }
+      });
+  }
+
+  onRejectContent(contentId: number, reason: string): void {
+    this.api.put(`/admin/content/${contentId}/reject`, { reason })
+      .subscribe({
+        next: () => {
+          this.loadContent();
+        },
+        error: (error) => {
+          console.error('Error rejecting content:', error);
+        }
+      });
+  }
+
+  onDeleteContent(contentId: number): void {
+    if (confirm('Are you sure you want to delete this content?')) {
+      this.api.delete(`/admin/content/${contentId}`)
+        .subscribe({
+          next: () => {
+            this.loadContent();
+          },
+          error: (error) => {
+            console.error('Error deleting content:', error);
+          }
+        });
+    }
+  }
+
+  toggleItemSelection(itemId: number): void {
+    const index = this.selectedItems.indexOf(itemId);
+    if (index > -1) {
+      this.selectedItems.splice(index, 1);
+    } else {
+      this.selectedItems.push(itemId);
+    }
+    this.showBulkActions = this.selectedItems.length > 0;
+  }
+
+  selectAll(): void {
+    this.selectedItems = this.filteredContent.map(item => item.id);
+    this.showBulkActions = true;
+  }
+
+  deselectAll(): void {
+    this.selectedItems = [];
+    this.showBulkActions = false;
+  }
+
+  bulkApprove(): void {
+    if (this.selectedItems.length === 0) return;
+    
+    const requests = this.selectedItems.map(id => 
+      this.api.put(`/admin/content/${id}/approve`, {})
+    );
+
+    Promise.all(requests.map(req => req.toPromise()))
+      .then(() => {
+        this.loadContent();
+        this.selectedItems = [];
+        this.showBulkActions = false;
+      })
+      .catch(error => {
+        console.error('Error in bulk approve:', error);
+      });
+  }
+
+  bulkReject(): void {
+    if (this.selectedItems.length === 0) return;
+    
+    const reason = prompt('Enter rejection reason:');
+    if (!reason) return;
+
+    const requests = this.selectedItems.map(id => 
+      this.api.put(`/admin/content/${id}/reject`, { reason })
+    );
+
+    Promise.all(requests.map(req => req.toPromise()))
+      .then(() => {
+        this.loadContent();
+        this.selectedItems = [];
+        this.showBulkActions = false;
+      })
+      .catch(error => {
+        console.error('Error in bulk reject:', error);
+      });
+  }
+
+  bulkDelete(): void {
+    if (this.selectedItems.length === 0) return;
+    
+    if (!confirm(`Are you sure you want to delete ${this.selectedItems.length} items?`)) return;
+
+    const requests = this.selectedItems.map(id => 
+      this.api.delete(`/admin/content/${id}`)
+    );
+
+    Promise.all(requests.map(req => req.toPromise()))
+      .then(() => {
+        this.loadContent();
+        this.selectedItems = [];
+        this.showBulkActions = false;
+      })
+      .catch(error => {
+        console.error('Error in bulk delete:', error);
+      });
   }
 
   get paginatedContent(): ContentItem[] {
@@ -147,11 +292,64 @@ export class ContentManagementComponent implements OnInit, OnDestroy {
   }
 
   get totalPages(): number {
-    return Math.ceil(this.totalItems / this.itemsPerPage);
+    return Math.ceil(this.filteredContent.length / this.itemsPerPage);
   }
 
-  onPageChange(page: number): void {
-    this.currentPage = page;
+  changePage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+    }
+  }
+
+  // Add missing methods for template
+  exportContent(): void {
+    const headers = ['ID', 'Name', 'Category', 'Content Type', 'Status', 'Created At'];
+    const rows = this.filteredContent.map(item => [
+      item.id, 
+      item.name, 
+      item.category, 
+      item.content_type || 'N/A',
+      item.status || 'N/A',
+      item.created_at
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${v ?? ''}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'content-export.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  refreshData(): void {
+    this.loadContent();
+  }
+
+  clearFilters(): void {
+    this.filterForm.reset();
+  }
+
+  onBulkAction(action: string): void {
+    switch (action) {
+      case 'approve':
+        this.bulkApprove();
+        break;
+      case 'reject':
+        this.bulkReject();
+        break;
+      case 'delete':
+        this.bulkDelete();
+        break;
+    }
+  }
+
+  onSelectAll(checked: boolean): void {
+    if (checked) {
+      this.selectAll();
+    } else {
+      this.deselectAll();
+    }
   }
 
   onContentSelect(itemId: number, checked: boolean): void {
@@ -163,108 +361,63 @@ export class ContentManagementComponent implements OnInit, OnDestroy {
     this.showBulkActions = this.selectedItems.length > 0;
   }
 
-  onSelectAll(checked: boolean): void {
-    if (checked) {
-      this.selectedItems = this.paginatedContent.map(item => item.id);
-    } else {
-      this.selectedItems = [];
-    }
-    this.showBulkActions = this.selectedItems.length > 0;
-  }
-
   onViewContent(content: ContentItem): void {
     this.selectedContent = content;
     this.showContentModal = true;
   }
 
-  onCreateInterest(data: { name: string; category: string; description?: string }): void {
-    this.api.post<any>('/admin/content/interests', data)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({ next: () => this.loadContent(), error: () => this.loadContent() });
+  onPageChange(page: number): void {
+    this.changePage(page);
   }
 
-  onUpdateInterest(itemId: number, data: { name?: string; category?: string; description?: string }): void {
-    this.api.put<any>(`/admin/content/interests/${itemId}`, data)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({ next: () => this.loadContent(), error: () => this.loadContent() });
-  }
-
-  onDeleteInterest(itemId: number): void {
-    if (!confirm('Are you sure you want to delete this interest?')) return;
-    this.api.delete<any>(`/admin/content/interests/${itemId}`)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({ next: () => this.loadContent(), error: () => this.loadContent() });
-  }
-
-  onBulkAction(action: string): void {
-    if (this.selectedItems.length === 0) return;
-
-    const actionText = action === 'approve' ? 'approve' : 
-                      action === 'reject' ? 'reject' : 'delete';
+  // Fix type issues in template methods
+  getContentPreview(content: string | undefined, contentType: string | undefined): string {
+    if (!content) return 'No content';
+    if (!contentType) return content.length > 100 ? content.substring(0, 100) + '...' : content;
     
-    if (confirm(`Are you sure you want to ${actionText} ${this.selectedItems.length} content items?`)) {
-      // API call for bulk action
-      // Perform bulk action on selected items
-      // Implementation would depend on the specific action type
-      this.selectedItems = [];
-      this.showBulkActions = false;
-      this.loadContent();
+    switch (contentType) {
+      case 'text':
+        return content.length > 100 ? content.substring(0, 100) + '...' : content;
+      case 'image':
+        return '📷 Image Content';
+      case 'video':
+        return '🎥 Video Content';
+      case 'audio':
+        return '🎵 Audio Content';
+      case 'document':
+        return '📄 Document Content';
+      default:
+        return content.length > 100 ? content.substring(0, 100) + '...' : content;
     }
   }
 
-  getStatusBadgeClass(status: string): string {
+  getContentTypeLabel(contentType: string | undefined): string {
+    if (!contentType) return 'Unknown';
+    const option = this.contentTypeOptions.find(opt => opt.value === contentType);
+    return option ? option.label : contentType;
+  }
+
+  getContentTypeBadgeClass(contentType: string | undefined): string {
+    if (!contentType) return 'bg-gray-100 text-gray-800';
+    switch (contentType) {
+      case 'text': return 'bg-blue-100 text-blue-800';
+      case 'image': return 'bg-green-100 text-green-800';
+      case 'video': return 'bg-purple-100 text-purple-800';
+      case 'audio': return 'bg-yellow-100 text-yellow-800';
+      case 'document': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  }
+
+  getStatusBadgeClass(status: string | undefined): string {
+    if (!status) return 'bg-gray-100 text-gray-800';
     switch (status) {
       case 'pending': return 'bg-yellow-100 text-yellow-800';
       case 'approved': return 'bg-green-100 text-green-800';
       case 'rejected': return 'bg-red-100 text-red-800';
+      case 'flagged': return 'bg-orange-100 text-orange-800';
+      case 'under_review': return 'bg-blue-100 text-blue-800';
       default: return 'bg-gray-100 text-gray-800';
     }
-  }
-
-  getContentTypeBadgeClass(type: string): string {
-    switch (type) {
-      case 'photo': return 'bg-blue-100 text-blue-800';
-      case 'profile_text': return 'bg-purple-100 text-purple-800';
-      case 'message': return 'bg-green-100 text-green-800';
-      case 'comment': return 'bg-orange-100 text-orange-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  }
-
-  formatDate(date: string): string {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
-
-  getContentTypeLabel(type: string): string {
-    const option = this.contentTypeOptions.find(opt => opt.value === type);
-    return option ? option.label : type;
-  }
-
-  getContentPreview(desc?: string): string {
-    const content = desc || '';
-    return content.length > 50 ? content.substring(0, 50) + '...' : content;
-  }
-
-  clearFilters(): void {
-    this.filterForm.reset();
-  }
-
-  exportContent(): void {
-    const headers = ['ID','Name','Category','Description','Created At'];
-    const rows = this.filteredContent.map(i => [i.id, i.name, i.category, (i.description||'').replaceAll('"','""'), i.created_at]);
-    const csv = [headers, ...rows].map(r => r.map(v => `"${v ?? ''}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'interests.csv'; a.click(); URL.revokeObjectURL(url);
-  }
-
-  refreshData(): void {
-    this.loadContent();
   }
 }

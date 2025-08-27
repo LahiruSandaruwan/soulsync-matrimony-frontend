@@ -46,21 +46,13 @@ export class VideoCallService {
    */
   private setupWebSocketListeners(): void {
     // Listen for incoming call notifications
-    this.webSocketService.on('video_call_incoming').subscribe((notification: VideoCallNotification) => {
-      if (notification.type === 'video_call_incoming') {
-        this.handleIncomingCall(notification);
-      }
-    });
-
-    // Listen for call status changes
-    this.webSocketService.on('video_call_status_changed').subscribe((notification: VideoCallNotification) => {
-      this.handleCallStatusChange(notification);
-    });
-
-    // Listen for call ending
-    this.webSocketService.on('video_call_ended').subscribe((notification: VideoCallNotification) => {
-      if (notification.type === 'video_call_ended') {
-        this.handleCallEnded(notification);
+    this.webSocketService.message$.subscribe((message: any) => {
+      if (message.type === 'video_call_incoming') {
+        this.handleIncomingCall(message.data);
+      } else if (message.type === 'video_call_status_changed') {
+        this.handleCallStatusChange(message.data);
+      } else if (message.type === 'video_call_ended') {
+        this.handleCallEnded(message.data);
       }
     });
   }
@@ -412,7 +404,11 @@ export class VideoCallService {
    */
   private sendSignalingMessage(message: any): void {
     // This would send the message via WebSocket to the other peer
-    this.webSocketService.send('video_call_signaling', message);
+    // Using the message$ observable pattern instead of direct send method
+    this.webSocketService.sendMessage({
+      type: 'video_call_signaling',
+      data: message
+    });
   }
 
   /**
@@ -433,24 +429,12 @@ export class VideoCallService {
         first_name: notification.data.caller_name?.split(' ')[0] || '',
         last_name: notification.data.caller_name?.split(' ')[1] || '',
         email: '',
-        phone: '',
         date_of_birth: '',
-        age: 0,
         gender: 'male',
         country_code: '',
-        language: '',
-        status: 'active',
-        profile_status: 'approved',
-        is_premium: false,
-        profile_completion: 0,
-        last_active_at: '',
-        verification: {
-          email_verified: false,
-          phone_verified: false,
-          photo_verified: false,
-          id_verified: false
-        },
-        referral_code: ''
+        email_verified_at: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       }
     };
 

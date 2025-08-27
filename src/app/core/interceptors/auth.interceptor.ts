@@ -47,7 +47,7 @@ export const authInterceptor: HttpInterceptorFn = (
           
         case 422:
           // Handle validation errors
-          errorHandlingService.handleValidationError(error.error?.errors || error.error, req.url);
+          errorHandlingService.handleValidationError(error.error?.errors || error.error);
           break;
           
         case 429:

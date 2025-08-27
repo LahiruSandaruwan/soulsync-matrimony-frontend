@@ -98,34 +98,105 @@ export class ErrorHandlingService {
         break;
       case 502:
       case 503:
-      case 504:
         message = 'Service temporarily unavailable. Please try again later.';
         severity = 'high';
-        action = 'Service is temporarily down. Please try again in a few minutes';
+        action = 'The service is being maintained. Please try again in a few minutes';
         break;
       default:
-        if (error.error?.message) {
-          message = error.error.message;
-        }
+        message = 'An unexpected error occurred';
         severity = 'medium';
+        action = 'Please try again or contact support';
     }
 
     this.addError({
       id: this.generateErrorId(),
       message,
-      details: {
-        status: error.status,
-        statusText: error.statusText,
-        url: error.url,
-        error: error.error
-      },
-      timestamp: new Date(),
-      context: context || 'HTTP Request',
+      details: error,
+      context,
       severity,
-      action
+      action,
+      timestamp: new Date()
     });
+  }
 
-    this.logError('HTTP Error', error, context);
+  /**
+   * Handle authentication errors specifically
+   */
+  handleAuthError(error: HttpErrorResponse): void {
+    let message = 'Authentication failed';
+    let severity: ErrorInfo['severity'] = 'high';
+    let action = 'Please log in again';
+
+    if (error.status === 401) {
+      message = 'Your session has expired. Please log in again.';
+      this.triggerReauthentication();
+    } else if (error.status === 403) {
+      message = 'Access denied. You don\'t have permission for this action.';
+      severity = 'medium';
+      action = 'Contact support if you believe this is an error';
+    }
+
+    this.addError({
+      id: this.generateErrorId(),
+      message,
+      details: error,
+      context: 'authentication',
+      severity,
+      action,
+      timestamp: new Date()
+    });
+  }
+
+  /**
+   * Handle permission errors specifically
+   */
+  handlePermissionError(error: HttpErrorResponse): void {
+    const message = 'You don\'t have permission to perform this action';
+    const action = 'Contact support if you believe this is an error';
+
+    this.addError({
+      id: this.generateErrorId(),
+      message,
+      details: error,
+      context: 'permissions',
+      severity: 'medium',
+      action,
+      timestamp: new Date()
+    });
+  }
+
+  /**
+   * Handle validation errors specifically
+   */
+  handleValidationError(validationErrors: any): void {
+    const message = 'Please correct the following errors:';
+    const action = 'Please correct the highlighted fields';
+
+    this.addError({
+      id: this.generateErrorId(),
+      message,
+      details: validationErrors,
+      context: 'validation',
+      severity: 'medium',
+      action,
+      timestamp: new Date()
+    });
+  }
+
+  /**
+   * Show a toast notification
+   */
+  showToast(title: string, message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info'): void {
+    // This would integrate with a toast service
+    // For now, we'll add it to the error list for consistency
+    this.addError({
+      id: this.generateErrorId(),
+      message: `${title}: ${message}`,
+      details: { type, title, message },
+      context: 'toast',
+      severity: type === 'error' ? 'medium' : 'low',
+      timestamp: new Date()
+    });
   }
 
   /**

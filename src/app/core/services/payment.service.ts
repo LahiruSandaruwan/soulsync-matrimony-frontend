@@ -3,6 +3,7 @@ import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import { ApiService, ApiResponse } from './api.service';
 import { environment } from '../../../environments/environment';
+import { of } from 'rxjs';
 
 export interface PaymentMethod {
   id: string;
@@ -284,7 +285,7 @@ export class PaymentService {
         }),
         catchError(error => {
           const fallback = (this as any)?.runtime?.get?.('payments.stripe.publishableKey') || (environment as any)?.payments?.stripe?.publishableKey || '';
-          return fallback ? new Observable(sub => { sub.next(fallback); sub.complete(); }) : throwError(() => error);
+          return fallback ? of(fallback) : throwError(() => error);
         })
       );
   }
@@ -304,7 +305,7 @@ export class PaymentService {
         }),
         catchError(error => {
           const fallback = (this as any)?.runtime?.get?.('payments.paypal.clientId') || (environment as any)?.payments?.paypal?.clientId || '';
-          return fallback ? new Observable(sub => { sub.next(fallback); sub.complete(); }) : throwError(() => error);
+          return fallback ? of(fallback) : throwError(() => error);
         })
       );
   }

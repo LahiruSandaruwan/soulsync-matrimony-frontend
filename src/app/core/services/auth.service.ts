@@ -233,11 +233,10 @@ export class AuthService {
 
     // Initialize realtime session
     try {
-      this.webSocketService.connect(token).then(() => {
-        if (user?.id) {
-          this.webSocketService.subscribeUser(user.id);
-        }
-      });
+      this.webSocketService.connect(token);
+      if (user?.id) {
+        this.webSocketService.subscribeUser(user.id);
+      }
     } catch (_) {}
   }
 

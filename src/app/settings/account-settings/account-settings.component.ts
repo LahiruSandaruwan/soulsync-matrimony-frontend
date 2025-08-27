@@ -320,7 +320,7 @@ export class AccountSettingsComponent implements OnInit, OnDestroy {
     this.error = '';
     this.success = '';
 
-    this.authService.enableTwoFactor()
+    this.authService.setupTwoFactor()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
