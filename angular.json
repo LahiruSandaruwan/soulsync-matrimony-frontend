@@ -38,6 +38,7 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
+              "src/manifest.webmanifest",
               {
                 "glob": "**/*",
                 "input": "node_modules/@fortawesome/fontawesome-free/webfonts",
@@ -50,9 +51,7 @@
             "scripts": [],
             "server": "src/main.server.ts",
             "prerender": false,
-            "ssr": {
-              "entry": "src/app.config.server.ts"
-            },
+            "ssr": false,
             "optimization": {
               "scripts": true,
               "styles": {
@@ -88,8 +87,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "25kB",
-                  "maximumError": "35kB"
+                  "maximumWarning": "30kB",
+                  "maximumError": "40kB"
                 }
               ],
               "outputHashing": "all",
@@ -118,8 +117,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "15kB",
-                  "maximumError": "20kB"
+                  "maximumWarning": "30kB",
+                  "maximumError": "40kB"
                 }
               ]
             }

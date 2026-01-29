@@ -4,6 +4,12 @@ import { RoleGuard } from './core/guards/role.guard';
 import { FeatureFlagsGuard } from './core/guards/feature-flags.guard';
 
 export const routes: Routes = [
+  // Public Homepage
+  {
+    path: '',
+    loadComponent: () => import('./home/home.component').then(m => m.HomeComponent)
+  },
+
   // Auth Routes
   {
     path: 'auth',
@@ -35,13 +41,13 @@ export const routes: Routes = [
 
   // Main App Routes (Protected)
   {
-    path: '',
+    path: 'app',
     loadComponent: () => import('./layouts/main-layout/main-layout.component').then(m => m.MainLayoutComponent),
     canActivate: [AuthGuard],
     children: [
       {
         path: 'dashboard',
-        loadComponent: () => import('./dashboard/user-dashboard/user-dashboard.component').then(m => m.UserDashboardComponent)
+        loadComponent: () => import('./dashboard/dashboard.component').then(m => m.DashboardComponent)
       },
       {
         path: 'profile',
@@ -54,6 +60,10 @@ export const routes: Routes = [
       {
         path: 'profile/photos',
         loadComponent: () => import('./profile/photo-upload/photo-upload.component').then(m => m.PhotoUploadComponent)
+      },
+      {
+        path: 'profile/:id',
+        loadComponent: () => import('./profile/profile-view/profile-view.component').then(m => m.ProfileViewComponent)
       },
       {
         path: 'matches',

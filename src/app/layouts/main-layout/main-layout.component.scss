@@ -1,66 +1,146 @@
+// ============================================
+// Main Layout - Cosmic Theme Integration
+// ============================================
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+// Design Tokens
+$cosmic-void: #0a0a0f;
+$cosmic-deep: #0d0d14;
+$cosmic-surface: #12121a;
+$cosmic-elevated: #1a1a24;
+$nebula-purple: #6b21a8;
+$nebula-violet: #7c3aed;
+$nebula-rose: #db2777;
+$stardust-white: #f8fafc;
+$stardust-silver: #94a3b8;
+
+$gradient-cosmic: linear-gradient(135deg, $nebula-purple 0%, $nebula-rose 100%);
+
 .main-layout {
   display: flex;
-  height: 100vh;
+  min-height: 100vh;
+  background: $cosmic-void;
 }
 
+// ============================================
+// Sidebar Navigation
+// ============================================
 .sidebar {
-  width: 280px;
-  background: #2c3e50;
-  color: white;
-  transition: transform 0.3s ease;
-  
+  width: 260px;
+  min-width: 260px;
+  background: linear-gradient(180deg, $cosmic-deep 0%, $cosmic-surface 100%);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, width 0.3s ease;
+  z-index: 100;
+
   &.sidebar-closed {
+    width: 0;
+    min-width: 0;
     transform: translateX(-100%);
+
+    @media (min-width: 768px) {
+      width: 70px;
+      min-width: 70px;
+      transform: none;
+
+      .sidebar-header h2,
+      .sidebar-nav span {
+        display: none;
+      }
+
+      .sidebar-nav a {
+        justify-content: center;
+        padding: 16px;
+      }
+    }
   }
-  
+
   .sidebar-header {
-    padding: 20px;
-    border-bottom: 1px solid #34495e;
+    padding: 24px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    
+
     h2 {
       margin: 0;
-      font-size: 24px;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 26px;
       font-weight: 600;
+      background: $gradient-cosmic;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
-    
+
     .sidebar-toggle {
-      background: none;
-      border: none;
-      color: white;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: $stardust-silver;
       cursor: pointer;
-      padding: 5px;
+      padding: 8px;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: $stardust-white;
+      }
     }
   }
-  
+
   .sidebar-nav {
-    padding: 20px 0;
-    
+    flex: 1;
+    padding: 16px 12px;
+    overflow-y: auto;
+
     ul {
       list-style: none;
       margin: 0;
       padding: 0;
-      
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
       li {
         a {
           display: flex;
           align-items: center;
-          padding: 15px 20px;
-          color: #bdc3c7;
+          gap: 12px;
+          padding: 14px 16px;
+          color: $stardust-silver;
           text-decoration: none;
+          border-radius: 12px;
+          font-family: 'Outfit', sans-serif;
+          font-size: 14px;
+          font-weight: 500;
           transition: all 0.3s ease;
-          
-          &:hover, &.active {
-            background: #34495e;
-            color: white;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: $stardust-white;
           }
-          
-          i {
-            margin-right: 12px;
+
+          &.active {
+            background: rgba(107, 33, 168, 0.2);
+            color: $stardust-white;
+            border: 1px solid rgba(107, 33, 168, 0.3);
+
+            i, .nav-icon {
+              color: $nebula-violet;
+            }
+          }
+
+          i, .nav-icon {
             width: 20px;
             height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
           }
         }
       }
@@ -68,89 +148,174 @@
   }
 }
 
+// ============================================
+// Main Content Area
+// ============================================
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #f8f9fa;
+  min-width: 0;
+  background: $cosmic-void;
   transition: margin-left 0.3s ease;
-  
+
   &.main-content-expanded {
     margin-left: 0;
   }
-  
+
   .main-header {
-    background: white;
-    padding: 15px 30px;
-    border-bottom: 1px solid #e9ecef;
+    background: rgba(18, 18, 26, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 16px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    
+    z-index: 50;
+
     .header-left {
       .menu-toggle {
-        background: none;
-        border: none;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: $stardust-silver;
         cursor: pointer;
-        padding: 5px;
-        font-size: 18px;
+        padding: 10px;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: $stardust-white;
+        }
       }
     }
-    
+
     .header-right {
       .user-menu {
         display: flex;
         align-items: center;
-        gap: 15px;
-        
+        gap: 16px;
+
         .user-name {
+          font-family: 'Outfit', sans-serif;
           font-weight: 500;
+          color: $stardust-white;
+          font-size: 14px;
         }
-        
+
         .logout-btn {
-          background: #e74c3c;
-          color: white;
-          border: none;
+          background: rgba(239, 68, 68, 0.2);
+          color: #ef4444;
+          border: 1px solid rgba(239, 68, 68, 0.3);
           padding: 8px 16px;
-          border-radius: 4px;
+          border-radius: 8px;
+          font-family: 'Outfit', sans-serif;
+          font-size: 13px;
+          font-weight: 500;
           cursor: pointer;
-          
+          transition: all 0.3s ease;
+
           &:hover {
-            background: #c0392b;
+            background: rgba(239, 68, 68, 0.3);
           }
         }
       }
     }
   }
-  
+
   .content-area {
     flex: 1;
-    padding: 30px;
     overflow-y: auto;
+    overflow-x: hidden;
+
+    // Remove padding - let individual components handle their own padding
+    padding: 0;
   }
 }
 
+// ============================================
+// Hamburger Icon
+// ============================================
 .hamburger {
   display: block;
-  width: 20px;
+  width: 18px;
   height: 2px;
   background: currentColor;
   position: relative;
-  
+  border-radius: 1px;
+
   &::before, &::after {
     content: '';
     position: absolute;
-    width: 20px;
+    width: 18px;
     height: 2px;
     background: currentColor;
+    border-radius: 1px;
     transition: transform 0.3s ease;
   }
-  
+
   &::before {
     top: -6px;
   }
-  
+
   &::after {
     bottom: -6px;
   }
-} 
+}
+
+// ============================================
+// Navigation Icons (using CSS)
+// ============================================
+.icon-dashboard::before { content: '📊'; }
+.icon-profile::before { content: '👤'; }
+.icon-matches::before { content: '💕'; }
+.icon-chat::before { content: '💬'; }
+.icon-search::before { content: '🔍'; }
+.icon-subscription::before { content: '⭐'; }
+.icon-notifications::before { content: '🔔'; }
+.icon-settings::before { content: '⚙️'; }
+
+// ============================================
+// Responsive Design
+// ============================================
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 200;
+
+    &.sidebar-closed {
+      transform: translateX(-100%);
+    }
+  }
+
+  .main-content {
+    width: 100%;
+  }
+}
+
+// ============================================
+// Scrollbar Styling
+// ============================================
+.sidebar-nav::-webkit-scrollbar,
+.content-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track,
+.content-area::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb,
+.content-area::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+}

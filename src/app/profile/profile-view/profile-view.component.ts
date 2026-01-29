@@ -6,18 +6,15 @@ import { ProfileService } from '../../core/services/profile.service';
 import { AuthService } from '../../core/services/auth.service';
 import { MatchService } from '../../core/services/match.service';
 import { HoroscopeService } from '../../core/services/horoscope.service';
-import { User, UserPhoto } from '../../core/models/match.model';
-import { UserProfile } from '../../core/models/user.model';
+import { User, UserProfile, UserPhoto } from '../../core/models/user.model';
 import { environment } from '../../../environments/environment';
-import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-profile-view',
   standalone: true,
   imports: [
     CommonModule,
-    RouterModule,
-    LoadingSpinnerComponent
+    RouterModule
   ],
   templateUrl: './profile-view.component.html',
   styleUrls: ['./profile-view.component.scss']
@@ -93,9 +90,10 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
     this.error = '';
 
     const userId = this.route.snapshot.params['id'];
+
+    // If no userId provided, load current user's own profile
     if (!userId) {
-      this.error = 'User ID not provided';
-      this.loading = false;
+      this.loadOwnProfile();
       return;
     }
 
@@ -118,6 +116,60 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
         error: (error: any) => {
           this.error = error.message || 'Failed to load profile';
           this.loading = false;
+        }
+      });
+  }
+
+  private loadOwnProfile(): void {
+    this.profileService.getProfile()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (profile: UserProfile) => {
+          this.userProfile = profile;
+          // For own profile, merge with current user data
+          if (this.currentUser) {
+            this.user = {
+              id: this.currentUser.id,
+              first_name: this.currentUser.first_name || 'User',
+              last_name: this.currentUser.last_name || '',
+              date_of_birth: this.currentUser.date_of_birth || '1990-01-01',
+              profile
+            } as any;
+          } else {
+            this.user = {
+              id: profile.user_id,
+              first_name: (profile as any).first_name || 'User',
+              last_name: (profile as any).last_name || '',
+              date_of_birth: (profile as any).date_of_birth || '1990-01-01',
+              profile
+            } as any;
+          }
+          this.loading = false;
+          this.loadOwnPhotos();
+          // Calculate profile completion
+          this.completionPercentage = profile.completion_percentage || 0;
+        },
+        error: (error: any) => {
+          this.error = error.message || 'Failed to load your profile';
+          this.loading = false;
+        }
+      });
+  }
+
+  private loadOwnPhotos(): void {
+    this.loadingPhotos = true;
+    this.profileService.getPhotos()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (photos: UserPhoto[]) => {
+          this.userPhotos = photos;
+          if (this.user) {
+            (this.user as any).photos = photos;
+          }
+          this.loadingPhotos = false;
+        },
+        error: () => {
+          this.loadingPhotos = false;
         }
       });
   }

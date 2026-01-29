@@ -1,50 +1,1129 @@
-.profile-view {
-  .profile-header {
-    margin-bottom: 30px;
-    
-    h1 {
+// ============================================
+// SoulSync Profile View - Celestial Romance Theme
+// ============================================
+
+// Import Fonts
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+// Design Tokens
+$font-display: 'Cormorant Garamond', Georgia, serif;
+$font-body: 'Outfit', system-ui, sans-serif;
+
+// Celestial Color Palette
+$cosmic-void: #0a0a0f;
+$cosmic-deep: #0d0d14;
+$cosmic-surface: #12121a;
+$cosmic-elevated: #1a1a24;
+
+$nebula-purple: #6b21a8;
+$nebula-violet: #7c3aed;
+$nebula-rose: #db2777;
+$nebula-pink: #ec4899;
+$nebula-coral: #f97316;
+
+$stardust-gold: #fbbf24;
+$stardust-silver: #94a3b8;
+$stardust-white: #f8fafc;
+
+$aurora-teal: #14b8a6;
+$aurora-cyan: #06b6d4;
+$aurora-blue: #3b82f6;
+
+// Gradients
+$gradient-cosmic: linear-gradient(135deg, $nebula-purple 0%, $nebula-rose 50%, $nebula-coral 100%);
+$gradient-aurora: linear-gradient(135deg, $aurora-teal 0%, $aurora-cyan 50%, $aurora-blue 100%);
+$gradient-stardust: linear-gradient(135deg, $stardust-gold 0%, $nebula-pink 100%);
+$gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+
+// Glassmorphism
+@mixin glass-card {
+  background: rgba(18, 18, 26, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+}
+
+@mixin glass-hover {
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px rgba(107, 33, 168, 0.2);
+    transform: translateY(-2px);
+  }
+}
+
+// ============================================
+// Main Container
+// ============================================
+.profile-container {
+  min-height: 100vh;
+  position: relative;
+  font-family: $font-body;
+  color: $stardust-white;
+  overflow-x: hidden;
+  background: $cosmic-void;
+}
+
+// ============================================
+// Cosmic Background
+// ============================================
+.cosmic-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(ellipse at 20% 20%, rgba(107, 33, 168, 0.15) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 80%, rgba(219, 39, 119, 0.1) 0%, transparent 50%),
+              radial-gradient(ellipse at 50% 50%, rgba(14, 165, 233, 0.08) 0%, transparent 60%);
+  pointer-events: none;
+
+  .stars {
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(2px 2px at 20px 30px, rgba(255, 255, 255, 0.8), transparent),
+      radial-gradient(2px 2px at 40px 70px, rgba(255, 255, 255, 0.5), transparent),
+      radial-gradient(1px 1px at 90px 40px, rgba(255, 255, 255, 0.6), transparent),
+      radial-gradient(2px 2px at 130px 80px, rgba(255, 255, 255, 0.4), transparent),
+      radial-gradient(1px 1px at 160px 120px, rgba(255, 255, 255, 0.7), transparent);
+    background-repeat: repeat;
+    background-size: 200px 200px;
+    animation: twinkle 8s ease-in-out infinite alternate;
+  }
+
+  .nebula {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 70%, rgba(236, 72, 153, 0.08) 0%, transparent 40%),
+                radial-gradient(ellipse at 70% 30%, rgba(124, 58, 237, 0.08) 0%, transparent 40%);
+    animation: nebula-drift 20s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes nebula-drift {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  100% { transform: translate(20px, -20px) rotate(2deg); }
+}
+
+// ============================================
+// Loading State
+// ============================================
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $cosmic-void;
+
+  .loading-content {
+    text-align: center;
+  }
+
+  .cosmic-loader {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 24px;
+
+    .orbit {
+      position: absolute;
+      inset: 0;
+      border: 2px solid transparent;
+      border-radius: 50%;
+
+      &.orbit-1 {
+        border-top-color: $nebula-purple;
+        animation: orbit 2s linear infinite;
+      }
+
+      &.orbit-2 {
+        inset: 15px;
+        border-right-color: $nebula-rose;
+        animation: orbit 1.5s linear infinite reverse;
+      }
+    }
+
+    .heart-core {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       font-size: 32px;
-      font-weight: 700;
-      color: #2c3e50;
-      margin-bottom: 8px;
-    }
-    
-    .profile-subtitle {
-      color: #7f8c8d;
-      font-size: 16px;
-      margin: 0;
+      animation: pulse-glow 1.5s ease-in-out infinite;
     }
   }
-  
-  .profile-content {
-    display: grid;
-    gap: 30px;
+
+  .loading-text {
+    font-family: $font-display;
+    font-size: 20px;
+    color: $stardust-silver;
+    letter-spacing: 2px;
   }
-  
-  .profile-section {
-    background: white;
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    
+}
+
+@keyframes orbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); filter: brightness(1); }
+  50% { transform: translate(-50%, -50%) scale(1.1); filter: brightness(1.3); }
+}
+
+// ============================================
+// Error State
+// ============================================
+.error-container {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+
+  .error-card {
+    @include glass-card;
+    padding: 48px;
+    text-align: center;
+    max-width: 400px;
+
+    .error-icon {
+      font-size: 64px;
+      margin-bottom: 24px;
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+
     h2 {
+      font-family: $font-display;
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      background: $gradient-cosmic;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    p {
+      color: $stardust-silver;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+  }
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: $gradient-cosmic;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-family: $font-body;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(107, 33, 168, 0.4);
+  }
+}
+
+// ============================================
+// Toast Messages
+// ============================================
+.toast-message {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-weight: 500;
+  animation: slideDown 0.3s ease;
+
+  &.success-toast {
+    background: rgba(20, 184, 166, 0.2);
+    border: 1px solid rgba(20, 184, 166, 0.3);
+    color: $aurora-teal;
+  }
+
+  .toast-icon {
+    font-size: 20px;
+  }
+}
+
+@keyframes slideDown {
+  from { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+// ============================================
+// Profile Content
+// ============================================
+.profile-content {
+  position: relative;
+  z-index: 10;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+
+  @media (min-width: 768px) {
+    padding: 32px;
+  }
+}
+
+// ============================================
+// Header
+// ============================================
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  .btn-back {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: $stardust-white;
+    font-family: $font-body;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    svg {
+      stroke: currentColor;
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 12px;
+  }
+
+  .btn-report {
+    padding: 10px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 10px;
+    color: #ef4444;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.2);
+    }
+  }
+
+  .btn-edit-profile {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: $gradient-cosmic;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-family: $font-body;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(107, 33, 168, 0.3);
+    }
+  }
+}
+
+// ============================================
+// Main Profile Card
+// ============================================
+.profile-card-main {
+  @include glass-card;
+  overflow: hidden;
+  margin-bottom: 32px;
+
+  @media (min-width: 768px) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+// Photo Gallery Section
+.photo-gallery-section {
+  position: relative;
+
+  .main-photo-container {
+    position: relative;
+    aspect-ratio: 4/5;
+    overflow: hidden;
+
+    @media (min-width: 768px) {
+      aspect-ratio: 3/4;
+    }
+
+    .main-photo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      cursor: pointer;
+      transition: transform 0.5s ease;
+
+      &:hover {
+        transform: scale(1.02);
+      }
+    }
+
+    .empty-photo-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, rgba(107, 33, 168, 0.2) 0%, rgba(219, 39, 119, 0.15) 50%, rgba(249, 115, 22, 0.1) 100%);
+      border: 2px dashed rgba(255, 255, 255, 0.15);
+
+      .placeholder-content {
+        text-align: center;
+        padding: 32px;
+      }
+
+      .placeholder-icon {
+        margin-bottom: 20px;
+
+        svg {
+          stroke: rgba(255, 255, 255, 0.4);
+        }
+      }
+
+      .placeholder-text {
+        font-size: 16px;
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 20px;
+      }
+
+      .btn-add-photo {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        background: $gradient-cosmic;
+        border-radius: 10px;
+        color: white;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(107, 33, 168, 0.4);
+        }
+      }
+    }
+  }
+
+  .photo-nav {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    pointer-events: none;
+
+    .nav-btn {
+      pointer-events: all;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover:not(:disabled) {
+        background: rgba(0, 0, 0, 0.7);
+        transform: scale(1.1);
+      }
+
+      &:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .photo-counter {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 16px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    font-size: 13px;
+    color: white;
+  }
+
+  .online-status {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    font-size: 12px;
+    color: $stardust-silver;
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: $stardust-silver;
+    }
+
+    &.online {
+      color: $aurora-teal;
+
+      .status-dot {
+        background: $aurora-teal;
+        box-shadow: 0 0 8px $aurora-teal;
+      }
+    }
+  }
+}
+
+.thumbnail-gallery {
+  display: flex;
+  gap: 8px;
+  padding: 16px;
+  overflow-x: auto;
+  background: rgba(0, 0, 0, 0.3);
+
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+  }
+
+  .thumbnail {
+    flex-shrink: 0;
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    &.active {
+      border-color: $nebula-violet;
+      box-shadow: 0 0 12px rgba(124, 58, 237, 0.4);
+    }
+
+    &:hover:not(.active) {
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+  }
+}
+
+// Profile Info Section
+.profile-info-section {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  @media (max-width: 767px) {
+    padding: 24px;
+  }
+}
+
+.profile-main-info {
+  margin-bottom: 24px;
+
+  .profile-name {
+    font-family: $font-display;
+    font-size: 36px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    background: $gradient-cosmic;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+
+    @media (max-width: 767px) {
+      font-size: 28px;
+    }
+  }
+
+  .profile-tagline {
+    font-size: 18px;
+    color: $stardust-silver;
+    margin: 0 0 12px;
+  }
+
+  .profile-location {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+
+    svg {
+      stroke: $nebula-rose;
+    }
+  }
+}
+
+// Compatibility/Completion Badge
+.compatibility-badge,
+.completion-badge {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.score-ring,
+.completion-ring {
+  position: relative;
+  width: 64px;
+  height: 64px;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+
+    .circle-bg {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.15);
+      stroke-width: 4;
+    }
+
+    .circle-fill {
+      fill: none;
+      stroke-width: 4;
+      stroke-linecap: round;
+      transition: stroke-dasharray 0.5s ease;
+    }
+  }
+
+  .score-text,
+  .completion-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 15px;
+    font-weight: 700;
+    color: $stardust-white;
+  }
+}
+
+.score-ring svg .circle-fill {
+  stroke: $aurora-teal;
+}
+
+.completion-ring svg .circle-fill {
+  stroke: $stardust-gold;
+}
+
+// Ensure the ring is visible even at 0%
+.completion-badge,
+.compatibility-badge {
+  .completion-ring,
+  .score-ring {
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: radial-gradient(circle at center, rgba(251, 191, 36, 0.1) 0%, transparent 70%);
+    }
+  }
+}
+
+.score-label,
+.completion-label {
+  font-size: 14px;
+  color: $stardust-silver;
+}
+
+// Action Buttons
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 24px;
+
+  .btn-action {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .btn-pass {
+    background: rgba(239, 68, 68, 0.2);
+    border: 2px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+
+    &:hover:not(:disabled) {
+      background: rgba(239, 68, 68, 0.3);
+      transform: scale(1.1);
+    }
+  }
+
+  .btn-superlike {
+    background: rgba(59, 130, 246, 0.2);
+    border: 2px solid rgba(59, 130, 246, 0.3);
+    color: $aurora-blue;
+
+    &:hover:not(:disabled) {
+      background: rgba(59, 130, 246, 0.3);
+      transform: scale(1.1);
+    }
+  }
+
+  .btn-like {
+    width: 72px;
+    height: 72px;
+    background: $gradient-cosmic;
+    border: none;
+    color: white;
+    box-shadow: 0 4px 20px rgba(219, 39, 119, 0.4);
+
+    &:hover:not(:disabled) {
+      transform: scale(1.15);
+      box-shadow: 0 8px 32px rgba(219, 39, 119, 0.5);
+    }
+  }
+}
+
+// Message Button
+.btn-message {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  background: $gradient-aurora;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-family: $font-body;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(20, 184, 166, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+// Own Profile Actions
+.own-profile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .btn-edit,
+  .btn-photos {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 12px;
+    font-family: $font-body;
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .btn-edit {
+    background: $gradient-cosmic;
+    color: white;
+    border: none;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(107, 33, 168, 0.3);
+    }
+  }
+
+  .btn-photos {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: $stardust-white;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+  }
+}
+
+// ============================================
+// Profile Details Grid
+// ============================================
+.profile-details-grid {
+  display: grid;
+  gap: 24px;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.detail-card {
+  @include glass-card;
+  padding: 24px;
+  transition: all 0.3s ease;
+  @include glass-hover;
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+    .card-icon {
+      font-size: 24px;
+    }
+
+    h3 {
+      font-family: $font-display;
       font-size: 20px;
       font-weight: 600;
-      color: #2c3e50;
-      margin-bottom: 16px;
-    }
-    
-    p {
-      color: #34495e;
-      line-height: 1.6;
       margin: 0;
-    }
-    
-    .empty-state {
-      text-align: center;
-      color: #95a5a6;
-      font-style: italic;
-      padding: 40px 20px;
+      color: $stardust-white;
     }
   }
-} 
+
+  .card-content {
+    p {
+      color: rgba(255, 255, 255, 0.8);
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    .empty-state {
+      color: $stardust-silver;
+      font-style: italic;
+
+      .link-edit {
+        display: inline-block;
+        margin-top: 8px;
+        color: $nebula-violet;
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+}
+
+// Make about and looking-for cards span full width
+.about-card,
+.looking-for-card {
+  @media (min-width: 768px) {
+    grid-column: span 2;
+  }
+
+  @media (min-width: 1024px) {
+    grid-column: span 3;
+  }
+}
+
+// Info Grid
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.info-item {
+  .info-label {
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: $stardust-silver;
+    margin-bottom: 4px;
+  }
+
+  .info-value {
+    display: block;
+    font-size: 15px;
+    color: $stardust-white;
+    text-transform: capitalize;
+  }
+
+  .lifestyle-badge {
+    &[data-type="never"] {
+      color: $aurora-teal;
+    }
+
+    &[data-type="vegetarian"],
+    &[data-type="vegan"] {
+      color: $aurora-teal;
+    }
+
+    &[data-type="regularly"] {
+      color: $nebula-coral;
+    }
+  }
+}
+
+// Tags
+.tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.language-tag {
+  background: rgba(124, 58, 237, 0.2);
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  color: $nebula-violet;
+}
+
+.hobby-tag {
+  background: rgba(236, 72, 153, 0.2);
+  border: 1px solid rgba(236, 72, 153, 0.3);
+  color: $nebula-pink;
+}
+
+// ============================================
+// Photo Modal
+// ============================================
+.photo-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(10px);
+  animation: fadeIn 0.3s ease;
+
+  .modal-close {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+    }
+  }
+
+  .modal-content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 85vh;
+  }
+
+  .modal-photo {
+    max-width: 100%;
+    max-height: 85vh;
+    object-fit: contain;
+    border-radius: 8px;
+  }
+
+  .modal-nav {
+    position: absolute;
+    bottom: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 24px;
+
+    .modal-nav-btn {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      &:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+      }
+    }
+
+    .modal-counter {
+      font-size: 16px;
+      color: $stardust-silver;
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+// ============================================
+// Responsive Adjustments
+// ============================================
+@media (max-width: 640px) {
+  .profile-content {
+    padding: 16px;
+  }
+
+  .profile-card-main {
+    border-radius: 16px;
+  }
+
+  .profile-info-section {
+    padding: 20px;
+  }
+
+  .profile-main-info .profile-name {
+    font-size: 24px;
+  }
+
+  .action-buttons {
+    gap: 12px;
+
+    .btn-action {
+      width: 56px;
+      height: 56px;
+    }
+
+    .btn-like {
+      width: 64px;
+      height: 64px;
+    }
+  }
+
+  .detail-card {
+    padding: 20px;
+    border-radius: 16px;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}

@@ -1,362 +1,455 @@
-<div class="min-h-screen bg-gradient-romantic">
+<div class="profile-container">
+  <!-- Cosmic Background -->
+  <div class="cosmic-bg">
+    <div class="stars"></div>
+    <div class="nebula"></div>
+  </div>
+
   <!-- Loading State -->
-  <div *ngIf="loading" class="flex items-center justify-center min-h-screen">
-    <app-loading-spinner 
-      type="dots" 
-      [size]="48" 
-      text="Loading profile..." 
-      variant="fullscreen"
-    ></app-loading-spinner>
+  <div *ngIf="loading" class="loading-overlay">
+    <div class="loading-content">
+      <div class="cosmic-loader">
+        <div class="orbit orbit-1"></div>
+        <div class="orbit orbit-2"></div>
+        <div class="heart-core">💫</div>
+      </div>
+      <p class="loading-text">Loading profile...</p>
+    </div>
   </div>
 
   <!-- Error State -->
-  <div *ngIf="error && !loading" class="flex items-center justify-center min-h-screen px-4">
-    <div class="text-center max-w-md">
-      <div class="text-red-500 text-6xl mb-4">😔</div>
-      <h2 class="text-2xl font-bold text-gray-900 mb-2">Oops! Something went wrong</h2>
-      <p class="text-gray-600 mb-6">{{ error }}</p>
-      <button 
-        (click)="loadUserProfile()" 
-        class="btn-primary"
-        aria-label="Try again"
-      >
+  <div *ngIf="error && !loading" class="error-container">
+    <div class="error-card">
+      <div class="error-icon">✨</div>
+      <h2>Unable to Load Profile</h2>
+      <p>{{ error }}</p>
+      <button (click)="loadUserProfile()" class="btn-primary">
+        <span class="btn-icon">🔄</span>
         Try Again
       </button>
     </div>
   </div>
 
+  <!-- Success/Error Messages -->
+  <div *ngIf="success" class="toast-message success-toast">
+    <span class="toast-icon">✨</span>
+    {{ success }}
+  </div>
+
   <!-- Profile Content -->
-  <div *ngIf="!loading && !error && user" class="container mx-auto px-4 py-6">
-    <!-- Header with Back Button -->
-    <div class="flex items-center justify-between mb-6">
-      <button 
-        (click)="onBackToChats()" 
-        class="btn-ghost flex items-center gap-2"
-        aria-label="Go back to chats"
-      >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+  <div *ngIf="!loading && !error && user" class="profile-content">
+    <!-- Header Navigation -->
+    <header class="profile-header">
+      <button (click)="onBackToChats()" class="btn-back" aria-label="Go back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 18l-6-6 6-6"/>
         </svg>
-        Back
+        <span>Back</span>
       </button>
-      
-      <div class="flex items-center gap-3">
-        <button 
-          (click)="onReport()" 
-          class="btn-ghost text-red-600 hover:text-red-700"
-          aria-label="Report user"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+
+      <div class="header-actions" *ngIf="!isOwnProfile()">
+        <button (click)="onReport()" class="btn-report" aria-label="Report user">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
           </svg>
         </button>
       </div>
-    </div>
+
+      <div class="header-actions" *ngIf="isOwnProfile()">
+        <a routerLink="/app/profile/edit" class="btn-edit-profile">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          Edit Profile
+        </a>
+      </div>
+    </header>
 
     <!-- Main Profile Card -->
-    <div class="card-romantic mb-6">
-      <!-- Photo Gallery -->
-      <div class="relative mb-6">
-        <div class="aspect-photo bg-gray-100 rounded-xl overflow-hidden relative">
-          <img 
-            [src]="getPrimaryPhoto()?.file_path || '/assets/images/default-avatar.png'" 
+    <div class="profile-card-main">
+      <!-- Photo Gallery Section -->
+      <div class="photo-gallery-section">
+        <div class="main-photo-container">
+          <!-- Show photo if available -->
+          <img
+            *ngIf="getPrimaryPhoto()?.file_path"
+            [src]="getPrimaryPhoto()?.file_path"
             [alt]="getFullName()"
-            class="w-full h-full object-cover"
+            class="main-photo"
             (error)="onImageError($event)"
+            (click)="openPhotoModal()"
           />
-          
+
+          <!-- Empty Photo Placeholder -->
+          <div *ngIf="!getPrimaryPhoto()?.file_path" class="empty-photo-placeholder">
+            <div class="placeholder-content">
+              <div class="placeholder-icon">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </div>
+              <p class="placeholder-text" *ngIf="isOwnProfile()">Add your first photo</p>
+              <a *ngIf="isOwnProfile()" routerLink="/app/profile/photos" class="btn-add-photo">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                Upload Photo
+              </a>
+            </div>
+          </div>
+
           <!-- Photo Navigation -->
-          <div *ngIf="getPublicPhotos().length > 1" class="absolute inset-0 flex items-center justify-between p-4">
-            <button 
-              (click)="previousPhoto()" 
-              class="btn-ghost bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-2"
-              [disabled]="currentPhotoIndex === 0"
-              aria-label="Previous photo"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          <div *ngIf="getPublicPhotos().length > 1" class="photo-nav">
+            <button (click)="previousPhoto()" [disabled]="currentPhotoIndex === 0" class="nav-btn prev" aria-label="Previous photo">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 18l-6-6 6-6"/>
               </svg>
             </button>
-            
-            <button 
-              (click)="nextPhoto()" 
-              class="btn-ghost bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-2"
-              [disabled]="currentPhotoIndex === getPublicPhotos().length - 1"
-              aria-label="Next photo"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            <button (click)="nextPhoto()" [disabled]="currentPhotoIndex === getPublicPhotos().length - 1" class="nav-btn next" aria-label="Next photo">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18l6-6-6-6"/>
               </svg>
             </button>
           </div>
 
           <!-- Photo Counter -->
-          <div *ngIf="getPublicPhotos().length > 1" class="absolute bottom-4 left-1/2 transform -translate-x-1/2">
-            <span class="bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
-              {{ currentPhotoIndex + 1 }} / {{ getPublicPhotos().length }}
-            </span>
+          <div *ngIf="getPublicPhotos().length > 1" class="photo-counter">
+            {{ currentPhotoIndex + 1 }} / {{ getPublicPhotos().length }}
+          </div>
+
+          <!-- Online Status -->
+          <div class="online-status" [class.online]="user?.is_online">
+            <span class="status-dot"></span>
+            {{ user?.is_online ? 'Online' : 'Offline' }}
           </div>
         </div>
 
         <!-- Thumbnail Gallery -->
-        <div *ngIf="getPublicPhotos().length > 1" class="flex gap-2 mt-4 overflow-x-auto pb-2">
-          <button 
+        <div *ngIf="getPublicPhotos().length > 1" class="thumbnail-gallery">
+          <button
             *ngFor="let photo of getPublicPhotos(); let i = index"
             (click)="goToPhoto(i)"
-            class="flex-shrink-0 aspect-square w-16 bg-gray-100 rounded-lg overflow-hidden border-2 transition-all"
-            [class.border-primary-500]="i === currentPhotoIndex"
-            [class.border-gray-200]="i !== currentPhotoIndex"
-            [attr.aria-label]="'Go to photo ' + (i + 1)"
+            class="thumbnail"
+            [class.active]="i === currentPhotoIndex"
+            [attr.aria-label]="'View photo ' + (i + 1)"
           >
-            <img 
-              [src]="photo.file_path" 
-              [alt]="getFullName() + ' photo ' + (i + 1)"
-              class="w-full h-full object-cover"
-              (error)="onImageError($event)"
-            />
+            <img [src]="photo.file_path" [alt]="'Photo ' + (i + 1)" (error)="onImageError($event)"/>
           </button>
         </div>
       </div>
 
-      <!-- Profile Info -->
-      <div class="space-y-6">
-        <!-- Basic Info -->
-        <div class="text-center">
-          <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ getFullName() }}</h1>
-          <p class="text-lg text-gray-600 mb-4">{{ getAge() }} years old • {{ getLocation() }}</p>
-          
-          <!-- Compatibility Score -->
-          <div *ngIf="compatibilityScore > 0" class="inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-full">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+      <!-- Profile Info Section -->
+      <div class="profile-info-section">
+        <div class="profile-main-info">
+          <h1 class="profile-name">{{ getFullName() }}</h1>
+          <p class="profile-tagline">{{ getAge() }} years old</p>
+          <p class="profile-location">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
             </svg>
-            <span class="font-medium">{{ compatibilityScore }}% Match</span>
-          </div>
+            {{ getLocation() }}
+          </p>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="flex gap-3 justify-center">
-          <button 
-            (click)="onDislike()" 
-            class="btn-secondary flex items-center gap-2"
-            [disabled]="disliking"
-            aria-label="Dislike profile"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        <!-- Compatibility Score (for other profiles) -->
+        <div *ngIf="!isOwnProfile() && compatibilityScore > 0" class="compatibility-badge">
+          <div class="score-ring" [style.--score]="compatibilityScore">
+            <svg viewBox="0 0 36 36">
+              <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+              <path class="circle-fill" [attr.stroke-dasharray]="compatibilityScore + ', 100'" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
             </svg>
-            <span class="hidden sm:inline">Pass</span>
+            <span class="score-text">{{ compatibilityScore }}%</span>
+          </div>
+          <span class="score-label">Match Score</span>
+        </div>
+
+        <!-- Profile Completion (for own profile) -->
+        <div *ngIf="isOwnProfile() && completionPercentage >= 0" class="completion-badge">
+          <div class="completion-ring" [style.--completion]="completionPercentage">
+            <svg viewBox="0 0 36 36">
+              <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+              <path class="circle-fill" [attr.stroke-dasharray]="completionPercentage + ', 100'" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            </svg>
+            <span class="completion-text">{{ completionPercentage }}%</span>
+          </div>
+          <span class="completion-label">Profile Complete</span>
+        </div>
+
+        <!-- Action Buttons (for other profiles) -->
+        <div *ngIf="!isOwnProfile()" class="action-buttons">
+          <button (click)="onDislike()" [disabled]="disliking" class="btn-action btn-pass" aria-label="Pass">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
           </button>
 
-          <button 
-            (click)="onLike()" 
-            class="btn-primary flex items-center gap-2"
-            [disabled]="liking"
-            aria-label="Like profile"
-          >
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+          <button (click)="onSuperLike()" [disabled]="superLiking" class="btn-action btn-superlike" aria-label="Super Like">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
             </svg>
-            <span class="hidden sm:inline">Like</span>
           </button>
 
-          <button 
-            (click)="onSuperLike()" 
-            class="btn-outline border-blue-500 text-blue-600 hover:bg-blue-500 hover:text-white flex items-center gap-2"
-            [disabled]="superLiking"
-            aria-label="Super like profile"
-          >
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+          <button (click)="onLike()" [disabled]="liking" class="btn-action btn-like" aria-label="Like">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
             </svg>
-            <span class="hidden sm:inline">Super Like</span>
           </button>
         </div>
 
         <!-- Message Button -->
-        <div class="text-center">
-          <button 
-            (click)="onStartConversation()" 
-            class="btn-primary w-full sm:w-auto"
-            [disabled]="startingConversation"
-            aria-label="Start conversation"
-          >
-            <svg *ngIf="!startingConversation" class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+        <button *ngIf="!isOwnProfile()" (click)="onStartConversation()" [disabled]="startingConversation" class="btn-message">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          {{ startingConversation ? 'Starting...' : 'Send Message' }}
+        </button>
+
+        <!-- Edit Actions (for own profile) -->
+        <div *ngIf="isOwnProfile()" class="own-profile-actions">
+          <a routerLink="/app/profile/edit" class="btn-edit">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
             </svg>
-            <app-loading-spinner *ngIf="startingConversation" [size]="20" type="dots"></app-loading-spinner>
-            {{ startingConversation ? 'Starting conversation...' : 'Send Message' }}
-          </button>
+            Edit Profile
+          </a>
+          <a routerLink="/app/profile/photos" class="btn-photos">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+            Manage Photos
+          </a>
         </div>
       </div>
     </div>
 
-    <!-- Profile Details -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <!-- Personal Information -->
-      <div class="space-y-6">
-        <!-- About Me -->
-        <div *ngIf="user.profile?.about_me" class="card">
-          <h3 class="text-lg font-semibold mb-4">About Me</h3>
-          <p class="text-gray-700 leading-relaxed">{{ user.profile?.about_me }}</p>
+    <!-- Profile Details Grid -->
+    <div class="profile-details-grid">
+      <!-- About Section -->
+      <div class="detail-card about-card" *ngIf="userProfile?.about_me || isOwnProfile()">
+        <div class="card-header">
+          <span class="card-icon">💭</span>
+          <h3>About Me</h3>
         </div>
-
-        <!-- Basic Details -->
-        <div class="card">
-          <h3 class="text-lg font-semibold mb-4">Basic Information</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <span class="text-sm text-gray-500">Age</span>
-              <p class="font-medium">{{ getAge() }} years old</p>
-            </div>
-            <div>
-              <span class="text-sm text-gray-500">Location</span>
-              <p class="font-medium">{{ getLocation() }}</p>
-            </div>
-            <div>
-              <span class="text-sm text-gray-500">Education</span>
-              <p class="font-medium">{{ user.profile?.education_level || 'Not specified' }}</p>
-            </div>
-            <div>
-              <span class="text-sm text-gray-500">Occupation</span>
-              <p class="font-medium">{{ user.profile?.occupation || 'Not specified' }}</p>
-            </div>
-            <div>
-              <span class="text-sm text-gray-500">Religion</span>
-              <p class="font-medium">{{ user.profile?.religion || 'Not specified' }}</p>
-            </div>
-            <div>
-              <span class="text-sm text-gray-500">Mother Tongue</span>
-              <p class="font-medium">{{ user.profile?.mother_tongue || 'Not specified' }}</p>
-            </div>
-          </div>
+        <div class="card-content">
+          <p *ngIf="userProfile?.about_me">{{ userProfile?.about_me }}</p>
+          <p *ngIf="!userProfile?.about_me && isOwnProfile()" class="empty-state">
+            Share a bit about yourself to help others get to know you better.
+            <a routerLink="/app/profile/edit" class="link-edit">Add now</a>
+          </p>
         </div>
+      </div>
 
-        <!-- Hobbies -->
-        <div *ngIf="user.profile?.hobbies && (user.profile?.hobbies || []).length > 0" class="card">
-          <h3 class="text-lg font-semibold mb-4">Hobbies & Interests</h3>
-          <div class="flex flex-wrap gap-2">
-            <span 
-              *ngFor="let hobby of user.profile?.hobbies || []"
-              class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
-            >
-              {{ hobby }}
-            </span>
-          </div>
+      <!-- Looking For Section -->
+      <div class="detail-card looking-for-card" *ngIf="userProfile?.looking_for || isOwnProfile()">
+        <div class="card-header">
+          <span class="card-icon">💫</span>
+          <h3>Looking For</h3>
         </div>
+        <div class="card-content">
+          <p *ngIf="userProfile?.looking_for">{{ userProfile?.looking_for }}</p>
+          <p *ngIf="!userProfile?.looking_for && isOwnProfile()" class="empty-state">
+            Describe what you're looking for in a partner.
+            <a routerLink="/app/profile/edit" class="link-edit">Add now</a>
+          </p>
+        </div>
+      </div>
 
-        <!-- Languages -->
-        <div *ngIf="user.profile?.languages_known && (user.profile?.languages_known || []).length > 0" class="card">
-          <h3 class="text-lg font-semibold mb-4">Languages</h3>
-          <div class="flex flex-wrap gap-2">
-            <span 
-              *ngFor="let language of user.profile?.languages_known || []"
-              class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
-            >
-              {{ language }}
-            </span>
+      <!-- Basic Information -->
+      <div class="detail-card basic-info-card">
+        <div class="card-header">
+          <span class="card-icon">👤</span>
+          <h3>Basic Information</h3>
+        </div>
+        <div class="card-content">
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Age</span>
+              <span class="info-value">{{ getAge() }} years</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Height</span>
+              <span class="info-value">{{ userProfile?.height_cm ? userProfile?.height_cm + ' cm' : 'Not specified' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Body Type</span>
+              <span class="info-value">{{ userProfile?.body_type || 'Not specified' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Marital Status</span>
+              <span class="info-value">{{ userProfile?.marital_status?.replace('_', ' ') || 'Not specified' }}</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Additional Information -->
-      <div class="space-y-6">
-        <!-- Lifestyle -->
-        <div class="card">
-          <h3 class="text-lg font-semibold mb-4">Lifestyle</h3>
-          <div class="space-y-3">
-            <div class="flex justify-between items-center">
-              <span class="text-gray-600">Diet</span>
-              <span class="font-medium">{{ user.profile?.diet || 'Not specified' }}</span>
+      <!-- Education & Career -->
+      <div class="detail-card career-card">
+        <div class="card-header">
+          <span class="card-icon">🎓</span>
+          <h3>Education & Career</h3>
+        </div>
+        <div class="card-content">
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Education</span>
+              <span class="info-value">{{ userProfile?.education_level?.replace('_', ' ') || 'Not specified' }}</span>
             </div>
-            <div class="flex justify-between items-center">
-              <span class="text-gray-600">Smoking</span>
-              <span class="font-medium">{{ user.profile?.smoking || 'Not specified' }}</span>
+            <div class="info-item">
+              <span class="info-label">Occupation</span>
+              <span class="info-value">{{ userProfile?.occupation || 'Not specified' }}</span>
             </div>
-            <div class="flex justify-between items-center">
-              <span class="text-gray-600">Drinking</span>
-              <span class="font-medium">{{ user.profile?.drinking || 'Not specified' }}</span>
+            <div class="info-item" *ngIf="userProfile?.company">
+              <span class="info-label">Company</span>
+              <span class="info-value">{{ userProfile?.company }}</span>
+            </div>
+            <div class="info-item" *ngIf="userProfile?.job_title">
+              <span class="info-label">Job Title</span>
+              <span class="info-value">{{ userProfile?.job_title }}</span>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Family -->
-        <div class="card">
-          <h3 class="text-lg font-semibold mb-4">Family</h3>
-          <div class="space-y-3">
-            <div class="flex justify-between items-center">
-              <span class="text-gray-600">Family Type</span>
-              <span class="font-medium">{{ user.profile?.family_type || 'Not specified' }}</span>
+      <!-- Religion & Culture -->
+      <div class="detail-card culture-card">
+        <div class="card-header">
+          <span class="card-icon">🙏</span>
+          <h3>Religion & Culture</h3>
+        </div>
+        <div class="card-content">
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Religion</span>
+              <span class="info-value">{{ userProfile?.religion || 'Not specified' }}</span>
             </div>
-            <div class="flex justify-between items-center">
-              <span class="text-gray-600">Family Status</span>
-              <span class="font-medium">{{ user.profile?.family_status || 'Not specified' }}</span>
+            <div class="info-item" *ngIf="userProfile?.caste">
+              <span class="info-label">Caste</span>
+              <span class="info-value">{{ userProfile?.caste }}</span>
             </div>
-            <div class="flex justify-between items-center">
-              <span class="text-gray-600">Marital Status</span>
-              <span class="font-medium">{{ user.profile?.marital_status || 'Not specified' }}</span>
+            <div class="info-item">
+              <span class="info-label">Mother Tongue</span>
+              <span class="info-value">{{ userProfile?.mother_tongue || 'Not specified' }}</span>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Preferences -->
-        <div class="card">
-          <h3 class="text-lg font-semibold mb-4">Looking For</h3>
-          <p class="text-gray-700">{{ user.profile?.looking_for || 'Not specified' }}</p>
+      <!-- Lifestyle -->
+      <div class="detail-card lifestyle-card">
+        <div class="card-header">
+          <span class="card-icon">🌟</span>
+          <h3>Lifestyle</h3>
+        </div>
+        <div class="card-content">
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Diet</span>
+              <span class="info-value lifestyle-badge" [attr.data-type]="userProfile?.diet">
+                {{ userProfile?.diet?.replace('_', ' ') || 'Not specified' }}
+              </span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Smoking</span>
+              <span class="info-value lifestyle-badge" [attr.data-type]="userProfile?.smoking">
+                {{ userProfile?.smoking || 'Not specified' }}
+              </span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Drinking</span>
+              <span class="info-value lifestyle-badge" [attr.data-type]="userProfile?.drinking">
+                {{ userProfile?.drinking || 'Not specified' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Family Background -->
+      <div class="detail-card family-card">
+        <div class="card-header">
+          <span class="card-icon">👨‍👩‍👧‍👦</span>
+          <h3>Family Background</h3>
+        </div>
+        <div class="card-content">
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Family Type</span>
+              <span class="info-value">{{ userProfile?.family_type || 'Not specified' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Family Status</span>
+              <span class="info-value">{{ userProfile?.family_status?.replace('_', ' ') || 'Not specified' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Languages -->
+      <div class="detail-card languages-card" *ngIf="(userProfile?.languages_known?.length ?? 0) > 0">
+        <div class="card-header">
+          <span class="card-icon">🗣️</span>
+          <h3>Languages</h3>
+        </div>
+        <div class="card-content">
+          <div class="tags-list">
+            <span *ngFor="let lang of userProfile?.languages_known" class="tag language-tag">{{ lang }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hobbies & Interests -->
+      <div class="detail-card hobbies-card" *ngIf="(userProfile?.hobbies?.length ?? 0) > 0">
+        <div class="card-header">
+          <span class="card-icon">🎯</span>
+          <h3>Hobbies & Interests</h3>
+        </div>
+        <div class="card-content">
+          <div class="tags-list">
+            <span *ngFor="let hobby of userProfile?.hobbies" class="tag hobby-tag">{{ hobby }}</span>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Photo Modal -->
-  <div 
-    *ngIf="showPhotoModal" 
-    class="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
-    (click)="closePhotoModal()"
-  >
-    <div class="relative max-w-4xl max-h-full">
-      <button 
-        (click)="closePhotoModal()" 
-        class="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
-        aria-label="Close photo modal"
-      >
-        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-      </button>
-      
-      <div class="relative">
-        <img 
-          [src]="(getPublicPhotos()[currentPhotoIndex].file_path) || '/assets/images/default-avatar.png'" 
-          [alt]="getFullName()"
-          class="w-full h-auto max-h-96 object-contain"
-        >
-      </div>
-      
-      <!-- Modal Navigation -->
-      <div *ngIf="getPublicPhotos().length > 1" class="absolute inset-0 flex items-center justify-between p-4">
-        <button 
-          (click)="previousPhoto(); $event.stopPropagation()" 
-          class="btn-ghost bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-2"
-          [disabled]="currentPhotoIndex === 0"
-          aria-label="Previous photo"
-        >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+  <div *ngIf="showPhotoModal" class="photo-modal" (click)="closePhotoModal()">
+    <button class="modal-close" (click)="closePhotoModal()" aria-label="Close modal">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <img
+        [src]="getCurrentPhoto()?.file_path || '/assets/images/default-avatar.png'"
+        [alt]="getFullName()"
+        class="modal-photo"
+      />
+
+      <div *ngIf="getPublicPhotos().length > 1" class="modal-nav">
+        <button (click)="previousPhoto()" [disabled]="currentPhotoIndex === 0" class="modal-nav-btn" aria-label="Previous">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M15 18l-6-6 6-6"/>
           </svg>
         </button>
-        
-        <button 
-          (click)="nextPhoto(); $event.stopPropagation()" 
-          class="btn-ghost bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-2"
-          [disabled]="currentPhotoIndex === getPublicPhotos().length - 1"
-          aria-label="Next photo"
-        >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        <span class="modal-counter">{{ currentPhotoIndex + 1 }} / {{ getPublicPhotos().length }}</span>
+        <button (click)="nextPhoto()" [disabled]="currentPhotoIndex === getPublicPhotos().length - 1" class="modal-nav-btn" aria-label="Next">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 18l6-6-6-6"/>
           </svg>
         </button>
       </div>
     </div>
   </div>
-</div> 
+</div>

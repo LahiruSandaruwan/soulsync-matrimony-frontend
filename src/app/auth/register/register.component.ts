@@ -21,7 +21,6 @@ export class RegisterComponent {
     password_confirmation: '',
     date_of_birth: '',
     gender: 'male',
-    country_code: '+94',
     terms_accepted: false,
     privacy_accepted: false
   };
@@ -46,15 +45,33 @@ export class RegisterComponent {
 
     this.loading = true;
     this.error = '';
-    
+
     this.authService.register(this.registerForm).subscribe({
       next: () => {
         this.router.navigate(['/auth/login']);
       },
       error: (error: any) => {
-        this.error = error.message || 'Registration failed';
+        this.error = this.extractErrorMessage(error);
         this.loading = false;
       }
     });
+  }
+
+  private extractErrorMessage(error: any): string {
+    // Handle Laravel validation errors
+    if (error.error?.errors) {
+      const errors = error.error.errors;
+      const firstField = Object.keys(errors)[0];
+      if (firstField && errors[firstField]?.length > 0) {
+        return errors[firstField][0];
+      }
+    }
+    if (error.error?.message) {
+      return error.error.message;
+    }
+    if (error.message) {
+      return error.message;
+    }
+    return 'Registration failed. Please try again.';
   }
 } 

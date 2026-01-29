@@ -133,7 +133,7 @@ export interface RegisterRequest {
   last_name: string;
   date_of_birth: string;
   gender: 'male' | 'female' | 'other';
-  country_code: string;
+  country_code?: string;
   terms_accepted: boolean;
   privacy_accepted: boolean;
 }
