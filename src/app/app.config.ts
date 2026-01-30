@@ -12,6 +12,7 @@ import { NotificationService } from './core/services/notification.service';
 import { AdminSettingsService } from './core/services/admin-settings.service';
 import { RuntimeConfigService } from './core/services/runtime-config.service';
 import { environment } from '../environments/environment';
+import { translocoProviders } from './transloco.config';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -20,6 +21,7 @@ export const appConfig: ApplicationConfig = {
       withInterceptors([authInterceptor])
     ),
     provideAnimations(),
+    ...translocoProviders,
     {
       provide: APP_INITIALIZER,
       multi: true,

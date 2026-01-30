@@ -1,0 +1,227 @@
+{
+  "common": {
+    "appName": "SoulSync",
+    "tagline": "Find Your Perfect Life Partner"
+  },
+  "nav": {
+    "howItWorks": "How It Works",
+    "features": "Features",
+    "successStories": "Success Stories",
+    "pricing": "Pricing",
+    "faq": "FAQ",
+    "signIn": "Sign In",
+    "registerFree": "Register Free",
+    "myDashboard": "My Dashboard"
+  },
+  "hero": {
+    "badge": "Trusted by 50,000+ Happy Couples",
+    "title": "Find Your Perfect",
+    "titleHighlight": "Life Partner",
+    "subtitle": "Sri Lanka's most trusted matrimonial platform. Join thousands of verified profiles and find your soulmate with our advanced matching system.",
+    "quickSearch": {
+      "title": "Quick Search",
+      "lookingFor": "I'm looking for",
+      "bride": "Bride",
+      "groom": "Groom",
+      "ageFrom": "Age From",
+      "ageTo": "Age To",
+      "religion": "Religion",
+      "any": "Any",
+      "buddhist": "Buddhist",
+      "hindu": "Hindu",
+      "christian": "Christian",
+      "muslim": "Muslim",
+      "other": "Other",
+      "searchProfiles": "Search Profiles"
+    },
+    "viewMyMatches": "View My Matches",
+    "trustBadges": {
+      "verifiedProfiles": "Verified Profiles",
+      "privacy": "100% Privacy",
+      "support": "24/7 Support"
+    }
+  },
+  "stats": {
+    "registeredMembers": "Registered Members",
+    "successfulMatches": "Successful Matches",
+    "verifiedProfiles": "Verified Profiles",
+    "userRating": "User Rating"
+  },
+  "howItWorks": {
+    "title": "How It Works",
+    "subtitle": "Simple steps to find your perfect match",
+    "step1": {
+      "title": "Register",
+      "description": "Create your free profile with your details and preferences"
+    },
+    "step2": {
+      "title": "Get Verified",
+      "description": "Complete verification for a trusted profile badge"
+    },
+    "step3": {
+      "title": "Find Matches",
+      "description": "Browse profiles and get AI-powered match suggestions"
+    },
+    "step4": {
+      "title": "Connect",
+      "description": "Send interests, chat securely and meet your soulmate"
+    }
+  },
+  "features": {
+    "title": "Why Choose SoulSync?",
+    "subtitle": "Features designed to help you find your perfect life partner",
+    "verified": {
+      "title": "100% Verified Profiles",
+      "description": "Every profile goes through our rigorous verification process including ID and photo verification."
+    },
+    "aiMatching": {
+      "title": "AI-Powered Matching",
+      "description": "Our intelligent algorithm analyzes 50+ compatibility factors to suggest your best matches."
+    },
+    "privacy": {
+      "title": "Privacy & Security",
+      "description": "Your data is protected with bank-level encryption. You control who sees your profile."
+    },
+    "horoscope": {
+      "title": "Horoscope Matching",
+      "description": "Get detailed horoscope compatibility analysis based on traditional astrology."
+    },
+    "messaging": {
+      "title": "Secure Messaging",
+      "description": "Chat privately with your matches. Messages are encrypted end-to-end."
+    },
+    "support": {
+      "title": "24/7 Customer Support",
+      "description": "Our dedicated support team is available around the clock to assist you."
+    }
+  },
+  "testimonials": {
+    "title": "Success Stories",
+    "subtitle": "Real couples who found love through SoulSync",
+    "story1": {
+      "text": "We found each other on SoulSync within 2 months. The matching algorithm suggested my husband and it was a perfect match. Highly recommended!",
+      "names": "Nirmala & Kasun",
+      "date": "Married - January 2024"
+    },
+    "story2": {
+      "text": "After trying several matrimony sites, SoulSync stood out with its genuine profiles and excellent horoscope matching. We got engaged in 3 months!",
+      "names": "Sachini & Pramod",
+      "date": "Married - March 2024"
+    },
+    "story3": {
+      "text": "The customer support was exceptional. They helped us every step of the way. Both families were very happy with the professional service.",
+      "names": "Dilini & Ravindu",
+      "date": "Married - November 2024"
+    }
+  },
+  "pricing": {
+    "title": "Simple, Transparent Pricing",
+    "subtitle": "Start free, upgrade when you need more features",
+    "currency": "LKR",
+    "perMonth": "per month",
+    "foreverFree": "Forever free",
+    "mostPopular": "MOST POPULAR",
+    "getStarted": "Get Started",
+    "getPremium": "Get Premium",
+    "getVip": "Get VIP",
+    "free": {
+      "name": "Free",
+      "price": "0",
+      "features": {
+        "createProfile": "Create profile",
+        "browseProfiles": "Browse profiles",
+        "matchesPerDay": "5 matches per day",
+        "sendInterests": "Send 3 interests"
+      }
+    },
+    "premium": {
+      "name": "Premium",
+      "price": "2,500",
+      "features": {
+        "everythingInFree": "Everything in Free",
+        "unlimitedMatches": "Unlimited matches",
+        "seeWhoLiked": "See who liked you",
+        "chatWithMatches": "Chat with matches",
+        "advancedFilters": "Advanced search filters"
+      }
+    },
+    "vip": {
+      "name": "VIP",
+      "price": "5,000",
+      "features": {
+        "everythingInPremium": "Everything in Premium",
+        "priorityVisibility": "Priority profile visibility",
+        "videoCalls": "Video calls",
+        "dedicatedSupport": "Dedicated support",
+        "profileBoost": "Profile boost weekly"
+      }
+    }
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Find answers to common questions about SoulSync",
+    "q1": {
+      "question": "How do I create a profile?",
+      "answer": "Click on \"Register Free\" button, fill in your basic details, upload your photos, and complete your profile information. The process takes only 5 minutes."
+    },
+    "q2": {
+      "question": "Is my information safe and private?",
+      "answer": "Yes, absolutely. We use bank-level encryption to protect your data. You have full control over your privacy settings and can choose what information to show on your profile."
+    },
+    "q3": {
+      "question": "How does the matching algorithm work?",
+      "answer": "Our AI-powered algorithm analyzes over 50 compatibility factors including education, profession, interests, values, and preferences to suggest your best matches."
+    },
+    "q4": {
+      "question": "Can I get a refund if I'm not satisfied?",
+      "answer": "Yes, we offer a 7-day money-back guarantee for all premium subscriptions. If you're not satisfied, contact our support team for a full refund."
+    },
+    "q5": {
+      "question": "How do I verify my profile?",
+      "answer": "Go to your profile settings and click on \"Verify Profile\". You'll need to upload a valid government ID and take a selfie. Verification is usually completed within 24 hours."
+    }
+  },
+  "cta": {
+    "title": "Ready to Find Your Life Partner?",
+    "subtitle": "Join thousands of happy couples who found love on SoulSync",
+    "findMatches": "Find Matches"
+  },
+  "footer": {
+    "tagline": "Sri Lanka's trusted matrimonial platform helping thousands find their perfect life partner.",
+    "phone": "+94 11 234 5678",
+    "email": "support@soulsync.lk",
+    "quickLinks": {
+      "title": "Quick Links",
+      "register": "Register",
+      "signIn": "Sign In",
+      "pricing": "Pricing",
+      "faq": "FAQ"
+    },
+    "support": {
+      "title": "Support",
+      "helpCenter": "Help Center",
+      "safetyTips": "Safety Tips",
+      "contactUs": "Contact Us",
+      "reportIssue": "Report Issue"
+    },
+    "legal": {
+      "title": "Legal",
+      "privacyPolicy": "Privacy Policy",
+      "termsOfService": "Terms of Service",
+      "cookiePolicy": "Cookie Policy",
+      "refundPolicy": "Refund Policy"
+    },
+    "copyright": "SoulSync Matrimony. All rights reserved."
+  },
+  "layout": {
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "matches": "Matches",
+    "chat": "Chat",
+    "search": "Search",
+    "subscription": "Subscription",
+    "notifications": "Notifications",
+    "settings": "Settings",
+    "logout": "Logout"
+  }
+}

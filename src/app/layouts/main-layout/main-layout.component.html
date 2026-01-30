@@ -1,89 +1,92 @@
-<div class="main-layout">
-  <!-- Sidebar -->
-  <aside class="sidebar" [class.sidebar-closed]="!isSidebarOpen">
-    <div class="sidebar-header">
-      <h2>SoulSync</h2>
-      <button class="sidebar-toggle" (click)="toggleSidebar()">
-        <span class="hamburger"></span>
-      </button>
-    </div>
-    
-    <nav class="sidebar-nav">
-      <ul>
-        <li>
-          <a routerLink="/app/dashboard" routerLinkActive="active">
-            <i class="icon-dashboard"></i>
-            <span>Dashboard</span>
-          </a>
-        </li>
-        <li>
-          <a routerLink="/app/profile" routerLinkActive="active">
-            <i class="icon-profile"></i>
-            <span>Profile</span>
-          </a>
-        </li>
-        <li>
-          <a routerLink="/app/matches" routerLinkActive="active">
-            <i class="icon-matches"></i>
-            <span>Matches</span>
-          </a>
-        </li>
-        <li>
-          <a routerLink="/app/chat" routerLinkActive="active">
-            <i class="icon-chat"></i>
-            <span>Chat</span>
-          </a>
-        </li>
-        <li>
-          <a routerLink="/app/search" routerLinkActive="active">
-            <i class="icon-search"></i>
-            <span>Search</span>
-          </a>
-        </li>
-        <li>
-          <a routerLink="/app/subscription" routerLinkActive="active">
-            <i class="icon-subscription"></i>
-            <span>Subscription</span>
-          </a>
-        </li>
-        <li>
-          <a routerLink="/app/notifications" routerLinkActive="active">
-            <i class="icon-notifications"></i>
-            <span>Notifications</span>
-          </a>
-        </li>
-        <li>
-          <a routerLink="/app/settings" routerLinkActive="active">
-            <i class="icon-settings"></i>
-            <span>Settings</span>
-          </a>
-        </li>
-      </ul>
-    </nav>
-  </aside>
-  
-  <!-- Main Content -->
-  <main class="main-content" [class.main-content-expanded]="!isSidebarOpen">
-    <header class="main-header">
-      <div class="header-left">
-        <button class="menu-toggle" (click)="toggleSidebar()">
+<ng-container *transloco="let t">
+  <div class="main-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" [class.sidebar-closed]="!isSidebarOpen">
+      <div class="sidebar-header">
+        <h2>SoulSync</h2>
+        <button class="sidebar-toggle" (click)="toggleSidebar()">
           <span class="hamburger"></span>
         </button>
       </div>
-      
-      <div class="header-right">
-        <div class="user-menu">
-          <span class="user-name">John Doe</span>
-          <button class="logout-btn">Logout</button>
+
+      <nav class="sidebar-nav">
+        <ul>
+          <li>
+            <a routerLink="/app/dashboard" routerLinkActive="active">
+              <i class="icon-dashboard"></i>
+              <span>{{ t('layout.dashboard') }}</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/app/profile" routerLinkActive="active">
+              <i class="icon-profile"></i>
+              <span>{{ t('layout.profile') }}</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/app/matches" routerLinkActive="active">
+              <i class="icon-matches"></i>
+              <span>{{ t('layout.matches') }}</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/app/chat" routerLinkActive="active">
+              <i class="icon-chat"></i>
+              <span>{{ t('layout.chat') }}</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/app/search" routerLinkActive="active">
+              <i class="icon-search"></i>
+              <span>{{ t('layout.search') }}</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/app/subscription" routerLinkActive="active">
+              <i class="icon-subscription"></i>
+              <span>{{ t('layout.subscription') }}</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/app/notifications" routerLinkActive="active">
+              <i class="icon-notifications"></i>
+              <span>{{ t('layout.notifications') }}</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/app/settings" routerLinkActive="active">
+              <i class="icon-settings"></i>
+              <span>{{ t('layout.settings') }}</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" [class.main-content-expanded]="!isSidebarOpen">
+      <header class="main-header">
+        <div class="header-left">
+          <button class="menu-toggle" (click)="toggleSidebar()">
+            <span class="hamburger"></span>
+          </button>
         </div>
+
+        <div class="header-right">
+          <app-language-switcher></app-language-switcher>
+          <div class="user-menu">
+            <span class="user-name">John Doe</span>
+            <button class="logout-btn">{{ t('layout.logout') }}</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="content-area">
+        <router-outlet></router-outlet>
       </div>
-    </header>
-    
-    <div class="content-area">
-      <router-outlet></router-outlet>
-    </div>
-  </main>
-  
-  <!-- Toast Container -->
-  <app-toast-container></app-toast-container>
-</div> 
+    </main>
+
+    <!-- Toast Container -->
+    <app-toast-container></app-toast-container>
+  </div>
+</ng-container>
