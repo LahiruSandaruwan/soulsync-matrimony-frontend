@@ -353,12 +353,12 @@ export class ChatBoxComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   onBackToChats(): void {
-    this.router.navigate(['/chat']);
+    this.router.navigate(['/app/chat']);
   }
 
   onViewProfile(): void {
     if (this.otherUser) {
-      this.router.navigate(['/profile', this.otherUser.id]);
+      this.router.navigate(['/app/profile']);
     }
   }
 

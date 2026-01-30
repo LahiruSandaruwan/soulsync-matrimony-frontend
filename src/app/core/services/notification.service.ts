@@ -206,7 +206,7 @@ export class NotificationService {
 
   // Helper to request and persist subscription using VAPID
   async ensurePushSubscription(vapidPublicKey: string): Promise<void> {
-    if (!('serviceWorker' in navigator)) return;
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
     const registration = await navigator.serviceWorker.getRegistration();
     if (!registration) return;
     let sub = await registration.pushManager.getSubscription();

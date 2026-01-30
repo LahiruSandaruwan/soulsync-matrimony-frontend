@@ -214,7 +214,7 @@ export class VideoCallComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Failed to initialize call:', error);
       this.callStatus = 'Failed to connect';
-      setTimeout(() => this.router.navigate(['/chat']), 3000);
+      setTimeout(() => this.router.navigate(['/app/chat']), 3000);
     }
   }
 
@@ -285,11 +285,11 @@ export class VideoCallComponent implements OnInit, OnDestroy {
     try {
       await this.videoCallService.endCall(parseInt(this.callId)).toPromise();
       this.cleanupCall();
-      this.router.navigate(['/chat']);
+      this.router.navigate(['/app/chat']);
     } catch (error) {
       console.error('Failed to end call:', error);
       this.cleanupCall();
-      this.router.navigate(['/chat']);
+      this.router.navigate(['/app/chat']);
     }
   }
 

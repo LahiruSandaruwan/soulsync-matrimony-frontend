@@ -342,7 +342,7 @@ export class PerformanceService {
       metrics,
       events,
       timestamp: new Date().toISOString(),
-      userAgent: navigator.userAgent
+      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown'
     }, null, 2);
   }
 

@@ -203,7 +203,7 @@ export class ProfileEditComponent implements OnInit, OnDestroy {
           
           // Navigate back to profile view after a short delay
           setTimeout(() => {
-            this.router.navigate(['/profile']);
+            this.router.navigate(['/app/profile']);
           }, 2000);
         },
         error: (error) => {
@@ -215,7 +215,7 @@ export class ProfileEditComponent implements OnInit, OnDestroy {
   }
 
   onCancel(): void {
-    this.router.navigate(['/profile']);
+    this.router.navigate(['/app/profile']);
   }
 
   onAddLanguage(): void {

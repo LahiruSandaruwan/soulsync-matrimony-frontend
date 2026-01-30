@@ -1,0 +1,38 @@
+# Git
+.git
+.gitignore
+
+# Dependencies (will be installed in build)
+node_modules
+
+# Build output
+dist
+.angular
+
+# Development
+.env
+.env.*
+.editorconfig
+.vscode
+
+# Tests
+e2e
+*.spec.ts
+karma.conf.js
+playwright.config.ts
+test-results
+
+# Documentation
+*.md
+!README.md
+
+# Docker
+docker-compose*.yml
+Dockerfile*
+docker
+
+# Misc
+.DS_Store
+Thumbs.db
+*.log
+coverage

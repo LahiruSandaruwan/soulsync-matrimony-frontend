@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { Subject, takeUntil, forkJoin, catchError, of } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { MatchService } from '../../core/services/match.service';
@@ -71,7 +71,8 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     private matchService: MatchService,
     private chatService: ChatService,
     private profileService: ProfileService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -96,17 +97,35 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error = '';
 
+    console.log('Loading dashboard data...');
+
     // Load all dashboard data in parallel
     forkJoin({
-      matches: this.matchService.getMatches().pipe(catchError(() => of({ data: [] }))),
-      conversations: this.chatService.getConversations().pipe(catchError(() => of({ data: [] }))),
-      profileCompletion: this.profileService.getProfileCompletion().pipe(catchError(() => of({ completion_percentage: 0 }))),
-      unreadCount: this.notificationService.unreadCount$.pipe(catchError(() => of(0))),
-      profile: this.profileService.getProfile().pipe(catchError(() => of(null)))
+      matches: this.matchService.getMatches().pipe(catchError((err) => {
+        console.error('Matches error:', err);
+        return of({ data: [] });
+      })),
+      conversations: this.chatService.getConversations().pipe(catchError((err) => {
+        console.error('Conversations error:', err);
+        return of({ data: [] });
+      })),
+      profileCompletion: this.profileService.getProfileCompletion().pipe(catchError((err) => {
+        console.error('Profile completion error:', err);
+        return of({ completion_percentage: 0 });
+      })),
+      unreadCount: this.notificationService.unreadCount$.pipe(catchError((err) => {
+        console.error('Unread count error:', err);
+        return of(0);
+      })),
+      profile: this.profileService.getProfile().pipe(catchError((err) => {
+        console.error('Profile error:', err);
+        return of(null);
+      }))
     })
     .pipe(takeUntil(this.destroy$))
     .subscribe({
       next: (data) => {
+        console.log('Dashboard data loaded:', data);
         this.processDashboardData(data);
         this.loading = false;
       },
@@ -163,28 +182,23 @@ export class UserDashboardComponent implements OnInit, OnDestroy {
   }
 
   onViewProfile(userId: number): void {
-    // Navigate to user profile
-    console.log('View profile:', userId);
+    this.router.navigate(['/app/profile']);
   }
 
   onViewConversation(conversationId: number): void {
-    // Navigate to conversation
-    console.log('View conversation:', conversationId);
+    this.router.navigate(['/app/chat', conversationId]);
   }
 
   onViewMatches(): void {
-    // Navigate to matches page
-    console.log('View all matches');
+    this.router.navigate(['/app/matches']);
   }
 
   onViewMessages(): void {
-    // Navigate to messages page
-    console.log('View all messages');
+    this.router.navigate(['/app/chat']);
   }
 
   onCompleteProfile(): void {
-    // Navigate to profile completion
-    console.log('Complete profile');
+    this.router.navigate(['/app/profile/edit']);
   }
 
   refreshData(): void {

@@ -1,64 +1,259 @@
-<div class="login-container">
-  <div class="login-card">
-    <h2>Welcome Back</h2>
-    <p class="subtitle">Sign in to your SoulSync account</p>
-    
-    <form (ngSubmit)="onSubmit()" #form="ngForm">
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input 
-          type="email" 
-          id="email" 
-          name="email" 
-          [(ngModel)]="loginForm.email" 
-          required 
-          class="form-control"
-          placeholder="Enter your email">
-      </div>
-      
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input 
-          type="password" 
-          id="password" 
-          name="password" 
-          [(ngModel)]="loginForm.password" 
-          required 
-          class="form-control"
-          placeholder="Enter your password">
-      </div>
-      
-      <div class="error-message" *ngIf="error">
-        {{ error }}
-      </div>
-      
-      <button 
-        type="submit" 
-        class="btn-primary" 
-        [disabled]="loading || !form.form.valid">
-        <span *ngIf="loading">Signing in...</span>
-        <span *ngIf="!loading">Sign In</span>
-      </button>
-    </form>
-    
-    <div class="social-login">
-      <div class="or-separator">
-        <span></span>
-        <p>or</p>
-        <span></span>
-      </div>
-      <button class="btn-google" (click)="onGoogleLogin()" [disabled]="loading">
-        Continue with Google
-      </button>
-      <button class="btn-facebook" (click)="onFacebookLogin()" [disabled]="loading">
-        Continue with Facebook
-      </button>
-    </div>
-    
-    <div class="links">
-      <a routerLink="/auth/forgot-password">Forgot Password?</a>
-      <span class="divider">|</span>
-      <a routerLink="/auth/register">Don't have an account? Sign up</a>
+<main class="login-container" role="main" aria-labelledby="login-title">
+  <!-- Animated Background -->
+  <div class="background-animation" aria-hidden="true">
+    <div class="floating-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+      <div class="shape shape-4"></div>
     </div>
   </div>
-</div> 
+
+  <!-- Main Content -->
+  <div class="login-content">
+    <!-- Brand Header -->
+    <header class="brand-section">
+      <div class="logo-container">
+        <div class="logo" aria-label="SoulSync Logo">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M12 2L15.09 8.26L22 9L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9L8.91 8.26L12 2Z" fill="currentColor"/>
+          </svg>
+        </div>
+      </div>
+    </header>
+
+    <!-- Login Card -->
+    <section class="login-card" role="region" aria-labelledby="login-title">
+      <div class="card-header">
+        <h1 id="login-title" class="login-title">Welcome back</h1>
+        <p class="login-subtitle">Sign in to your account</p>
+      </div>
+
+      <!-- Login Form -->
+      <form 
+        [formGroup]="loginForm" 
+        (ngSubmit)="onSubmit()" 
+        class="login-form"
+        role="form"
+        aria-describedby="form-instructions"
+        novalidate>
+        
+        <div id="form-instructions" class="sr-only">
+          Login form with email and password fields. All fields are required.
+        </div>
+
+        <!-- Email Field -->
+        <div class="form-group">
+          <label for="email" class="form-label" id="email-label">
+            Email address <span class="required" aria-label="required">*</span>
+          </label>
+          <div 
+            class="input-wrapper" 
+            [class.focused]="emailControl.touched && emailControl.dirty"
+            [class.error]="emailControl.invalid && emailControl.touched"
+            [class.valid]="emailControl.valid && emailControl.dirty">
+            
+            <div class="input-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4ZM20 8L12 13L4 8V6L12 11L20 6V8Z" fill="currentColor"/>
+              </svg>
+            </div>
+            
+            <input 
+              type="email" 
+              id="email" 
+              formControlName="email"
+              class="form-input"
+              placeholder="Enter your email address"
+              [attr.aria-describedby]="emailControl.invalid && emailControl.touched ? 'email-error' : 'email-help'"
+              [attr.aria-invalid]="emailControl.invalid && emailControl.touched"
+              [attr.aria-required]="true"
+              (focus)="onInputFocus('email')"
+              (blur)="onInputBlur('email')"
+              autocomplete="email"
+              aria-labelledby="email-label">
+            
+            <div class="input-status" aria-hidden="true">
+              <svg *ngIf="emailControl.valid && emailControl.dirty" class="status-icon valid" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="currentColor"/>
+              </svg>
+              <svg *ngIf="emailControl.invalid && emailControl.touched" class="status-icon error" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="currentColor"/>
+              </svg>
+            </div>
+          </div>
+          
+          <div id="email-help" class="help-text" *ngIf="!emailControl.touched || emailControl.valid">
+            Enter the email address associated with your account
+          </div>
+          
+          <div id="email-error" class="error-message" role="alert" aria-live="polite" *ngIf="emailControl.invalid && emailControl.touched">
+            <svg class="error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="currentColor"/>
+            </svg>
+            <span *ngIf="emailControl.errors?.['required']">Email address is required</span>
+            <span *ngIf="emailControl.errors?.['email']">Please enter a valid email address</span>
+          </div>
+        </div>
+
+        <!-- Password Field -->
+        <div class="form-group">
+          <label for="password" class="form-label" id="password-label">
+            Password <span class="required" aria-label="required">*</span>
+          </label>
+          <div 
+            class="input-wrapper" 
+            [class.focused]="passwordControl.touched && passwordControl.dirty"
+            [class.error]="passwordControl.invalid && passwordControl.touched"
+            [class.valid]="passwordControl.valid && passwordControl.dirty">
+            
+            <div class="input-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18 8H17V6C17 3.24 14.76 1 12 1C9.24 1 7 3.24 7 6V8H6C4.9 8 4 8.9 4 10V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V10C20 8.9 19.1 8 18 8ZM12 17C10.9 17 10 16.1 10 15C10 13.9 10.9 13 12 13C13.1 13 14 13.9 14 15C14 16.1 13.1 17 12 17ZM15.1 8H8.9V6C8.9 4.29 10.29 2.9 12 2.9C13.71 2.9 15.1 4.29 15.1 6V8Z" fill="currentColor"/>
+              </svg>
+            </div>
+            
+            <input 
+              [type]="showPassword ? 'text' : 'password'" 
+              id="password" 
+              formControlName="password"
+              class="form-input"
+              placeholder="Enter your password"
+              [attr.aria-describedby]="passwordControl.invalid && passwordControl.touched ? 'password-error' : 'password-help'"
+              [attr.aria-invalid]="passwordControl.invalid && passwordControl.touched"
+              [attr.aria-required]="true"
+              (focus)="onInputFocus('password')"
+              (blur)="onInputBlur('password')"
+              autocomplete="current-password"
+              aria-labelledby="password-label">
+            
+            <button 
+              type="button" 
+              class="password-toggle" 
+              (click)="togglePassword()"
+              [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+              [attr.aria-pressed]="showPassword"
+              tabindex="0">
+              <svg *ngIf="!showPassword" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17ZM12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z" fill="currentColor"/>
+              </svg>
+              <svg *ngIf="showPassword" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M12 7C14.76 7 17 9.24 17 12C17 12.65 16.87 13.26 16.64 13.83L19.56 16.75C21.07 15.49 22.26 13.86 22.99 12C21.26 7.61 16.99 4.5 12 4.5C10.8 4.5 9.67 4.75 8.64 5.2L10.82 7.38C11.33 7.13 11.89 7 12.5 7C14.76 7 17 9.24 17 12C17 12.65 16.87 13.26 16.64 13.83L19.56 16.75C21.07 15.49 22.26 13.86 22.99 12C21.26 7.61 16.99 4.5 12 4.5C10.8 4.5 9.67 4.75 8.64 5.2L10.82 7.38C11.33 7.13 11.89 7 12.5 7ZM2 4.27L3.28 3L20.72 20.44L19.44 21.72L15.29 17.57C14.76 17.87 14.19 18.07 13.59 18.17C13.85 18.92 14.5 19.5 15.33 19.5C16.03 19.5 16.58 19.11 16.79 18.57L18.83 20.61C18.33 21.43 17.23 22 16 22C14.79 22 13.69 21.43 13.19 20.61L12 22C10.8 22 9.67 21.43 9.17 20.61L7.97 22C6.77 22 5.67 21.43 5.17 20.61L3.97 22C2.77 22 1.67 21.43 1.17 20.61L0 22V4.27ZM12 17C9.24 17 7 14.76 7 12C7 11.35 7.13 10.74 7.36 10.17L4.44 7.25C2.93 8.51 1.74 10.14 1.01 12C2.74 16.39 7.01 19.5 12 19.5C13.2 19.5 14.33 19.25 15.36 18.8L13.18 16.62C12.67 16.87 12.11 17 11.5 17C9.24 17 7 14.76 7 12C7 11.35 7.13 10.74 7.36 10.17L4.44 7.25C2.93 8.51 1.74 10.14 1.01 12C2.74 16.39 7.01 19.5 12 19.5C13.2 19.5 14.33 19.25 15.36 18.8L13.18 16.62C12.67 16.87 12.11 17 11.5 17Z" fill="currentColor"/>
+              </svg>
+            </button>
+          </div>
+          
+          <div id="password-help" class="help-text" *ngIf="!passwordControl.touched || passwordControl.valid">
+            Password must be at least 6 characters long
+          </div>
+          
+          <div id="password-error" class="error-message" role="alert" aria-live="polite" *ngIf="passwordControl.invalid && passwordControl.touched">
+            <svg class="error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="currentColor"/>
+            </svg>
+            <span *ngIf="passwordControl.errors?.['required']">Password is required</span>
+            <span *ngIf="passwordControl.errors?.['minlength']">Password must be at least 6 characters</span>
+          </div>
+        </div>
+
+        <!-- Form Options -->
+        <div class="form-options">
+          <label class="checkbox-wrapper">
+            <input 
+              type="checkbox" 
+              class="checkbox-input" 
+              formControlName="rememberMe"
+              aria-describedby="remember-me-help">
+            <span class="checkbox-custom" aria-hidden="true"></span>
+            <span class="checkbox-label">Remember me</span>
+          </label>
+          <div id="remember-me-help" class="sr-only">
+            Check this box to save your email address for future logins
+          </div>
+          <a routerLink="/auth/forgot-password" class="forgot-link">Forgot password?</a>
+        </div>
+
+        <!-- Global Error Message -->
+        <div 
+          class="global-error" 
+          role="alert" 
+          aria-live="assertive" 
+          *ngIf="error"
+          id="global-error">
+          <svg class="error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="currentColor"/>
+          </svg>
+          <span>{{ error }}</span>
+          <button 
+            type="button" 
+            class="error-close" 
+            (click)="clearError()"
+            aria-label="Close error message">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z" fill="currentColor"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Submit Button -->
+        <button 
+          type="submit" 
+          class="btn-primary" 
+          [disabled]="!isFormValid || loading"
+          [attr.aria-describedby]="loading ? 'loading-status' : null"
+          [attr.aria-busy]="loading">
+          <div class="btn-content">
+            <div class="loading-spinner" *ngIf="loading" id="loading-status" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2V6M12 18V22M4.93 4.93L7.76 7.76M16.24 16.24L19.07 19.07M2 12H6M18 12H22M4.93 19.07L7.76 16.24M16.24 7.76L19.07 4.93" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <span>{{ loading ? 'Signing in...' : 'Sign in' }}</span>
+          </div>
+        </button>
+      </form>
+
+      <!-- Divider -->
+      <div class="divider" aria-hidden="true">
+        <span class="divider-line"></span>
+        <span class="divider-text">or continue with</span>
+        <span class="divider-line"></span>
+      </div>
+
+      <!-- Social Login Buttons -->
+      <div class="social-buttons" role="group" aria-label="Social login options">
+        <button 
+          class="btn-social btn-google" 
+          (click)="onGoogleLogin()" 
+          [disabled]="loading"
+          [attr.aria-describedby]="loading ? 'loading-status' : null"
+          type="button">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          <span>Continue with Google</span>
+        </button>
+        
+        <button 
+          class="btn-social btn-facebook" 
+          (click)="onFacebookLogin()" 
+          [disabled]="loading"
+          [attr.aria-describedby]="loading ? 'loading-status' : null"
+          type="button">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" fill="#1877F2"/>
+          </svg>
+          <span>Continue with Facebook</span>
+        </button>
+      </div>
+
+      <!-- Sign Up Link -->
+      <div class="signup-prompt">
+        <p>Don't have an account? <a routerLink="/auth/register" class="signup-link">Sign up</a></p>
+      </div>
+    </section>
+  </div>
+</main> 

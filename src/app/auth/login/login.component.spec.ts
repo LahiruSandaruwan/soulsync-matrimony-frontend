@@ -73,7 +73,7 @@ describe('LoginComponent', () => {
       email: 'test@example.com',
       password: 'password123'
     });
-    expect(router.navigate).toHaveBeenCalledWith(['/dashboard']);
+    expect(router.navigate).toHaveBeenCalledWith(['/app/dashboard']);
     expect(component.loading).toBe(false);
     expect(component.error).toBe('');
   });

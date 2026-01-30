@@ -96,7 +96,7 @@ describe('UnauthorizedComponent', () => {
       
       component.goHome();
       
-      expect(router.navigate).toHaveBeenCalledWith(['/dashboard']);
+      expect(router.navigate).toHaveBeenCalledWith(['/app/dashboard']);
     });
 
     it('should navigate to login when user is not logged in', () => {

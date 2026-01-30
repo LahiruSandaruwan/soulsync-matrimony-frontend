@@ -3,6 +3,7 @@
   <div *ngIf="loading" class="loading-container">
     <app-loading-spinner></app-loading-spinner>
     <p>Loading your dashboard...</p>
+    <button (click)="refreshData()" class="btn-refresh">Refresh</button>
   </div>
 
   <!-- Error State -->
@@ -119,7 +120,7 @@
           <div class="empty-icon">💕</div>
           <p>No matches yet</p>
           <p class="empty-subtitle">Start exploring to find your perfect match!</p>
-          <button routerLink="/matches" class="btn-primary">Start Matching</button>
+          <button routerLink="/app/matches" class="btn-primary">Start Matching</button>
         </div>
       </div>
       
@@ -156,7 +157,7 @@
           <div class="empty-icon">💬</div>
           <p>No messages yet</p>
           <p class="empty-subtitle">Start a conversation with your matches!</p>
-          <button routerLink="/chat" class="btn-primary">View Conversations</button>
+          <button routerLink="/app/chat" class="btn-primary">View Conversations</button>
         </div>
       </div>
     </div>
@@ -165,19 +166,19 @@
     <div class="quick-actions">
       <h3>Quick Actions</h3>
       <div class="actions-grid">
-        <button routerLink="/matches" class="action-btn">
+        <button routerLink="/app/matches" class="action-btn">
           <span class="action-icon">🔍</span>
           <span>Find Matches</span>
         </button>
-        <button routerLink="/profile/edit" class="action-btn">
+        <button routerLink="/app/profile/edit" class="action-btn">
           <span class="action-icon">✏️</span>
           <span>Edit Profile</span>
         </button>
-        <button routerLink="/search" class="action-btn">
+        <button routerLink="/app/search" class="action-btn">
           <span class="action-icon">🔎</span>
           <span>Search Users</span>
         </button>
-        <button routerLink="/subscription" class="action-btn">
+        <button routerLink="/app/subscription" class="action-btn">
           <span class="action-icon">⭐</span>
           <span>Upgrade Plan</span>
         </button>

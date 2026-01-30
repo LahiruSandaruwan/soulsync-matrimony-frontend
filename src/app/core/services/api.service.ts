@@ -33,7 +33,7 @@ export interface ApiConfig {
   providedIn: 'root'
 })
 export class ApiService {
-  private isOnlineSubject = new BehaviorSubject<boolean>(navigator.onLine);
+  private isOnlineSubject = new BehaviorSubject<boolean>(this.isBrowser() ? navigator.onLine : true);
   public isOnline$ = this.isOnlineSubject.asObservable();
 
   private baseUrl = environment.apiUrl;
@@ -44,17 +44,25 @@ export class ApiService {
     private http: HttpClient,
     private errorHandlingService: ErrorHandlingService
   ) {
-    this.setupOnlineStatusListener();
+    if (this.isBrowser()) {
+      this.setupOnlineStatusListener();
+    }
+  }
+
+  private isBrowser(): boolean {
+    return typeof window !== 'undefined' && typeof navigator !== 'undefined';
   }
 
   private setupOnlineStatusListener(): void {
-    window.addEventListener('online', () => {
-      this.isOnlineSubject.next(true);
-    });
+    if (this.isBrowser()) {
+      window.addEventListener('online', () => {
+        this.isOnlineSubject.next(true);
+      });
 
-    window.addEventListener('offline', () => {
-      this.isOnlineSubject.next(false);
-    });
+      window.addEventListener('offline', () => {
+        this.isOnlineSubject.next(false);
+      });
+    }
   }
 
   private getAuthHeaders(): HttpHeaders {

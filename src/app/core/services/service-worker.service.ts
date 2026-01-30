@@ -41,7 +41,7 @@ export class ServiceWorkerService {
    * Register service worker
    */
   async registerServiceWorker(config: ServiceWorkerConfig = {}): Promise<ServiceWorkerRegistration> {
-    if (!('serviceWorker' in navigator)) {
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
       throw new Error('Service Worker not supported');
     }
 
@@ -56,7 +56,7 @@ export class ServiceWorkerService {
         const newWorker = this.swRegistration!.installing;
         if (newWorker) {
           newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            if (newWorker.state === 'installed' && typeof navigator !== 'undefined' && navigator.serviceWorker.controller) {
               // New service worker available
               this.showUpdateNotification();
             }
@@ -65,10 +65,14 @@ export class ServiceWorkerService {
       });
 
       // Handle service worker controller change
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        console.log('Service Worker activated');
-        window.location.reload();
-      });
+      if (typeof navigator !== 'undefined') {
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          console.log('Service Worker activated');
+          if (typeof window !== 'undefined') {
+            window.location.reload();
+          }
+        });
+      }
 
       return this.swRegistration;
     } catch (error) {
@@ -239,7 +243,7 @@ export class ServiceWorkerService {
    * Check if app is online
    */
   isOnline(): boolean {
-    return navigator.onLine;
+    return typeof navigator !== 'undefined' ? navigator.onLine : true;
   }
 
   /**
@@ -247,6 +251,11 @@ export class ServiceWorkerService {
    */
   getOnlineStatus(): Observable<boolean> {
     return new Observable(observer => {
+      if (typeof navigator === 'undefined' || typeof window === 'undefined') {
+        observer.next(true);
+        return;
+      }
+
       const updateOnlineStatus = () => observer.next(navigator.onLine);
       
       window.addEventListener('online', updateOnlineStatus);
@@ -328,9 +337,9 @@ export class ServiceWorkerService {
    * Show update notification
    */
   private showUpdateNotification(): void {
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
       // Show update notification to user
-      if (confirm('A new version is available. Would you like to update?')) {
+      if (typeof window !== 'undefined' && confirm('A new version is available. Would you like to update?')) {
         this.skipWaiting();
       }
     }

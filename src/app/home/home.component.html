@@ -1,0 +1,311 @@
+<div class="homepage">
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-background">
+      <div class="hero-overlay"></div>
+    </div>
+    <div class="hero-content">
+      <div class="container">
+        <div class="hero-text">
+          <h1 class="hero-title">
+            <span class="brand-name">SoulSync</span>
+            <span class="brand-subtitle">Matrimony</span>
+          </h1>
+          <p class="hero-tagline">Find Your Perfect Match</p>
+          <p class="hero-description">
+            Connect with like-minded individuals who share your values, dreams, and aspirations. 
+            Our advanced compatibility system helps you find meaningful relationships that last.
+          </p>
+          
+          <div class="hero-actions" *ngIf="!(isAuthenticated$ | async)">
+            <button routerLink="/auth/register" class="btn-primary btn-large">
+              <span class="btn-icon">💕</span>
+              Start Your Journey
+            </button>
+            <button routerLink="/auth/login" class="btn-secondary btn-large">
+              <span class="btn-icon">🔑</span>
+              Sign In
+            </button>
+          </div>
+          
+          <div class="hero-actions" *ngIf="isAuthenticated$ | async">
+            <button routerLink="/app/dashboard" class="btn-primary btn-large">
+              <span class="btn-icon">🏠</span>
+              Go to Dashboard
+            </button>
+            <button routerLink="/app/matches" class="btn-secondary btn-large">
+              <span class="btn-icon">💕</span>
+              Find Matches
+            </button>
+          </div>
+        </div>
+        
+        <div class="hero-stats">
+          <div class="stat-item">
+            <div class="stat-number">50K+</div>
+            <div class="stat-label">Happy Couples</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">95%</div>
+            <div class="stat-label">Success Rate</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">24/7</div>
+            <div class="stat-label">Support</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="features">
+    <div class="container">
+      <div class="section-header">
+        <h2>Why Choose SoulSync?</h2>
+        <p>Advanced features designed to help you find your perfect match</p>
+      </div>
+      
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🎯</div>
+          <h3>Smart Matching</h3>
+          <p>Our AI-powered algorithm analyzes compatibility based on personality, interests, and values to suggest the most suitable matches.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">🔒</div>
+          <h3>Secure & Private</h3>
+          <p>Your privacy is our priority. Advanced security features and verification systems ensure a safe dating environment.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">💬</div>
+          <h3>Real-time Chat</h3>
+          <p>Connect instantly with your matches through our secure messaging platform and video calling features.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h3>Insights & Analytics</h3>
+          <p>Get detailed insights about your profile performance and receive personalized tips to improve your matching success.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">🌍</div>
+          <h3>Global Community</h3>
+          <p>Connect with people from around the world who share your cultural values and relationship goals.</p>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">⭐</div>
+          <h3>Premium Features</h3>
+          <p>Unlock advanced search filters, unlimited likes, and priority support with our premium membership plans.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Success Stories Section -->
+  <section class="testimonials">
+    <div class="container">
+      <div class="section-header">
+        <h2>Success Stories</h2>
+        <p>Real couples who found love through SoulSync</p>
+      </div>
+      
+      <div class="testimonials-grid">
+        <div class="testimonial-card">
+          <div class="testimonial-content">
+            <p>"SoulSync helped me find my soulmate. The compatibility matching was spot-on, and we connected instantly!"</p>
+          </div>
+          <div class="testimonial-author">
+            <div class="author-avatar">👨‍💼</div>
+            <div class="author-info">
+              <h4>Raj & Priya</h4>
+              <span>Married 2023</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="testimonial-card">
+          <div class="testimonial-content">
+            <p>"After years of searching, I found my perfect match through SoulSync. The platform made it so easy to connect with like-minded people."</p>
+          </div>
+          <div class="testimonial-author">
+            <div class="author-avatar">👩‍💻</div>
+            <div class="author-info">
+              <h4>Sarah & Michael</h4>
+              <span>Engaged 2024</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="testimonial-card">
+          <div class="testimonial-content">
+            <p>"The advanced search features and compatibility insights helped me understand what I was looking for. Highly recommended!"</p>
+          </div>
+          <div class="testimonial-author">
+            <div class="author-avatar">👨‍🎨</div>
+            <div class="author-info">
+              <h4>David & Emma</h4>
+              <span>Together 2 years</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Section -->
+  <section id="pricing" class="pricing">
+    <div class="container">
+      <div class="section-header">
+        <h2>Choose Your Plan</h2>
+        <p>Start free and upgrade when you're ready for more features</p>
+      </div>
+      
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <div class="plan-header">
+            <h3>Free</h3>
+            <div class="plan-price">
+              <span class="currency">$</span>
+              <span class="amount">0</span>
+              <span class="period">/month</span>
+            </div>
+          </div>
+          <ul class="plan-features">
+            <li>✓ Create your profile</li>
+            <li>✓ Browse profiles</li>
+            <li>✓ 5 daily matches</li>
+            <li>✓ Basic messaging</li>
+            <li>✓ Profile verification</li>
+          </ul>
+          <button routerLink="/auth/register" class="btn-outline">Get Started Free</button>
+        </div>
+        
+        <div class="pricing-card featured">
+          <div class="plan-badge">Most Popular</div>
+          <div class="plan-header">
+            <h3>Premium</h3>
+            <div class="plan-price">
+              <span class="currency">$</span>
+              <span class="amount">29</span>
+              <span class="period">/month</span>
+            </div>
+          </div>
+          <ul class="plan-features">
+            <li>✓ Everything in Free</li>
+            <li>✓ Unlimited matches</li>
+            <li>✓ Advanced search filters</li>
+            <li>✓ See who liked you</li>
+            <li>✓ Priority support</li>
+            <li>✓ Profile boost</li>
+          </ul>
+          <button routerLink="/auth/register" class="btn-primary">Start Premium</button>
+        </div>
+        
+        <div class="pricing-card">
+          <div class="plan-header">
+            <h3>VIP</h3>
+            <div class="plan-price">
+              <span class="currency">$</span>
+              <span class="amount">99</span>
+              <span class="period">/month</span>
+            </div>
+          </div>
+          <ul class="plan-features">
+            <li>✓ Everything in Premium</li>
+            <li>✓ Personal matchmaker</li>
+            <li>✓ Video calls</li>
+            <li>✓ Exclusive events</li>
+            <li>✓ Background verification</li>
+            <li>✓ 24/7 concierge</li>
+          </ul>
+          <button routerLink="/auth/register" class="btn-outline">Go VIP</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta">
+    <div class="container">
+      <div class="cta-content">
+        <h2>Ready to Find Your Perfect Match?</h2>
+        <p>Join thousands of singles who have found love through SoulSync. Your journey to happiness starts here.</p>
+        <div class="cta-actions" *ngIf="!(isAuthenticated$ | async)">
+          <button routerLink="/auth/register" class="btn-primary btn-large">
+            <span class="btn-icon">💕</span>
+            Create Your Profile
+          </button>
+          <button routerLink="/auth/login" class="btn-secondary btn-large">
+            <span class="btn-icon">🔑</span>
+            Sign In
+          </button>
+        </div>
+        <div class="cta-actions" *ngIf="isAuthenticated$ | async">
+          <button routerLink="/app/dashboard" class="btn-primary btn-large">
+            <span class="btn-icon">🏠</span>
+            Go to Dashboard
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <h3>SoulSync Matrimony</h3>
+          <p>Find Your Perfect Match</p>
+        </div>
+        
+        <div class="footer-links">
+          <div class="link-group">
+            <h4>Platform</h4>
+            <ul>
+              <li><a routerLink="/auth/register">Sign Up</a></li>
+              <li><a routerLink="/auth/login">Sign In</a></li>
+              <li><a href="#features">Features</a></li>
+              <li><a href="#pricing">Pricing</a></li>
+            </ul>
+          </div>
+          
+          <div class="link-group">
+            <h4>Support</h4>
+            <ul>
+              <li><a href="#">Help Center</a></li>
+              <li><a href="#">Safety Tips</a></li>
+              <li><a href="#">Contact Us</a></li>
+              <li><a href="#">Report Issue</a></li>
+            </ul>
+          </div>
+          
+          <div class="link-group">
+            <h4>Legal</h4>
+            <ul>
+              <li><a href="#">Privacy Policy</a></li>
+              <li><a href="#">Terms of Service</a></li>
+              <li><a href="#">Cookie Policy</a></li>
+              <li><a href="#">Community Guidelines</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2024 SoulSync Matrimony. All rights reserved.</p>
+        <div class="social-links">
+          <a href="#" aria-label="Facebook">📘</a>
+          <a href="#" aria-label="Twitter">🐦</a>
+          <a href="#" aria-label="Instagram">📷</a>
+          <a href="#" aria-label="LinkedIn">💼</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>

@@ -109,4 +109,34 @@
     font-style: italic;
     padding: 40px 20px;
   }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 1rem;
+  
+  p {
+    font-size: 1.125rem;
+    color: #7f8c8d;
+    margin: 0;
+  }
+  
+  .btn-refresh {
+    padding: 0.5rem 1rem;
+    background: #6A0DAD;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background-color 0.3s ease;
+    
+    &:hover {
+      background: #5A0B8F;
+    }
+  }
 } 

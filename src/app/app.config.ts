@@ -50,7 +50,8 @@ export const appConfig: ApplicationConfig = {
       multi: true,
       useFactory: () => {
         return () => {
-          if (environment.analytics.enableGoogleAnalytics && environment.analytics.googleAnalyticsId) {
+          if (typeof document !== 'undefined' && typeof window !== 'undefined' && 
+              environment.analytics.enableGoogleAnalytics && environment.analytics.googleAnalyticsId) {
             const gtagId = environment.analytics.googleAnalyticsId;
             const script1 = document.createElement('script');
             script1.async = true;
@@ -74,7 +75,7 @@ export const appConfig: ApplicationConfig = {
       useFactory: () => {
         const security = inject(SecurityService);
         return () => {
-          if (environment.security.enableContentSecurityPolicy) {
+          if (typeof document !== 'undefined' && environment.security.enableContentSecurityPolicy) {
             const meta = document.createElement('meta');
             meta.httpEquiv = 'Content-Security-Policy';
             meta.content = security.generateCSP();

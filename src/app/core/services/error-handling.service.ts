@@ -204,9 +204,10 @@ export class ErrorHandlingService {
    */
   handleNetworkError(error: any): void {
     const networkInfo = this.getNetworkInfo();
+    const isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
     
     this.updateNetworkStatus({
-      isOffline: !navigator.onLine,
+      isOffline: !isOnline,
       hasSlowConnection: networkInfo.downlink ? networkInfo.downlink < 1 : false,
       connectionType: networkInfo.effectiveType
     });
@@ -215,7 +216,7 @@ export class ErrorHandlingService {
       id: this.generateErrorId(),
       message: 'Network connection issue detected',
       details: {
-        online: navigator.onLine,
+        online: isOnline,
         connectionType: networkInfo.effectiveType,
         downlink: networkInfo.downlink,
         error
@@ -331,6 +332,11 @@ export class ErrorHandlingService {
    * Setup global error handlers
    */
   private setupGlobalErrorHandlers(): void {
+    // Check if we're in a browser environment
+    if (typeof window === 'undefined') {
+      return; // Skip setup during server-side rendering
+    }
+
     // Handle unhandled promise rejections
     window.addEventListener('unhandledrejection', (event) => {
       this.handleApplicationError(
@@ -353,6 +359,11 @@ export class ErrorHandlingService {
    * Monitor network status changes
    */
   private monitorNetworkStatus(): void {
+    // Check if we're in a browser environment
+    if (typeof window === 'undefined') {
+      return; // Skip setup during server-side rendering
+    }
+
     window.addEventListener('online', () => {
       this.updateNetworkStatus({ isOffline: false, hasSlowConnection: false });
       this.clearErrorsBySeverity('high'); // Clear network-related errors
@@ -364,7 +375,7 @@ export class ErrorHandlingService {
     });
 
     // Monitor connection quality if supported
-    if ('connection' in navigator) {
+    if (typeof navigator !== 'undefined' && 'connection' in navigator) {
       const connection = (navigator as any).connection;
       connection.addEventListener('change', () => {
         this.updateNetworkStatus({
@@ -387,6 +398,10 @@ export class ErrorHandlingService {
    * Get network information
    */
   private getNetworkInfo(): any {
+    if (typeof navigator === 'undefined') {
+      return {};
+    }
+    
     if ('connection' in navigator) {
       return (navigator as any).connection;
     }
@@ -471,8 +486,8 @@ export class ErrorHandlingService {
         userEmail,
         error: error,
         timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent,
-        url: window.location.href
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown',
+        url: typeof window !== 'undefined' ? window.location.href : 'Unknown'
       };
 
       this.logError('Error Feedback', report);
