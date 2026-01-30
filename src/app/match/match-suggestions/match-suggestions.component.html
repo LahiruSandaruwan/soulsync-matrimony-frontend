@@ -206,20 +206,20 @@
         <h2>It's a Match!</h2>
         <p>You and {{ selectedMatch?.user?.first_name || 'User' }} liked each other!</p>
       </div>
-      
+
       <div class="match-users">
         <div class="user-avatar">
-          <img [src]="currentUser?.profile?.primary_photo || 'assets/images/default-avatar.png'" 
+          <img [src]="currentUser?.profile?.primary_photo || 'assets/images/default-avatar.png'"
                [alt]="currentUser?.first_name">
         </div>
         <div class="match-heart">💕</div>
         <div class="user-avatar">
-          <img 
+          <img
             [src]="selectedMatch?.user?.profile?.primary_photo || 'assets/images/default-avatar.png'"
             [alt]="selectedMatch?.user?.first_name || 'User'">
         </div>
       </div>
-      
+
       <div class="match-actions">
         <button (click)="onStartConversation()" class="btn-start-chat">
           Start Conversation
@@ -230,7 +230,4 @@
       </div>
     </div>
   </app-modal>
-
-  <!-- Toast Notifications -->
-  <app-toast></app-toast>
 </div>

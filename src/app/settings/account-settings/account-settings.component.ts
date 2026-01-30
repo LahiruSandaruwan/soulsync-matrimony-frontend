@@ -170,13 +170,18 @@ export class AccountSettingsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
-          this.userSettings = { ...this.userSettings, ...response.data.user_settings };
-          this.securitySettings = { ...this.securitySettings, ...response.data.security_settings };
+          // The service already returns response.data, so access directly
+          if (response) {
+            this.userSettings = { ...this.userSettings, ...(response.user_settings || response) };
+            this.securitySettings = { ...this.securitySettings, ...(response.security_settings || {}) };
+          }
           this.populateForms();
           this.loading = false;
         },
         error: (error: any) => {
-          this.error = error.message || 'Failed to load settings';
+          // On error, still show the form with default values
+          console.error('Settings load error:', error);
+          this.populateForms();
           this.loading = false;
         }
       });

@@ -9,7 +9,6 @@ import { AuthService } from '../../core/services/auth.service';
 import { MatchSuggestion, MatchFilters, MatchStats } from '../../core/models/match.model';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
-import { ToastComponent } from '../../shared/components/toast/toast.component';
 
 @Component({
   selector: 'app-match-suggestions',
@@ -20,8 +19,7 @@ import { ToastComponent } from '../../shared/components/toast/toast.component';
     FormsModule,
     ReactiveFormsModule,
     LoadingSpinnerComponent,
-    ModalComponent,
-    ToastComponent
+    ModalComponent
   ],
   templateUrl: './match-suggestions.component.html',
   styleUrls: ['./match-suggestions.component.scss']
@@ -282,9 +280,9 @@ export class MatchSuggestionsComponent implements OnInit, OnDestroy {
   }
 
   getCompatibilityColor(score: number): string {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 80) return 'high';
+    if (score >= 60) return 'medium';
+    return 'low';
   }
 
   getDistanceText(distance?: number): string {

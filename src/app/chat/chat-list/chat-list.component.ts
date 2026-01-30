@@ -7,7 +7,6 @@ import { ChatService, Conversation } from '../../core/services/chat.service';
 import { AuthService } from '../../core/services/auth.service';
 import { WebSocketService } from '../../core/services/websocket.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
-import { ToastComponent } from '../../shared/components/toast/toast.component';
 
 @Component({
   selector: 'app-chat-list',
@@ -16,8 +15,7 @@ import { ToastComponent } from '../../shared/components/toast/toast.component';
     CommonModule,
     RouterModule,
     FormsModule,
-    LoadingSpinnerComponent,
-    ToastComponent
+    LoadingSpinnerComponent
   ],
   templateUrl: './chat-list.component.html',
   styleUrls: ['./chat-list.component.scss']
@@ -229,7 +227,7 @@ export class ChatListComponent implements OnInit, OnDestroy {
   onConversationClick(conversationId: number): void {
     // Optionally join room when navigating
     this.webSocketService.joinConversation(conversationId);
-    this.router.navigate(['/chat', conversationId]);
+    this.router.navigate(['/app/chat', conversationId]);
   }
 
   onMarkAsRead(conversationId: number): void {

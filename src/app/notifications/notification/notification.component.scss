@@ -1,8 +1,42 @@
+// ============================================
+// Celestial Romance Theme - Notifications
+// ============================================
+
+// Theme Variables
+$cosmos-deep: #0f0a1e;
+$cosmos-mid: #1a1333;
+$nebula-pink: #ff6b9d;
+$nebula-rose: #ff8fa3;
+$aurora-purple: #c77dff;
+$aurora-violet: #9d4edd;
+$stardust: #e8e0ff;
+$moonlight: #f4f0ff;
+$starlight: rgba(255, 255, 255, 0.7);
+
+// Glass morphism
+$glass-bg: rgba(255, 255, 255, 0.03);
+$glass-bg-hover: rgba(255, 255, 255, 0.06);
+$glass-border: rgba(255, 255, 255, 0.08);
+$glass-border-hover: rgba(255, 255, 255, 0.15);
+
+// Gradients
+$gradient-primary: linear-gradient(135deg, $nebula-pink 0%, $aurora-purple 100%);
+$gradient-glow: linear-gradient(135deg, rgba($nebula-pink, 0.2) 0%, rgba($aurora-purple, 0.2) 100%);
+
+// Notification type colors
+$color-match: #ff6b9d;
+$color-message: #60a5fa;
+$color-like: #34d399;
+$color-super-like: #fbbf24;
+$color-view: #a78bfa;
+$color-system: #94a3b8;
+
 .notification-container {
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Outfit', sans-serif;
+  min-height: calc(100vh - 100px);
 
   .loading-container {
     display: flex;
@@ -13,7 +47,7 @@
     gap: 1rem;
 
     p {
-      color: #64748b;
+      color: $starlight;
       font-size: 0.875rem;
     }
   }
@@ -27,62 +61,73 @@
 
     .error-message {
       text-align: center;
-      background: white;
+      background: $glass-bg;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       padding: 2rem;
-      border-radius: 0.75rem;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      border-radius: 1rem;
+      border: 1px solid rgba($nebula-pink, 0.3);
       max-width: 400px;
 
       h3 {
-        color: #dc2626;
+        color: $nebula-pink;
         margin-bottom: 0.5rem;
         font-size: 1.125rem;
         font-weight: 600;
+        font-family: 'Cormorant Garamond', serif;
       }
 
       p {
-        color: #64748b;
+        color: $starlight;
         margin-bottom: 1rem;
         font-size: 0.875rem;
       }
 
       .btn-primary {
-        background: #3b82f6;
+        background: $gradient-primary;
         color: white;
         border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 0.375rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
         font-size: 0.875rem;
         font-weight: 500;
         cursor: pointer;
-        transition: background-color 0.2s;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba($nebula-pink, 0.3);
 
         &:hover {
-          background: #2563eb;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba($nebula-pink, 0.4);
         }
       }
     }
   }
 
   .notification-content {
+    animation: fadeIn 0.5s ease-out;
+
     .notification-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       margin-bottom: 2rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid $glass-border;
 
       .header-info {
         h1 {
-          font-size: 2rem;
-          font-weight: 700;
-          color: #1f2937;
+          font-size: 2.25rem;
+          font-weight: 600;
+          font-family: 'Cormorant Garamond', serif;
+          background: $gradient-primary;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
           margin: 0 0 0.5rem 0;
         }
 
         p {
-          color: #6b7280;
+          color: $starlight;
           font-size: 0.875rem;
           margin: 0;
         }
@@ -94,34 +139,38 @@
         align-items: center;
 
         .btn-secondary {
-          background: #f3f4f6;
-          color: #374151;
-          border: 1px solid #d1d5db;
+          background: $glass-bg;
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          color: $stardust;
+          border: 1px solid $glass-border;
           padding: 0.5rem 1rem;
-          border-radius: 0.375rem;
+          border-radius: 0.5rem;
           font-size: 0.875rem;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.3s ease;
 
           &:hover {
-            background: #e5e7eb;
-            border-color: #9ca3af;
+            background: $glass-bg-hover;
+            border-color: $glass-border-hover;
+            color: $moonlight;
           }
         }
 
         .btn-refresh {
-          background: none;
-          border: none;
-          color: #6b7280;
+          background: $glass-bg;
+          border: 1px solid $glass-border;
+          color: $starlight;
           padding: 0.5rem;
-          border-radius: 0.375rem;
+          border-radius: 0.5rem;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.3s ease;
 
           &:hover {
-            background: #f3f4f6;
-            color: #374151;
+            background: $glass-bg-hover;
+            border-color: $glass-border-hover;
+            color: $moonlight;
             transform: rotate(180deg);
           }
         }
@@ -134,44 +183,61 @@
       margin-bottom: 2rem;
       overflow-x: auto;
       padding-bottom: 0.5rem;
+      scrollbar-width: thin;
+      scrollbar-color: rgba($aurora-purple, 0.3) transparent;
+
+      &::-webkit-scrollbar {
+        height: 4px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: rgba($aurora-purple, 0.3);
+        border-radius: 4px;
+      }
 
       .filter-tab {
-        background: none;
-        border: none;
+        background: $glass-bg;
+        border: 1px solid $glass-border;
         padding: 0.75rem 1rem;
         font-size: 0.875rem;
         font-weight: 500;
-        color: #6b7280;
+        color: $starlight;
         cursor: pointer;
         border-radius: 0.5rem;
-        transition: all 0.2s;
+        transition: all 0.3s ease;
         white-space: nowrap;
         display: flex;
         align-items: center;
         gap: 0.5rem;
 
         &:hover {
-          color: #374151;
-          background: #f9fafb;
+          color: $stardust;
+          background: $glass-bg-hover;
+          border-color: $glass-border-hover;
         }
 
         &.active {
-          color: #3b82f6;
-          background: #eff6ff;
+          background: $gradient-glow;
+          border-color: rgba($nebula-pink, 0.4);
+          color: $moonlight;
         }
 
         .count {
-          background: #e5e7eb;
-          color: #6b7280;
-          padding: 0.125rem 0.375rem;
-          border-radius: 0.75rem;
+          background: rgba(255, 255, 255, 0.1);
+          color: $starlight;
+          padding: 0.125rem 0.5rem;
+          border-radius: 1rem;
           font-size: 0.75rem;
           font-weight: 600;
           min-width: 1.5rem;
           text-align: center;
 
           &.unread {
-            background: #ef4444;
+            background: $gradient-primary;
             color: white;
           }
         }
@@ -182,26 +248,37 @@
       .empty-state {
         text-align: center;
         padding: 4rem 2rem;
-        background: white;
-        border-radius: 0.75rem;
-        border: 1px solid #e2e8f0;
+        background: $glass-bg;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 1rem;
+        border: 1px solid $glass-border;
+        animation: fadeIn 0.5s ease-out;
 
         .empty-icon {
-          color: #9ca3af;
+          color: $aurora-purple;
           margin-bottom: 1.5rem;
+          opacity: 0.7;
+
+          svg {
+            stroke: $aurora-purple;
+          }
         }
 
         h3 {
-          font-size: 1.25rem;
+          font-size: 1.5rem;
           font-weight: 600;
-          color: #374151;
-          margin: 0 0 0.5rem 0;
+          font-family: 'Cormorant Garamond', serif;
+          color: $stardust;
+          margin: 0 0 0.75rem 0;
         }
 
         p {
-          color: #6b7280;
+          color: $starlight;
           font-size: 0.875rem;
           margin: 0;
+          max-width: 300px;
+          margin: 0 auto;
         }
       }
 
@@ -209,45 +286,73 @@
         display: flex;
         gap: 1rem;
         padding: 1.5rem;
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 0.75rem;
+        background: $glass-bg;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid $glass-border;
+        border-radius: 1rem;
         margin-bottom: 1rem;
         transition: all 0.3s ease;
         animation: slideInUp 0.3s ease-out;
 
         &:hover {
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          background: $glass-bg-hover;
+          border-color: $glass-border-hover;
           transform: translateY(-2px);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
         &.unread {
-          border-left: 4px solid #3b82f6;
-          background: #f8fafc;
+          border-left: 4px solid $aurora-purple;
+          background: rgba($aurora-purple, 0.05);
         }
 
         &.notification-match {
-          border-left-color: #ec4899;
+          border-left-color: $color-match;
+
+          &.unread {
+            background: rgba($color-match, 0.05);
+          }
         }
 
         &.notification-message {
-          border-left-color: #3b82f6;
+          border-left-color: $color-message;
+
+          &.unread {
+            background: rgba($color-message, 0.05);
+          }
         }
 
         &.notification-like {
-          border-left-color: #10b981;
+          border-left-color: $color-like;
+
+          &.unread {
+            background: rgba($color-like, 0.05);
+          }
         }
 
         &.notification-super-like {
-          border-left-color: #f59e0b;
+          border-left-color: $color-super-like;
+
+          &.unread {
+            background: rgba($color-super-like, 0.05);
+          }
         }
 
         &.notification-view {
-          border-left-color: #8b5cf6;
+          border-left-color: $color-view;
+
+          &.unread {
+            background: rgba($color-view, 0.05);
+          }
         }
 
         &.notification-system {
-          border-left-color: #6b7280;
+          border-left-color: $color-system;
+
+          &.unread {
+            background: rgba($color-system, 0.05);
+          }
         }
 
         .notification-icon {
@@ -256,13 +361,13 @@
 
           .icon {
             font-size: 1.5rem;
-            display: block;
-            width: 3rem;
-            height: 3rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #f3f4f6;
+            width: 3rem;
+            height: 3rem;
+            background: $glass-bg-hover;
+            border: 1px solid $glass-border;
             border-radius: 50%;
           }
 
@@ -272,9 +377,10 @@
             right: 0;
             width: 0.75rem;
             height: 0.75rem;
-            background: #3b82f6;
+            background: $gradient-primary;
             border-radius: 50%;
-            border: 2px solid white;
+            border: 2px solid $cosmos-mid;
+            animation: pulse 2s ease-in-out infinite;
           }
         }
 
@@ -287,11 +393,13 @@
             justify-content: space-between;
             align-items: flex-start;
             margin-bottom: 0.5rem;
+            border: none;
+            padding: 0;
 
             .notification-title {
               font-size: 1rem;
               font-weight: 600;
-              color: #1f2937;
+              color: $stardust;
               margin: 0;
               line-height: 1.4;
             }
@@ -302,29 +410,31 @@
               flex-shrink: 0;
 
               .btn-action {
-                background: none;
-                border: none;
-                color: #6b7280;
-                padding: 0.25rem;
-                border-radius: 0.25rem;
+                background: $glass-bg;
+                border: 1px solid $glass-border;
+                color: $starlight;
+                padding: 0.375rem;
+                border-radius: 0.375rem;
                 cursor: pointer;
-                transition: all 0.2s;
+                transition: all 0.2s ease;
 
                 &:hover {
-                  background: #f3f4f6;
-                  color: #374151;
+                  background: $glass-bg-hover;
+                  border-color: $glass-border-hover;
+                  color: $moonlight;
                 }
 
                 &.btn-delete:hover {
-                  background: #fee2e2;
-                  color: #dc2626;
+                  background: rgba($nebula-pink, 0.2);
+                  border-color: rgba($nebula-pink, 0.4);
+                  color: $nebula-pink;
                 }
               }
             }
           }
 
           .notification-message {
-            color: #6b7280;
+            color: $starlight;
             font-size: 0.875rem;
             line-height: 1.5;
             margin: 0 0 0.75rem 0;
@@ -336,19 +446,20 @@
             align-items: center;
 
             .notification-time {
-              color: #9ca3af;
+              color: rgba(255, 255, 255, 0.5);
               font-size: 0.75rem;
             }
 
             .notification-type {
-              background: #f3f4f6;
-              color: #6b7280;
-              padding: 0.125rem 0.375rem;
+              background: $glass-bg;
+              border: 1px solid $glass-border;
+              color: $starlight;
+              padding: 0.125rem 0.5rem;
               border-radius: 0.25rem;
               font-size: 0.75rem;
               font-weight: 500;
               text-transform: uppercase;
-              letter-spacing: 0.025em;
+              letter-spacing: 0.05em;
             }
           }
         }
@@ -359,22 +470,25 @@
         margin-top: 2rem;
 
         .btn-load-more {
-          background: #f3f4f6;
-          color: #374151;
-          border: 1px solid #d1d5db;
-          padding: 0.75rem 1.5rem;
-          border-radius: 0.375rem;
+          background: $glass-bg;
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          color: $stardust;
+          border: 1px solid $glass-border;
+          padding: 0.75rem 2rem;
+          border-radius: 0.5rem;
           font-size: 0.875rem;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.3s ease;
           display: inline-flex;
           align-items: center;
           gap: 0.5rem;
 
           &:hover:not(:disabled) {
-            background: #e5e7eb;
-            border-color: #9ca3af;
+            background: $gradient-glow;
+            border-color: rgba($nebula-pink, 0.4);
+            color: $moonlight;
           }
 
           &:disabled {
@@ -387,7 +501,65 @@
   }
 }
 
+// Toast messages
+.message-toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  padding: 1rem 1.5rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  animation: slideInRight 0.3s ease-out;
+  z-index: 1000;
+
+  span {
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  button {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  &.success {
+    background: rgba($color-like, 0.2);
+    border: 1px solid rgba($color-like, 0.4);
+    color: $color-like;
+  }
+
+  &.error {
+    background: rgba($nebula-pink, 0.2);
+    border: 1px solid rgba($nebula-pink, 0.4);
+    color: $nebula-pink;
+  }
+}
+
 // Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @keyframes slideInUp {
   from {
     opacity: 0;
@@ -396,6 +568,28 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
   }
 }
 
@@ -459,6 +653,12 @@
         }
       }
     }
+  }
+
+  .message-toast {
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
   }
 }
 

@@ -52,7 +52,7 @@
         <h3>No conversations yet</h3>
         <p *ngIf="searchQuery">No conversations match your search.</p>
         <p *ngIf="!searchQuery">Start matching with people to begin conversations!</p>
-        <button routerLink="/matches" class="btn-primary" *ngIf="!searchQuery">
+        <button routerLink="/app/matches" class="btn-primary" *ngIf="!searchQuery">
           Find Matches
         </button>
       </div>
@@ -135,8 +135,8 @@
 
       <!-- Load More Button -->
       <div *ngIf="hasMoreConversations && filteredConversations.length > 0" class="load-more">
-        <button 
-          (click)="loadMoreConversations()" 
+        <button
+          (click)="loadMoreConversations()"
           [disabled]="loadingMore"
           class="btn-load-more">
           <span *ngIf="loadingMore">Loading...</span>
@@ -145,7 +145,4 @@
       </div>
     </div>
   </div>
-
-  <!-- Toast Notifications -->
-  <app-toast></app-toast>
 </div>
