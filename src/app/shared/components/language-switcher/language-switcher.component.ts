@@ -19,7 +19,7 @@ export class LanguageSwitcherComponent {
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    if (!this.elementRef.nativeElement.contains(event.target)) {
+    if (this.elementRef?.nativeElement && !this.elementRef.nativeElement.contains(event.target)) {
       this.isOpen = false;
     }
   }

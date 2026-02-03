@@ -1,4 +1,5 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
+import { Injectable, inject, signal, computed, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { TranslocoService } from '@jsverse/transloco';
 import {
   Language,
@@ -12,6 +13,8 @@ import {
 })
 export class LanguageService {
   private transloco = inject(TranslocoService);
+  private platformId = inject(PLATFORM_ID);
+  private isBrowser = isPlatformBrowser(this.platformId);
 
   readonly supportedLanguages = SUPPORTED_LANGUAGES;
 
@@ -27,18 +30,22 @@ export class LanguageService {
   }
 
   private getInitialLanguage(): string {
-    if (typeof localStorage !== 'undefined') {
-      const stored = localStorage.getItem(LANGUAGE_STORAGE_KEY);
-      if (stored && this.isSupported(stored)) {
-        return stored;
+    try {
+      if (this.isBrowser && typeof localStorage !== 'undefined') {
+        const stored = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+        if (stored && this.isSupported(stored)) {
+          return stored;
+        }
       }
-    }
 
-    if (typeof navigator !== 'undefined') {
-      const browserLang = navigator.language?.split('-')[0];
-      if (browserLang && this.isSupported(browserLang)) {
-        return browserLang;
+      if (this.isBrowser && typeof navigator !== 'undefined') {
+        const browserLang = navigator.language?.split('-')[0];
+        if (browserLang && this.isSupported(browserLang)) {
+          return browserLang;
+        }
       }
+    } catch {
+      // Ignore errors during SSR
     }
 
     return DEFAULT_LANGUAGE;

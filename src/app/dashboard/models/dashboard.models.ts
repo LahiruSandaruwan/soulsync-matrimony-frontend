@@ -104,3 +104,97 @@ export interface PaginatedResponse<T> {
   from: number;
   to: number;
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Horoscope Compatibility Models
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface HoroscopeCompatibilityPreview {
+  hasHoroscope: boolean;
+  userSign: string | null;
+  userMoonSign?: string;
+  topMatches: HoroscopeMatch[];
+  dailyReading?: DailyHoroscopeReading;
+}
+
+export interface HoroscopeMatch {
+  userId: number;
+  name: string;
+  photoUrl: string;
+  age: number;
+  location: string;
+  zodiacSign: string;
+  moonSign?: string;
+  compatibilityScore: number;
+  compatibilityGrade: 'excellent' | 'very_good' | 'good' | 'average' | 'low';
+  keyFactors: string[];
+  lastActive?: string;
+}
+
+export interface DailyHoroscopeReading {
+  general: string;
+  love: string;
+  luckyNumbers: number[];
+  luckyColors: string[];
+  compatibleSignsToday: string[];
+  date: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Favorites/Shortlist Models
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface FavoriteProfile {
+  id: number;
+  favoriteId: number;
+  userId: number;
+  name: string;
+  firstName: string;
+  photoUrl: string;
+  age: number;
+  location: string;
+  occupation?: string;
+  compatibilityScore: number;
+  isOnline: boolean;
+  lastActive: string;
+  savedAt: string;
+  notes?: string;
+  isPremium: boolean;
+}
+
+export interface FavoritesResponse {
+  favorites: FavoriteProfile[];
+  total: number;
+  hasMore: boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Who Viewed Me Models
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface ProfileViewer {
+  id: number;
+  viewId: number;
+  viewerId: number;
+  name: string;
+  firstName: string;
+  photoUrl: string;
+  age: number;
+  location: string;
+  occupation?: string;
+  isOnline: boolean;
+  lastActive?: string;
+  viewedAt: string;
+  isPremium: boolean;
+  isAnonymous: boolean;
+  deviceType?: 'mobile' | 'desktop' | 'tablet';
+}
+
+export interface ProfileViewsResponse {
+  viewers: ProfileViewer[];
+  totalViews: number;
+  uniqueViewers: number;
+  todayViews: number;
+  hasMore: boolean;
+  isPremiumRequired: boolean;
+}

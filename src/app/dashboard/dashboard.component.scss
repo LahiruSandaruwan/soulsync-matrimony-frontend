@@ -1388,6 +1388,909 @@
   }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// NEW DASHBOARD WIDGETS - Celestial Theme Extensions
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── Secondary Content Section ────────────────────────────────────────────────
+.secondary-content {
+  margin-top: var(--space-2xl);
+
+  .content-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-xl);
+
+    @media (max-width: 1200px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+// ─── Horoscope Widget ─────────────────────────────────────────────────────────
+.horoscope-widget {
+  background: linear-gradient(135deg, var(--glass-bg), rgba(199, 125, 255, 0.05));
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s var(--ease-out-expo);
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(199, 125, 255, 0.2);
+  }
+
+  // Celestial decoration
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(199, 125, 255, 0.2) 0%, transparent 70%);
+    animation: pulse-glow 6s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-lg);
+    border-bottom: 1px solid var(--glass-border);
+
+    h2 {
+      display: flex;
+      align-items: center;
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      color: var(--moonlight);
+      margin: 0;
+
+      .header-icon {
+        margin-right: var(--space-sm);
+        filter: drop-shadow(0 0 10px var(--aurora-purple));
+      }
+    }
+
+    .zodiac-badge {
+      padding: 6px 14px;
+      background: linear-gradient(135deg, var(--aurora-purple), var(--nebula-pink));
+      border-radius: var(--radius-md);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: white;
+    }
+  }
+
+  .horoscope-content {
+    padding: var(--space-lg);
+
+    .daily-reading {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      margin-bottom: var(--space-lg);
+
+      .reading-text {
+        font-family: var(--font-display);
+        font-style: italic;
+        font-size: 1rem;
+        color: var(--stardust);
+        margin: 0 0 var(--space-sm) 0;
+        line-height: 1.5;
+      }
+
+      .lucky-items {
+        display: flex;
+        gap: var(--space-md);
+        flex-wrap: wrap;
+        font-size: 0.8rem;
+        color: var(--stardust);
+        opacity: 0.7;
+
+        span {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+      }
+    }
+
+    .compatible-matches {
+      h4 {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--stardust);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin: 0 0 var(--space-md) 0;
+      }
+
+      .horoscope-matches-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-sm);
+      }
+
+      .horoscope-match-item {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        padding: var(--space-sm);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: all 0.3s var(--ease-out-expo);
+
+        &:hover {
+          background: var(--glass-bg);
+          transform: translateX(4px);
+        }
+
+        .match-avatar-wrapper {
+          position: relative;
+          flex-shrink: 0;
+
+          .match-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: var(--radius-full);
+            object-fit: cover;
+            border: 2px solid var(--glass-border);
+          }
+
+          .compatibility-ring {
+            position: absolute;
+            bottom: -4px;
+            right: -4px;
+            width: 24px;
+            height: 24px;
+            border-radius: var(--radius-full);
+            background: var(--score-color, var(--success));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.55rem;
+            font-weight: 700;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+          }
+        }
+
+        .match-details {
+          flex: 1;
+          min-width: 0;
+
+          h5 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--moonlight);
+            margin: 0;
+          }
+
+          .zodiac-info {
+            font-size: 0.8rem;
+            color: var(--stardust);
+            margin: 2px 0;
+            opacity: 0.8;
+          }
+
+          .compatibility-grade {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: var(--radius-sm);
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+
+            &.excellent { background: rgba(110, 231, 183, 0.2); color: var(--success); }
+            &.very_good { background: rgba(125, 243, 225, 0.2); color: var(--aurora-cyan); }
+            &.good { background: rgba(255, 215, 107, 0.2); color: var(--nebula-gold); }
+            &.average { background: rgba(255, 138, 122, 0.2); color: var(--nebula-coral); }
+            &.low { background: rgba(252, 165, 165, 0.2); color: var(--danger); }
+          }
+        }
+      }
+    }
+  }
+
+  // Empty/No Horoscope State
+  &.no-horoscope {
+    .empty-horoscope {
+      text-align: center;
+      padding: var(--space-2xl);
+
+      .empty-illustration {
+        margin-bottom: var(--space-lg);
+
+        .zodiac-wheel {
+          font-size: 4rem;
+          display: block;
+          animation: float 4s ease-in-out infinite;
+          filter: drop-shadow(0 0 20px var(--aurora-purple));
+        }
+
+        .stars-decoration {
+          display: flex;
+          justify-content: center;
+          gap: var(--space-md);
+          margin-top: var(--space-sm);
+
+          span {
+            font-size: 1.5rem;
+            animation: twinkle 2s ease-in-out infinite;
+
+            &:nth-child(2) { animation-delay: 0.3s; }
+            &:nth-child(3) { animation-delay: 0.6s; }
+          }
+        }
+      }
+
+      h3 {
+        font-family: var(--font-display);
+        font-size: 1.5rem;
+        color: var(--moonlight);
+        margin: 0 0 var(--space-sm) 0;
+      }
+
+      p {
+        color: var(--stardust);
+        opacity: 0.7;
+        margin: 0 0 var(--space-lg) 0;
+      }
+
+      .btn-add-horoscope {
+        padding: var(--space-md) var(--space-xl);
+        background: linear-gradient(135deg, var(--aurora-purple), var(--nebula-pink));
+        border: none;
+        border-radius: var(--radius-md);
+        color: white;
+        font-family: var(--font-body);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s var(--ease-out-expo);
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 30px rgba(199, 125, 255, 0.4);
+        }
+      }
+    }
+  }
+
+  .card-footer {
+    padding: var(--space-md) var(--space-lg);
+    border-top: 1px solid var(--glass-border);
+
+    .btn-view-all {
+      width: 100%;
+      padding: var(--space-md);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      color: var(--stardust);
+      font-family: var(--font-body);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s var(--ease-out-expo);
+
+      &:hover {
+        background: var(--aurora-purple);
+        border-color: var(--aurora-purple);
+        color: white;
+      }
+    }
+  }
+}
+
+// ─── Favorites Widget ─────────────────────────────────────────────────────────
+.favorites-widget {
+  cursor: pointer;
+  transition: all 0.3s var(--ease-out-expo);
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(255, 107, 157, 0.15);
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-lg);
+    border-bottom: 1px solid var(--glass-border);
+
+    h2 {
+      display: flex;
+      align-items: center;
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      color: var(--moonlight);
+      margin: 0;
+
+      .header-icon {
+        margin-right: var(--space-sm);
+      }
+    }
+
+    .favorites-count {
+      padding: 4px 12px;
+      background: linear-gradient(135deg, var(--nebula-pink), var(--nebula-coral));
+      border-radius: var(--radius-full);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: white;
+    }
+  }
+
+  .favorites-content {
+    padding: var(--space-md);
+
+    .favorites-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-md);
+
+      @media (max-width: 480px) {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .favorite-item {
+      position: relative;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      cursor: pointer;
+      transition: all 0.3s var(--ease-out-expo);
+
+      &:hover {
+        border-color: var(--nebula-pink);
+        transform: translateY(-4px);
+        box-shadow: 0 10px 30px rgba(255, 107, 157, 0.15);
+
+        .btn-remove-favorite {
+          opacity: 1;
+        }
+      }
+
+      .favorite-avatar {
+        position: relative;
+        margin-bottom: var(--space-sm);
+
+        .avatar-img {
+          width: 100%;
+          aspect-ratio: 1;
+          object-fit: cover;
+          border-radius: var(--radius-md);
+        }
+
+        .online-indicator {
+          position: absolute;
+          bottom: 8px;
+          right: 8px;
+          width: 14px;
+          height: 14px;
+          border-radius: var(--radius-full);
+          background: var(--stardust);
+          border: 2px solid var(--cosmos-mid);
+          opacity: 0.4;
+
+          &.online {
+            background: var(--success);
+            opacity: 1;
+            box-shadow: 0 0 8px var(--success);
+          }
+        }
+
+        .premium-badge {
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          font-size: 1rem;
+          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+      }
+
+      .favorite-info {
+        h4 {
+          font-size: 1rem;
+          font-weight: 600;
+          color: var(--moonlight);
+          margin: 0 0 4px 0;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        p {
+          font-size: 0.8rem;
+          color: var(--stardust);
+          margin: 0 0 var(--space-sm) 0;
+          opacity: 0.7;
+        }
+
+        .match-score {
+          display: flex;
+          align-items: center;
+          gap: var(--space-sm);
+
+          .score-bar {
+            flex: 1;
+            height: 4px;
+            background: var(--glass-border);
+            border-radius: 2px;
+            overflow: hidden;
+
+            .score-fill {
+              height: 100%;
+              border-radius: 2px;
+              transition: width 0.5s var(--ease-out-expo);
+            }
+          }
+
+          .score-text {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--stardust);
+          }
+        }
+      }
+
+      .btn-remove-favorite {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        width: 24px;
+        height: 24px;
+        border-radius: var(--radius-full);
+        background: rgba(0, 0, 0, 0.5);
+        border: none;
+        color: var(--stardust);
+        font-size: 0.8rem;
+        cursor: pointer;
+        opacity: 0;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+          background: var(--danger);
+          color: white;
+        }
+      }
+    }
+  }
+
+  .empty-favorites {
+    text-align: center;
+    padding: var(--space-2xl);
+
+    .empty-icon {
+      font-size: 4rem;
+      margin-bottom: var(--space-md);
+      opacity: 0.5;
+    }
+
+    h3 {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      color: var(--moonlight);
+      margin: 0 0 var(--space-sm) 0;
+    }
+
+    p {
+      color: var(--stardust);
+      opacity: 0.6;
+      margin: 0 0 var(--space-lg) 0;
+    }
+
+    .btn-browse-profiles {
+      padding: var(--space-md) var(--space-xl);
+      background: linear-gradient(135deg, var(--nebula-pink), var(--nebula-coral));
+      border: none;
+      border-radius: var(--radius-md);
+      color: white;
+      font-family: var(--font-body);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s var(--ease-out-expo);
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(255, 107, 157, 0.3);
+      }
+    }
+  }
+
+  .card-footer {
+    padding: var(--space-md) var(--space-lg);
+    border-top: 1px solid var(--glass-border);
+
+    .btn-view-all {
+      width: 100%;
+      padding: var(--space-md);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      color: var(--stardust);
+      font-family: var(--font-body);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s var(--ease-out-expo);
+
+      &:hover {
+        background: var(--nebula-pink);
+        border-color: var(--nebula-pink);
+        color: white;
+      }
+    }
+  }
+}
+
+// ─── Who Viewed Me Widget ─────────────────────────────────────────────────────
+.viewers-widget {
+  cursor: pointer;
+  transition: all 0.3s var(--ease-out-expo);
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(125, 243, 225, 0.15);
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-lg);
+    border-bottom: 1px solid var(--glass-border);
+
+    h2 {
+      display: flex;
+      align-items: center;
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      color: var(--moonlight);
+      margin: 0;
+
+      .header-icon {
+        margin-right: var(--space-sm);
+      }
+    }
+
+    .views-summary {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+
+      .total-views {
+        font-size: 0.85rem;
+        color: var(--stardust);
+        opacity: 0.7;
+      }
+
+      .today-badge {
+        padding: 4px 10px;
+        background: linear-gradient(135deg, var(--success), var(--aurora-cyan));
+        border-radius: var(--radius-sm);
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--cosmos-deep);
+      }
+    }
+  }
+
+  .views-stats-bar {
+    display: flex;
+    justify-content: space-around;
+    padding: var(--space-md) var(--space-lg);
+    background: var(--glass-bg);
+    border-bottom: 1px solid var(--glass-border);
+
+    .stat-item {
+      text-align: center;
+
+      .stat-value {
+        display: block;
+        font-family: var(--font-display);
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--moonlight);
+      }
+
+      .stat-label {
+        font-size: 0.75rem;
+        color: var(--stardust);
+        opacity: 0.6;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+    }
+  }
+
+  .viewers-content {
+    padding: var(--space-md);
+
+    .viewers-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+
+    .viewer-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-sm) var(--space-md);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.3s var(--ease-out-expo);
+
+      &:hover:not(.anonymous) {
+        background: var(--glass-bg);
+
+        .btn-like-viewer {
+          opacity: 1;
+        }
+      }
+
+      &.anonymous {
+        cursor: default;
+        opacity: 0.6;
+      }
+
+      .viewer-avatar {
+        position: relative;
+        flex-shrink: 0;
+
+        img {
+          width: 44px;
+          height: 44px;
+          border-radius: var(--radius-full);
+          object-fit: cover;
+          border: 2px solid var(--glass-border);
+        }
+
+        &.anonymous {
+          width: 44px;
+          height: 44px;
+          border-radius: var(--radius-full);
+          background: var(--glass-bg);
+          border: 2px dashed var(--glass-border);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          .anonymous-icon {
+            font-size: 1.25rem;
+            opacity: 0.5;
+          }
+        }
+
+        .online-indicator {
+          position: absolute;
+          bottom: 0;
+          right: 0;
+          width: 12px;
+          height: 12px;
+          border-radius: var(--radius-full);
+          background: var(--stardust);
+          border: 2px solid var(--cosmos-mid);
+          opacity: 0.4;
+
+          &.online {
+            background: var(--success);
+            opacity: 1;
+            box-shadow: 0 0 6px var(--success);
+          }
+        }
+      }
+
+      .viewer-info {
+        flex: 1;
+        min-width: 0;
+
+        h4 {
+          font-size: 0.9rem;
+          font-weight: 600;
+          color: var(--moonlight);
+          margin: 0;
+        }
+
+        .viewer-details {
+          font-size: 0.8rem;
+          color: var(--stardust);
+          margin: 2px 0;
+          opacity: 0.8;
+        }
+
+        .viewed-time {
+          font-size: 0.75rem;
+          color: var(--stardust);
+          margin: 0;
+          opacity: 0.5;
+        }
+      }
+
+      .device-icon {
+        font-size: 1rem;
+        opacity: 0.5;
+      }
+
+      .viewer-actions {
+        .btn-like-viewer {
+          width: 36px;
+          height: 36px;
+          border-radius: var(--radius-full);
+          background: var(--glass-bg);
+          border: 1px solid var(--glass-border);
+          font-size: 1rem;
+          cursor: pointer;
+          opacity: 0;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          &:hover {
+            background: var(--nebula-pink);
+            border-color: var(--nebula-pink);
+            transform: scale(1.1);
+          }
+        }
+      }
+    }
+  }
+
+  // Premium Required State
+  &.premium-required {
+    .premium-blur-overlay {
+      position: relative;
+      padding: var(--space-lg);
+
+      .blur-content {
+        filter: blur(8px);
+        pointer-events: none;
+
+        .blurred-avatars {
+          display: flex;
+          justify-content: center;
+          gap: var(--space-sm);
+          padding: var(--space-lg);
+
+          .blur-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: var(--radius-full);
+            background: linear-gradient(135deg, var(--glass-bg), var(--glass-border));
+          }
+        }
+      }
+
+      .premium-prompt {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: var(--space-lg);
+
+        .premium-icon {
+          font-size: 3rem;
+          margin-bottom: var(--space-md);
+          animation: float 3s ease-in-out infinite;
+        }
+
+        h3 {
+          font-family: var(--font-display);
+          font-size: 1.25rem;
+          color: var(--moonlight);
+          margin: 0 0 var(--space-sm) 0;
+        }
+
+        p {
+          color: var(--stardust);
+          opacity: 0.7;
+          margin: 0 0 var(--space-lg) 0;
+          font-size: 0.9rem;
+        }
+
+        .btn-upgrade-premium {
+          padding: var(--space-md) var(--space-xl);
+          background: linear-gradient(135deg, var(--nebula-gold), var(--nebula-coral));
+          border: none;
+          border-radius: var(--radius-md);
+          color: var(--cosmos-deep);
+          font-family: var(--font-body);
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.3s var(--ease-out-expo);
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 215, 107, 0.4);
+          }
+        }
+      }
+    }
+  }
+
+  .empty-viewers {
+    text-align: center;
+    padding: var(--space-2xl);
+
+    .empty-icon {
+      font-size: 4rem;
+      margin-bottom: var(--space-md);
+      opacity: 0.5;
+    }
+
+    h3 {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      color: var(--moonlight);
+      margin: 0 0 var(--space-sm) 0;
+    }
+
+    p {
+      color: var(--stardust);
+      opacity: 0.6;
+      margin: 0 0 var(--space-lg) 0;
+    }
+
+    .btn-complete-profile {
+      padding: var(--space-md) var(--space-xl);
+      background: linear-gradient(135deg, var(--aurora-cyan), var(--aurora-purple));
+      border: none;
+      border-radius: var(--radius-md);
+      color: white;
+      font-family: var(--font-body);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s var(--ease-out-expo);
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(125, 243, 225, 0.3);
+      }
+    }
+  }
+
+  .card-footer {
+    padding: var(--space-md) var(--space-lg);
+    border-top: 1px solid var(--glass-border);
+
+    .btn-view-all {
+      width: 100%;
+      padding: var(--space-md);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      color: var(--stardust);
+      font-family: var(--font-body);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s var(--ease-out-expo);
+
+      &:hover {
+        background: var(--aurora-cyan);
+        border-color: var(--aurora-cyan);
+        color: var(--cosmos-deep);
+      }
+    }
+  }
+}
+
 // ─── Reduced Motion ──────────────────────────────────────────────────────────
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

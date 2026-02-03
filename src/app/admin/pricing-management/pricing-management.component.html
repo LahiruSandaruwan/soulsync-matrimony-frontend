@@ -1,0 +1,446 @@
+<div class="pricing-management">
+  <header class="page-header">
+    <h1>Country Pricing Management</h1>
+    <p>Manage subscription pricing for different countries</p>
+  </header>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <app-loading-spinner></app-loading-spinner>
+    <p>Loading pricing configurations...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="error-alert">
+    <span>{{ error }}</span>
+    <button (click)="loadCountries()">Retry</button>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!loading" class="content">
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-filter">
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (keyup.enter)="onSearch()"
+          placeholder="Search countries..."
+          class="search-input"
+        />
+        <select [(ngModel)]="filterActive" (change)="onFilterChange()" class="filter-select">
+          <option value="all">All Status</option>
+          <option value="active">Active Only</option>
+          <option value="inactive">Inactive Only</option>
+        </select>
+      </div>
+      <div class="actions">
+        <button (click)="onOpenAdjustModal()" class="btn-secondary">
+          Adjust Prices
+        </button>
+        <button (click)="onAddCountry()" class="btn-primary">
+          Add Country
+        </button>
+      </div>
+    </div>
+
+    <!-- Countries Table -->
+    <div class="table-container">
+      <table class="pricing-table">
+        <thead>
+          <tr>
+            <th (click)="onSortChange('country_name')" class="sortable">
+              Country
+              <span *ngIf="sortBy === 'country_name'">{{ sortDir === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+            <th>Currency</th>
+            <th (click)="onSortChange('basic_monthly')" class="sortable">
+              Basic/mo
+              <span *ngIf="sortBy === 'basic_monthly'">{{ sortDir === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+            <th (click)="onSortChange('premium_monthly')" class="sortable">
+              Premium/mo
+              <span *ngIf="sortBy === 'premium_monthly'">{{ sortDir === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+            <th (click)="onSortChange('platinum_monthly')" class="sortable">
+              Platinum/mo
+              <span *ngIf="sortBy === 'platinum_monthly'">{{ sortDir === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+            <th>Payment Methods</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let country of countries" [class.inactive]="!country.is_active">
+            <td>
+              <strong>{{ country.country_name }}</strong>
+              <span class="country-code">({{ country.country_code }})</span>
+              <span *ngIf="country.is_default" class="default-badge">Default</span>
+            </td>
+            <td>{{ country.currency_code }} ({{ country.currency_symbol }})</td>
+            <td>{{ formatPrice(country.basic_monthly, country.currency_symbol) }}</td>
+            <td>{{ formatPrice(country.premium_monthly, country.currency_symbol) }}</td>
+            <td>{{ formatPrice(country.platinum_monthly, country.currency_symbol) }}</td>
+            <td>
+              <div class="payment-methods-cell">
+                <span *ngFor="let method of country.payment_methods" class="method-tag">
+                  {{ method }}
+                </span>
+              </div>
+            </td>
+            <td>
+              <span class="status-badge" [class.active]="country.is_active" [class.inactive]="!country.is_active">
+                {{ country.is_active ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td class="actions-cell">
+              <button (click)="onSelectCountry(country)" class="btn-icon" title="Edit">
+                Edit
+              </button>
+              <button
+                (click)="onToggleActive(country)"
+                class="btn-icon"
+                [title]="country.is_active ? 'Deactivate' : 'Activate'">
+                {{ country.is_active ? 'Deactivate' : 'Activate' }}
+              </button>
+              <button
+                *ngIf="!country.is_default"
+                (click)="onDeleteCountry(country)"
+                class="btn-icon btn-danger"
+                title="Delete">
+                Delete
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="countries.length === 0" class="no-data">
+        <p>No country pricing configurations found.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Country Modal -->
+  <div *ngIf="editMode && selectedCountry" class="modal-overlay" (click)="onCancelEdit()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Edit Pricing: {{ selectedCountry.country_name }}</h2>
+        <button (click)="onCancelEdit()" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <!-- Currency Info -->
+          <div class="form-section">
+            <h3>Currency Settings</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Currency Code</label>
+                <input type="text" [(ngModel)]="selectedCountry.currency_code" maxlength="3" />
+              </div>
+              <div class="form-group">
+                <label>Currency Symbol</label>
+                <input type="text" [(ngModel)]="selectedCountry.currency_symbol" maxlength="10" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Basic Plan Prices -->
+          <div class="form-section">
+            <h3>Basic Plan Prices</h3>
+            <div class="form-row three-col">
+              <div class="form-group">
+                <label>Monthly</label>
+                <input type="number" [(ngModel)]="selectedCountry.basic_monthly" step="0.01" min="0" />
+              </div>
+              <div class="form-group">
+                <label>Quarterly</label>
+                <input type="number" [(ngModel)]="selectedCountry.basic_quarterly" step="0.01" min="0" />
+              </div>
+              <div class="form-group">
+                <label>Yearly</label>
+                <input type="number" [(ngModel)]="selectedCountry.basic_yearly" step="0.01" min="0" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Premium Plan Prices -->
+          <div class="form-section">
+            <h3>Premium Plan Prices</h3>
+            <div class="form-row three-col">
+              <div class="form-group">
+                <label>Monthly</label>
+                <input type="number" [(ngModel)]="selectedCountry.premium_monthly" step="0.01" min="0" />
+              </div>
+              <div class="form-group">
+                <label>Quarterly</label>
+                <input type="number" [(ngModel)]="selectedCountry.premium_quarterly" step="0.01" min="0" />
+              </div>
+              <div class="form-group">
+                <label>Yearly</label>
+                <input type="number" [(ngModel)]="selectedCountry.premium_yearly" step="0.01" min="0" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Platinum Plan Prices -->
+          <div class="form-section">
+            <h3>Platinum Plan Prices</h3>
+            <div class="form-row three-col">
+              <div class="form-group">
+                <label>Monthly</label>
+                <input type="number" [(ngModel)]="selectedCountry.platinum_monthly" step="0.01" min="0" />
+              </div>
+              <div class="form-group">
+                <label>Quarterly</label>
+                <input type="number" [(ngModel)]="selectedCountry.platinum_quarterly" step="0.01" min="0" />
+              </div>
+              <div class="form-group">
+                <label>Yearly</label>
+                <input type="number" [(ngModel)]="selectedCountry.platinum_yearly" step="0.01" min="0" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Tax Settings -->
+          <div class="form-section">
+            <h3>Tax Settings</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Tax Rate (%)</label>
+                <input type="number" [(ngModel)]="selectedCountry.tax_rate" step="0.01" min="0" max="100" />
+              </div>
+              <div class="form-group">
+                <label>Tax Name</label>
+                <input type="text" [(ngModel)]="selectedCountry.tax_name" placeholder="e.g., VAT, GST" />
+              </div>
+              <div class="form-group checkbox-group">
+                <label>
+                  <input type="checkbox" [(ngModel)]="selectedCountry.tax_inclusive" />
+                  Tax Inclusive
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Methods -->
+          <div class="form-section">
+            <h3>Payment Methods</h3>
+            <div class="payment-methods-select">
+              <label *ngFor="let method of availablePaymentMethods" class="checkbox-label">
+                <input
+                  type="checkbox"
+                  [checked]="isPaymentMethodSelected(selectedCountry.payment_methods, method)"
+                  (change)="togglePaymentMethod(selectedCountry.payment_methods, method)"
+                />
+                {{ method | titlecase }}
+              </label>
+            </div>
+          </div>
+
+          <!-- Display Settings -->
+          <div class="form-section">
+            <h3>Display Settings</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Display Order</label>
+                <input type="number" [(ngModel)]="selectedCountry.display_order" min="0" />
+              </div>
+              <div class="form-group checkbox-group">
+                <label>
+                  <input type="checkbox" [(ngModel)]="selectedCountry.is_active" />
+                  Active
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button (click)="onCancelEdit()" class="btn-secondary">Cancel</button>
+        <button (click)="onSaveCountry()" [disabled]="saving" class="btn-primary">
+          {{ saving ? 'Saving...' : 'Save Changes' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Country Modal -->
+  <div *ngIf="showAddModal" class="modal-overlay" (click)="onCloseAddModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Add New Country</h2>
+        <button (click)="onCloseAddModal()" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <!-- Country Info -->
+          <div class="form-section">
+            <h3>Country Information</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Country Code (2 letters) *</label>
+                <input type="text" [(ngModel)]="newCountry.country_code" maxlength="2" required />
+              </div>
+              <div class="form-group">
+                <label>Country Name *</label>
+                <input type="text" [(ngModel)]="newCountry.country_name" required />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Currency Code (3 letters) *</label>
+                <input type="text" [(ngModel)]="newCountry.currency_code" maxlength="3" required />
+              </div>
+              <div class="form-group">
+                <label>Currency Symbol *</label>
+                <input type="text" [(ngModel)]="newCountry.currency_symbol" maxlength="10" required />
+              </div>
+            </div>
+          </div>
+
+          <!-- Prices -->
+          <div class="form-section">
+            <h3>Monthly Prices</h3>
+            <div class="form-row three-col">
+              <div class="form-group">
+                <label>Basic</label>
+                <input type="number" [(ngModel)]="newCountry.basic_monthly" step="0.01" min="0" />
+              </div>
+              <div class="form-group">
+                <label>Premium</label>
+                <input type="number" [(ngModel)]="newCountry.premium_monthly" step="0.01" min="0" />
+              </div>
+              <div class="form-group">
+                <label>Platinum</label>
+                <input type="number" [(ngModel)]="newCountry.platinum_monthly" step="0.01" min="0" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Quarterly Prices</h3>
+            <div class="form-row three-col">
+              <div class="form-group">
+                <label>Basic</label>
+                <input type="number" [(ngModel)]="newCountry.basic_quarterly" step="0.01" min="0" />
+              </div>
+              <div class="form-group">
+                <label>Premium</label>
+                <input type="number" [(ngModel)]="newCountry.premium_quarterly" step="0.01" min="0" />
+              </div>
+              <div class="form-group">
+                <label>Platinum</label>
+                <input type="number" [(ngModel)]="newCountry.platinum_quarterly" step="0.01" min="0" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Yearly Prices</h3>
+            <div class="form-row three-col">
+              <div class="form-group">
+                <label>Basic</label>
+                <input type="number" [(ngModel)]="newCountry.basic_yearly" step="0.01" min="0" />
+              </div>
+              <div class="form-group">
+                <label>Premium</label>
+                <input type="number" [(ngModel)]="newCountry.premium_yearly" step="0.01" min="0" />
+              </div>
+              <div class="form-group">
+                <label>Platinum</label>
+                <input type="number" [(ngModel)]="newCountry.platinum_yearly" step="0.01" min="0" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Methods -->
+          <div class="form-section">
+            <h3>Payment Methods</h3>
+            <div class="payment-methods-select">
+              <label *ngFor="let method of availablePaymentMethods" class="checkbox-label">
+                <input
+                  type="checkbox"
+                  [checked]="isPaymentMethodSelected(newCountry.payment_methods || [], method)"
+                  (change)="togglePaymentMethod(newCountry.payment_methods || [], method)"
+                />
+                {{ method | titlecase }}
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button (click)="onCloseAddModal()" class="btn-secondary">Cancel</button>
+        <button (click)="onSaveNewCountry()" [disabled]="saving" class="btn-primary">
+          {{ saving ? 'Creating...' : 'Create Country' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bulk Adjust Prices Modal -->
+  <div *ngIf="showAdjustModal" class="modal-overlay" (click)="onCloseAdjustModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Bulk Price Adjustment</h2>
+        <button (click)="onCloseAdjustModal()" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-section">
+          <h3>Adjustment Percentage</h3>
+          <p class="help-text">Enter a positive number to increase prices, or negative to decrease.</p>
+          <div class="form-group">
+            <label>Percentage (%)</label>
+            <input
+              type="number"
+              [(ngModel)]="priceAdjustment.percentage"
+              step="0.1"
+              min="-50"
+              max="100"
+              placeholder="e.g., 10 or -5"
+            />
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>Select Plans to Adjust</h3>
+          <div class="plan-select">
+            <label *ngFor="let plan of availablePlans" class="checkbox-label">
+              <input
+                type="checkbox"
+                [checked]="priceAdjustment.plans.includes(plan)"
+                (change)="togglePlan(plan)"
+              />
+              {{ plan | titlecase }}
+            </label>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3>Select Countries (leave empty for all)</h3>
+          <div class="country-select">
+            <label *ngFor="let country of countries" class="checkbox-label">
+              <input
+                type="checkbox"
+                [checked]="priceAdjustment.countries.includes(country.country_code)"
+                (change)="toggleCountryForAdjustment(country.country_code)"
+              />
+              {{ country.country_name }} ({{ country.country_code }})
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button (click)="onCloseAdjustModal()" class="btn-secondary">Cancel</button>
+        <button
+          (click)="onApplyPriceAdjustment()"
+          [disabled]="saving || priceAdjustment.percentage === 0"
+          class="btn-primary">
+          {{ saving ? 'Applying...' : 'Apply Adjustment' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -4,6 +4,7 @@ import { RouterModule, Router } from '@angular/router';
 import { Subject, takeUntil, forkJoin, catchError, of, Observable } from 'rxjs';
 import { DashboardService } from './services/dashboard.service';
 import { LoadingSpinnerComponent } from '../shared/components/loading-spinner/loading-spinner.component';
+import { TopLiveProfilesComponent } from '../shared/components/top-live-profiles/top-live-profiles.component';
 import {
   UserProfile,
   Match,
@@ -13,13 +14,17 @@ import {
   DashboardStats,
   SearchPreferences,
   ApiResponse,
-  PaginatedResponse
+  PaginatedResponse,
+  HoroscopeCompatibilityPreview,
+  FavoriteProfile,
+  FavoritesResponse,
+  ProfileViewsResponse
 } from './models/dashboard.models';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, LoadingSpinnerComponent],
+  imports: [CommonModule, RouterModule, LoadingSpinnerComponent, TopLiveProfilesComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -35,10 +40,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   subscription$!: Observable<ApiResponse<Subscription>>;
   dashboardStats$!: Observable<ApiResponse<DashboardStats>>;
   searchPreferences$!: Observable<ApiResponse<SearchPreferences>>;
-  
+  horoscopePreview$!: Observable<ApiResponse<HoroscopeCompatibilityPreview>>;
+  favorites$!: Observable<ApiResponse<FavoritesResponse>>;
+  profileViewers$!: Observable<ApiResponse<ProfileViewsResponse>>;
+
   // Loading state
   loading$!: Observable<boolean>;
-  
+
   // Local data
   userProfile: UserProfile | null = null;
   matches: Match[] = [];
@@ -47,7 +55,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   subscription: Subscription | null = null;
   dashboardStats: DashboardStats | null = null;
   searchPreferences: SearchPreferences | null = null;
-  
+  horoscopePreview: HoroscopeCompatibilityPreview | null = null;
+  favorites: FavoriteProfile[] = [];
+  favoritesTotal = 0;
+  favoritesHasMore = false;
+  profileViewers: ProfileViewsResponse | null = null;
+
   // UI state
   showNotifications = false;
   error = '';
@@ -66,8 +79,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.subscription$ = this.dashboardService.getSubscription();
     this.dashboardStats$ = this.dashboardService.getDashboardStats();
     this.searchPreferences$ = this.dashboardService.getSearchPreferences();
+    this.horoscopePreview$ = this.dashboardService.getHoroscopeCompatibilityPreview();
+    this.favorites$ = this.dashboardService.getFavorites(4);
+    this.profileViewers$ = this.dashboardService.getProfileViewers(5);
     this.loading$ = this.dashboardService.loading$;
-    
+
     this.loadAllData();
   }
 
@@ -85,7 +101,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       notifications: this.notifications$.pipe(catchError(() => of(null))),
       subscription: this.subscription$.pipe(catchError(() => of(null))),
       dashboardStats: this.dashboardStats$.pipe(catchError(() => of(null))),
-      searchPreferences: this.searchPreferences$.pipe(catchError(() => of(null)))
+      searchPreferences: this.searchPreferences$.pipe(catchError(() => of(null))),
+      horoscopePreview: this.horoscopePreview$.pipe(catchError(() => of(null))),
+      favorites: this.favorites$.pipe(catchError(() => of(null))),
+      profileViewers: this.profileViewers$.pipe(catchError(() => of(null)))
     })
     .pipe(takeUntil(this.destroy$))
     .subscribe({
@@ -107,6 +126,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.subscription = data.subscription?.data || null;
     this.dashboardStats = data.dashboardStats?.data || null;
     this.searchPreferences = data.searchPreferences?.data || null;
+
+    // Process new widget data
+    this.horoscopePreview = data.horoscopePreview?.data || null;
+
+    const favoritesData = data.favorites?.data;
+    if (favoritesData) {
+      this.favorites = favoritesData.favorites || [];
+      this.favoritesTotal = favoritesData.total || 0;
+      this.favoritesHasMore = favoritesData.hasMore || false;
+    }
+
+    this.profileViewers = data.profileViewers?.data || null;
   }
 
   // UI Methods
@@ -150,6 +181,45 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   onSearch(): void {
     this.router.navigate(['/app/search']);
+  }
+
+  // New Widget Navigation Methods
+  onViewHoroscope(): void {
+    this.router.navigate(['/app/horoscope']);
+  }
+
+  onSetupHoroscope(): void {
+    this.router.navigate(['/app/horoscope/setup']);
+  }
+
+  onViewFavorites(): void {
+    this.router.navigate(['/app/matches'], { queryParams: { tab: 'favorites' } });
+  }
+
+  onViewAllViewers(): void {
+    this.router.navigate(['/app/insights/profile-views']);
+  }
+
+  onViewUserProfile(userId: number): void {
+    this.router.navigate(['/app/users', userId]);
+  }
+
+  onRemoveFavorite(favoriteId: number): void {
+    this.dashboardService.removeFromFavorites(favoriteId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.favorites = this.favorites.filter(f => f.favoriteId !== favoriteId);
+          this.favoritesTotal = Math.max(0, this.favoritesTotal - 1);
+        },
+        error: (error) => {
+          console.error('Failed to remove favorite:', error);
+        }
+      });
+  }
+
+  onLikeViewer(viewerId: number): void {
+    this.router.navigate(['/app/users', viewerId]);
   }
 
   // Utility Methods
@@ -198,5 +268,46 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // Skeleton loading methods
   getSkeletonArray(count: number): number[] {
     return Array.from({ length: count }, (_, i) => i);
+  }
+
+  // Horoscope utility methods
+  getZodiacEmoji(sign: string | null | undefined): string {
+    if (!sign) return '⭐';
+    const zodiacEmojis: { [key: string]: string } = {
+      'Aries': '♈',
+      'Taurus': '♉',
+      'Gemini': '♊',
+      'Cancer': '♋',
+      'Leo': '♌',
+      'Virgo': '♍',
+      'Libra': '♎',
+      'Scorpio': '♏',
+      'Sagittarius': '♐',
+      'Capricorn': '♑',
+      'Aquarius': '♒',
+      'Pisces': '♓'
+    };
+    return zodiacEmojis[sign] || '⭐';
+  }
+
+  formatCompatibilityGrade(grade: string | undefined): string {
+    if (!grade) return 'Unknown';
+    const gradeLabels: { [key: string]: string } = {
+      'excellent': 'Excellent Match',
+      'very_good': 'Very Good',
+      'good': 'Good Match',
+      'average': 'Average',
+      'low': 'Low Compatibility'
+    };
+    return gradeLabels[grade] || grade;
+  }
+
+  getDeviceIcon(deviceType: string | undefined): string {
+    const icons: { [key: string]: string } = {
+      'mobile': '📱',
+      'desktop': '💻',
+      'tablet': '📲'
+    };
+    return icons[deviceType || ''] || '📱';
   }
 }

@@ -1,5 +1,4 @@
-<ng-container *transloco="let t">
-  <div class="main-layout">
+<div class="main-layout">
     <!-- Sidebar -->
     <aside class="sidebar" [class.sidebar-closed]="!isSidebarOpen">
       <div class="sidebar-header">
@@ -14,49 +13,49 @@
           <li>
             <a routerLink="/app/dashboard" routerLinkActive="active">
               <i class="icon-dashboard"></i>
-              <span>{{ t('layout.dashboard') }}</span>
+              <span>{{ 'layout.dashboard' | transloco }}</span>
             </a>
           </li>
           <li>
             <a routerLink="/app/profile" routerLinkActive="active">
               <i class="icon-profile"></i>
-              <span>{{ t('layout.profile') }}</span>
+              <span>{{ 'layout.profile' | transloco }}</span>
             </a>
           </li>
           <li>
             <a routerLink="/app/matches" routerLinkActive="active">
               <i class="icon-matches"></i>
-              <span>{{ t('layout.matches') }}</span>
+              <span>{{ 'layout.matches' | transloco }}</span>
             </a>
           </li>
           <li>
             <a routerLink="/app/chat" routerLinkActive="active">
               <i class="icon-chat"></i>
-              <span>{{ t('layout.chat') }}</span>
+              <span>{{ 'layout.chat' | transloco }}</span>
             </a>
           </li>
           <li>
             <a routerLink="/app/search" routerLinkActive="active">
               <i class="icon-search"></i>
-              <span>{{ t('layout.search') }}</span>
+              <span>{{ 'layout.search' | transloco }}</span>
             </a>
           </li>
           <li>
             <a routerLink="/app/subscription" routerLinkActive="active">
               <i class="icon-subscription"></i>
-              <span>{{ t('layout.subscription') }}</span>
+              <span>{{ 'layout.subscription' | transloco }}</span>
             </a>
           </li>
           <li>
             <a routerLink="/app/notifications" routerLinkActive="active">
               <i class="icon-notifications"></i>
-              <span>{{ t('layout.notifications') }}</span>
+              <span>{{ 'layout.notifications' | transloco }}</span>
             </a>
           </li>
           <li>
             <a routerLink="/app/settings" routerLinkActive="active">
               <i class="icon-settings"></i>
-              <span>{{ t('layout.settings') }}</span>
+              <span>{{ 'layout.settings' | transloco }}</span>
             </a>
           </li>
         </ul>
@@ -76,7 +75,7 @@
           <app-language-switcher></app-language-switcher>
           <div class="user-menu">
             <span class="user-name">John Doe</span>
-            <button class="logout-btn">{{ t('layout.logout') }}</button>
+            <button class="logout-btn">{{ 'layout.logout' | transloco }}</button>
           </div>
         </div>
       </header>
@@ -88,5 +87,4 @@
 
     <!-- Toast Container -->
     <app-toast-container></app-toast-container>
-  </div>
-</ng-container>
+</div>

@@ -1,31 +1,35 @@
-import { Component, OnInit, OnDestroy, HostListener, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, Inject, PLATFORM_ID, signal } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TranslocoModule } from '@jsverse/transloco';
 import { AuthService } from '../core/services/auth.service';
 import { LanguageSwitcherComponent } from '../shared/components/language-switcher/language-switcher.component';
-import { Observable } from 'rxjs';
+import { TopLiveProfilesComponent } from '../shared/components/top-live-profiles/top-live-profiles.component';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslocoModule, LanguageSwitcherComponent],
+  imports: [CommonModule, RouterModule, TranslocoModule, LanguageSwitcherComponent, TopLiveProfilesComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit, OnDestroy {
-  isAuthenticated$: Observable<boolean>;
+  isAuthenticated = signal(false);
   isMobileMenuOpen = false;
   openFaqIndex: number | null = null;
   isScrolled = false;
   private isBrowser: boolean;
+  private authSub?: Subscription;
 
   constructor(
     private authService: AuthService,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
-    this.isAuthenticated$ = this.authService.isAuthenticated$;
     this.isBrowser = isPlatformBrowser(platformId);
+    this.authSub = this.authService.isAuthenticated$.subscribe(
+      (isAuth) => this.isAuthenticated.set(isAuth)
+    );
   }
 
   @HostListener('window:scroll', [])
@@ -43,7 +47,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // Cleanup if needed
+    this.authSub?.unsubscribe();
   }
 
   toggleMobileMenu(): void {

@@ -1,13 +1,16 @@
 import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Subject, takeUntil, firstValueFrom } from 'rxjs';
+import { Subject, takeUntil, firstValueFrom, forkJoin } from 'rxjs';
 import { PaymentService } from '../../core/services/payment.service';
 import { ScriptLoaderService } from '../../core/services/script-loader.service';
+import { GeolocationService } from '../../core/services/geolocation.service';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../core/services/auth.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
+import { CountryPricing, SupportedCountry, CountryInfo, PricingPlan } from '../../core/models/pricing.model';
 
 interface SubscriptionPlan {
   id: number;
@@ -15,6 +18,9 @@ interface SubscriptionPlan {
   type: 'free' | 'basic' | 'premium' | 'platinum';
   price_usd: number;
   price_lkr: number;
+  price_monthly?: number;
+  price_quarterly?: number;
+  price_yearly?: number;
   duration_months: number;
   features: string[];
   limits: {
@@ -39,6 +45,7 @@ interface CurrentSubscription {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     LoadingSpinnerComponent,
     ModalComponent
   ],
@@ -68,8 +75,17 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy, AfterViewI
   private stripeElements?: any;
   private cardElement?: any;
   
-  // Currency preference
-  currency: 'USD' | 'LKR' = 'USD';
+  // Currency and country preference
+  currency: string = 'USD';
+  currencySymbol: string = '$';
+  selectedCountryCode: string = 'US';
+  countryInfo: CountryInfo | null = null;
+  supportedCountries: SupportedCountry[] = [];
+  countryPricing: CountryPricing | null = null;
+  availablePaymentMethods: string[] = ['stripe', 'paypal'];
+
+  // Duration selection
+  selectedDuration: 'monthly' | 'quarterly' | 'yearly' = 'monthly';
   
   // Default plans if API fails
   defaultPlans: SubscriptionPlan[] = [
@@ -161,13 +177,120 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy, AfterViewI
     private paymentService: PaymentService,
     private authService: AuthService,
     private router: Router,
-    private scriptLoader: ScriptLoaderService
+    private scriptLoader: ScriptLoaderService,
+    private geolocationService: GeolocationService
   ) {}
 
   ngOnInit(): void {
     this.loadCurrentUser();
-    this.loadSubscriptionPlans();
+    this.initializeCountryAndPricing();
     this.loadCurrentSubscription();
+  }
+
+  /**
+   * Initialize country detection and load pricing
+   */
+  private initializeCountryAndPricing(): void {
+    this.loading = true;
+
+    // Subscribe to geolocation changes
+    this.geolocationService.country$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(countryInfo => {
+        if (countryInfo) {
+          this.countryInfo = countryInfo;
+          this.selectedCountryCode = countryInfo.countryCode;
+          this.currency = countryInfo.currencyCode;
+          this.currencySymbol = countryInfo.currencySymbol;
+        }
+      });
+
+    // Load supported countries and detect current location
+    forkJoin([
+      this.geolocationService.getSupportedCountries(),
+      this.geolocationService.detectCountry()
+    ]).pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: ([countries, countryInfo]) => {
+          this.supportedCountries = countries;
+          this.countryInfo = countryInfo;
+          this.selectedCountryCode = countryInfo.countryCode;
+          this.currency = countryInfo.currencyCode;
+          this.currencySymbol = countryInfo.currencySymbol;
+
+          // Load pricing for detected country
+          this.loadPricingForCountry(countryInfo.countryCode);
+        },
+        error: (error) => {
+          this.handleError('Failed to initialize country', error);
+          // Fallback to default plans
+          this.loadSubscriptionPlans();
+        }
+      });
+  }
+
+  /**
+   * Load pricing for a specific country
+   */
+  loadPricingForCountry(countryCode: string): void {
+    this.loading = true;
+    this.error = '';
+
+    this.geolocationService.getPricingForCountry(countryCode)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (pricing) => {
+          this.countryPricing = pricing;
+          this.currency = pricing.currencyCode;
+          this.currencySymbol = pricing.currencySymbol;
+          this.availablePaymentMethods = pricing.paymentMethods;
+
+          // Map plans to component format
+          this.plans = pricing.plans.map((plan: any) => ({
+            id: plan.id || 0,
+            name: plan.name,
+            type: plan.type,
+            price_usd: plan.prices?.monthly || 0,
+            price_lkr: plan.prices?.monthly || 0,
+            price_monthly: plan.prices?.monthly || 0,
+            price_quarterly: plan.prices?.quarterly || 0,
+            price_yearly: plan.prices?.yearly || 0,
+            duration_months: 1,
+            features: plan.features || [],
+            limits: {},
+            popular: plan.isPopular || false
+          }));
+
+          this.loading = false;
+        },
+        error: (error) => {
+          this.handleError('Failed to load pricing', error);
+          // Fallback to default plans
+          this.plans = this.defaultPlans;
+          this.loading = false;
+        }
+      });
+  }
+
+  /**
+   * Handle country change from dropdown
+   */
+  onCountryChange(countryCode: string): void {
+    const country = this.supportedCountries.find(c => c.countryCode === countryCode);
+    if (country) {
+      this.geolocationService.setManualCountry(countryCode, country.countryName);
+      this.selectedCountryCode = countryCode;
+      this.currency = country.currencyCode;
+      this.currencySymbol = country.currencySymbol;
+      this.loadPricingForCountry(countryCode);
+    }
+  }
+
+  /**
+   * Reset to auto-detected country
+   */
+  onResetToAutoDetect(): void {
+    this.geolocationService.resetToAutoDetect();
   }
 
   ngAfterViewInit(): void {}
@@ -419,15 +542,93 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy, AfterViewI
   }
 
   onToggleCurrency(): void {
-    this.currency = this.currency === 'USD' ? 'LKR' : 'USD';
+    // Legacy method - now we use country-based currency
+    // Keep for backward compatibility but now it cycles through available countries
+    const currentIndex = this.supportedCountries.findIndex(c => c.countryCode === this.selectedCountryCode);
+    const nextIndex = (currentIndex + 1) % this.supportedCountries.length;
+    if (this.supportedCountries[nextIndex]) {
+      this.onCountryChange(this.supportedCountries[nextIndex].countryCode);
+    }
   }
 
-  getPlanPrice(plan: SubscriptionPlan): number {
+  /**
+   * Get price for a plan based on selected duration
+   */
+  getPlanPrice(plan: SubscriptionPlan | any): number {
+    // Check if plan has the new price structure
+    if (plan.price_monthly !== undefined) {
+      switch (this.selectedDuration) {
+        case 'monthly':
+          return plan.price_monthly;
+        case 'quarterly':
+          return plan.price_quarterly;
+        case 'yearly':
+          return plan.price_yearly;
+        default:
+          return plan.price_monthly;
+      }
+    }
+    // Fallback to legacy structure
     return this.currency === 'USD' ? plan.price_usd : plan.price_lkr;
   }
 
+  /**
+   * Get monthly equivalent price for comparison
+   */
+  getMonthlyEquivalent(plan: SubscriptionPlan | any): number {
+    if (plan.price_monthly !== undefined) {
+      switch (this.selectedDuration) {
+        case 'monthly':
+          return plan.price_monthly;
+        case 'quarterly':
+          return plan.price_quarterly / 3;
+        case 'yearly':
+          return plan.price_yearly / 12;
+        default:
+          return plan.price_monthly;
+      }
+    }
+    return this.getPlanPrice(plan);
+  }
+
+  /**
+   * Get savings percentage for duration
+   */
+  getSavingsPercentage(plan: SubscriptionPlan | any): number {
+    if (!plan.price_monthly) return 0;
+
+    const monthlyTotal = plan.price_monthly * (this.selectedDuration === 'quarterly' ? 3 : 12);
+    const actualPrice = this.selectedDuration === 'quarterly' ? plan.price_quarterly : plan.price_yearly;
+
+    if (this.selectedDuration === 'monthly') return 0;
+    if (!actualPrice) return 0;
+
+    return Math.round(((monthlyTotal - actualPrice) / monthlyTotal) * 100);
+  }
+
   getCurrencySymbol(): string {
-    return this.currency === 'USD' ? '$' : 'Rs.';
+    return this.currencySymbol || '$';
+  }
+
+  /**
+   * Set duration preference
+   */
+  onDurationChange(duration: 'monthly' | 'quarterly' | 'yearly'): void {
+    this.selectedDuration = duration;
+  }
+
+  /**
+   * Format price with currency symbol
+   */
+  formatPrice(amount: number): string {
+    return this.geolocationService.formatPrice(amount, this.currencySymbol);
+  }
+
+  /**
+   * Check if a payment method is available for current country
+   */
+  isPaymentMethodAvailable(method: string): boolean {
+    return this.availablePaymentMethods.includes(method);
   }
 
   isCurrentPlan(plan: SubscriptionPlan): boolean {

@@ -113,6 +113,9 @@
       </div>
     </section>
 
+    <!-- Top Live Profiles Section -->
+    <app-top-live-profiles></app-top-live-profiles>
+
     <!-- Main Content Grid -->
     <section class="main-content">
       <div class="content-grid">
@@ -272,5 +275,271 @@
 
       </div>
     </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+    <!-- NEW WIDGETS SECTION -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+    <section class="secondary-content">
+      <div class="content-grid">
+
+        <!-- ─── Horoscope Compatibility Widget ─────────────────────────────── -->
+        <div class="content-card horoscope-widget"
+             [class.no-horoscope]="!horoscopePreview?.hasHoroscope"
+             (click)="onViewHoroscope()">
+          <div class="card-header">
+            <h2>
+              <span class="header-icon">✨</span>
+              Cosmic Compatibility
+            </h2>
+            <span class="zodiac-badge" *ngIf="horoscopePreview?.userSign">
+              {{ getZodiacEmoji(horoscopePreview?.userSign) }} {{ horoscopePreview?.userSign }}
+            </span>
+          </div>
+
+          <!-- Has Horoscope State -->
+          <div class="horoscope-content" *ngIf="horoscopePreview?.hasHoroscope">
+            <!-- Daily Reading Snippet -->
+            <div class="daily-reading" *ngIf="horoscopePreview?.dailyReading">
+              <p class="reading-text">{{ horoscopePreview?.dailyReading?.love }}</p>
+              <div class="lucky-items">
+                <span class="lucky-numbers">
+                  Lucky: {{ horoscopePreview?.dailyReading?.luckyNumbers?.join(', ') }}
+                </span>
+                <span class="lucky-colors">
+                  Colors: {{ horoscopePreview?.dailyReading?.luckyColors?.join(', ') }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Top Compatible Matches -->
+            <div class="compatible-matches">
+              <h4>Top Celestial Matches</h4>
+              <div class="horoscope-matches-list">
+                <div *ngFor="let match of horoscopePreview?.topMatches?.slice(0, 3)"
+                     class="horoscope-match-item"
+                     (click)="onViewUserProfile(match.userId); $event.stopPropagation()">
+                  <div class="match-avatar-wrapper">
+                    <img [src]="match.photoUrl"
+                         [alt]="match.name"
+                         class="match-avatar"
+                         loading="lazy">
+                    <div class="compatibility-ring"
+                         [style.--score-color]="getCompatibilityColor(match.compatibilityScore)">
+                      <span class="score">{{ match.compatibilityScore }}%</span>
+                    </div>
+                  </div>
+                  <div class="match-details">
+                    <h5>{{ match.name }}</h5>
+                    <p class="zodiac-info">
+                      {{ getZodiacEmoji(match.zodiacSign) }} {{ match.zodiacSign }}
+                    </p>
+                    <span class="compatibility-grade"
+                          [ngClass]="match.compatibilityGrade">
+                      {{ formatCompatibilityGrade(match.compatibilityGrade) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- No Horoscope State -->
+          <div class="empty-horoscope" *ngIf="!horoscopePreview?.hasHoroscope">
+            <div class="empty-illustration">
+              <span class="zodiac-wheel">🌙</span>
+              <div class="stars-decoration">
+                <span>⭐</span><span>✨</span><span>⭐</span>
+              </div>
+            </div>
+            <h3>Unlock Cosmic Insights</h3>
+            <p>Add your birth details to discover astrologically compatible matches</p>
+            <button class="btn-add-horoscope" (click)="onSetupHoroscope(); $event.stopPropagation()">
+              Add Birth Details
+            </button>
+          </div>
+
+          <div class="card-footer" *ngIf="horoscopePreview?.hasHoroscope">
+            <button class="btn-view-all">View Full Compatibility</button>
+          </div>
+        </div>
+
+        <!-- ─── Favorites/Shortlist Widget ─────────────────────────────────── -->
+        <div class="content-card favorites-widget" (click)="onViewFavorites()">
+          <div class="card-header">
+            <h2>
+              <span class="header-icon">💝</span>
+              My Favorites
+            </h2>
+            <span class="favorites-count" *ngIf="favorites?.length">
+              {{ favoritesTotal || favorites?.length }}
+            </span>
+          </div>
+
+          <div class="favorites-content" *ngIf="favorites?.length">
+            <div class="favorites-grid">
+              <div *ngFor="let favorite of favorites.slice(0, 4)"
+                   class="favorite-item"
+                   (click)="onViewUserProfile(favorite.userId); $event.stopPropagation()">
+                <div class="favorite-avatar">
+                  <img [src]="favorite.photoUrl"
+                       [alt]="favorite.name"
+                       class="avatar-img"
+                       loading="lazy">
+                  <div class="online-indicator" [class.online]="favorite.isOnline"></div>
+                  <div class="premium-badge" *ngIf="favorite.isPremium">👑</div>
+                </div>
+                <div class="favorite-info">
+                  <h4>{{ favorite.firstName }}</h4>
+                  <p>{{ favorite.age }} • {{ (favorite.location || '').split(',')[0] }}</p>
+                  <div class="match-score">
+                    <span class="score-bar">
+                      <span class="score-fill"
+                            [style.width.%]="favorite.compatibilityScore"
+                            [style.background]="getCompatibilityColor(favorite.compatibilityScore)">
+                      </span>
+                    </span>
+                    <span class="score-text">{{ favorite.compatibilityScore }}%</span>
+                  </div>
+                </div>
+                <button class="btn-remove-favorite"
+                        (click)="onRemoveFavorite(favorite.favoriteId); $event.stopPropagation()"
+                        aria-label="Remove from favorites">
+                  ✕
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div class="empty-favorites" *ngIf="!favorites?.length">
+            <div class="empty-icon">💫</div>
+            <h3>No Favorites Yet</h3>
+            <p>Save profiles you like to easily find them later</p>
+            <button class="btn-browse-profiles" (click)="onSearch(); $event.stopPropagation()">
+              Browse Profiles
+            </button>
+          </div>
+
+          <div class="card-footer" *ngIf="favorites?.length && favoritesHasMore">
+            <button class="btn-view-all">View All Favorites</button>
+          </div>
+        </div>
+
+        <!-- ─── Who Viewed Me Widget ───────────────────────────────────────── -->
+        <div class="content-card viewers-widget"
+             [class.premium-required]="profileViewers?.isPremiumRequired"
+             (click)="onViewAllViewers()">
+          <div class="card-header">
+            <h2>
+              <span class="header-icon">👁️</span>
+              Who Viewed Me
+            </h2>
+            <div class="views-summary">
+              <span class="total-views" *ngIf="profileViewers?.totalViews">
+                {{ profileViewers?.totalViews }} views
+              </span>
+              <span class="today-badge" *ngIf="profileViewers?.todayViews">
+                +{{ profileViewers?.todayViews }} today
+              </span>
+            </div>
+          </div>
+
+          <!-- Stats Bar -->
+          <div class="views-stats-bar" *ngIf="profileViewers && !profileViewers.isPremiumRequired">
+            <div class="stat-item">
+              <span class="stat-value">{{ profileViewers?.totalViews || 0 }}</span>
+              <span class="stat-label">Total</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">{{ profileViewers?.uniqueViewers || 0 }}</span>
+              <span class="stat-label">Unique</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">{{ profileViewers?.todayViews || 0 }}</span>
+              <span class="stat-label">Today</span>
+            </div>
+          </div>
+
+          <!-- Viewers List (Premium or has access) -->
+          <div class="viewers-content" *ngIf="profileViewers && !profileViewers.isPremiumRequired">
+            <div class="viewers-list">
+              <div *ngFor="let viewer of profileViewers?.viewers?.slice(0, 5)"
+                   class="viewer-item"
+                   [class.anonymous]="viewer.isAnonymous"
+                   (click)="!viewer.isAnonymous && onViewUserProfile(viewer.viewerId); $event.stopPropagation()">
+
+                <!-- Anonymous Viewer -->
+                <ng-container *ngIf="viewer.isAnonymous">
+                  <div class="viewer-avatar anonymous">
+                    <span class="anonymous-icon">👤</span>
+                  </div>
+                  <div class="viewer-info">
+                    <h4>Anonymous Viewer</h4>
+                    <p class="viewed-time">{{ getTimeAgo(viewer.viewedAt) }}</p>
+                  </div>
+                  <span class="device-icon">{{ getDeviceIcon(viewer.deviceType) }}</span>
+                </ng-container>
+
+                <!-- Known Viewer -->
+                <ng-container *ngIf="!viewer.isAnonymous">
+                  <div class="viewer-avatar">
+                    <img [src]="viewer.photoUrl"
+                         [alt]="viewer.name"
+                         loading="lazy">
+                    <div class="online-indicator" [class.online]="viewer.isOnline"></div>
+                  </div>
+                  <div class="viewer-info">
+                    <h4>{{ viewer.firstName }}</h4>
+                    <p class="viewer-details">{{ viewer.age }} • {{ (viewer.location || '').split(',')[0] }}</p>
+                    <p class="viewed-time">{{ getTimeAgo(viewer.viewedAt) }}</p>
+                  </div>
+                  <div class="viewer-actions">
+                    <button class="btn-like-viewer"
+                            (click)="onLikeViewer(viewer.viewerId); $event.stopPropagation()"
+                            aria-label="Like this profile">
+                      ❤️
+                    </button>
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+          </div>
+
+          <!-- Premium Required State -->
+          <div class="premium-blur-overlay" *ngIf="profileViewers?.isPremiumRequired">
+            <div class="blur-content">
+              <div class="blurred-avatars">
+                <div class="blur-avatar" *ngFor="let i of getSkeletonArray(5)"></div>
+              </div>
+            </div>
+            <div class="premium-prompt">
+              <span class="premium-icon">👑</span>
+              <h3>See Who's Interested</h3>
+              <p>Upgrade to Premium to see {{ profileViewers?.totalViews || 'all' }} people who viewed your profile</p>
+              <button class="btn-upgrade-premium" (click)="onViewSubscription(); $event.stopPropagation()">
+                Unlock Now
+              </button>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div class="empty-viewers" *ngIf="!profileViewers?.viewers?.length && !profileViewers?.isPremiumRequired">
+            <div class="empty-icon">🔍</div>
+            <h3>No Views Yet</h3>
+            <p>Complete your profile to attract more visitors</p>
+            <button class="btn-complete-profile" (click)="onViewProfile(); $event.stopPropagation()">
+              Enhance Profile
+            </button>
+          </div>
+
+          <div class="card-footer" *ngIf="profileViewers?.hasMore && !profileViewers?.isPremiumRequired">
+            <button class="btn-view-all">View All Viewers</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
   </div>
 </div>

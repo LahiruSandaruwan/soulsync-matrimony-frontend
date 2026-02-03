@@ -1,0 +1,227 @@
+{
+  "common": {
+    "appName": "SoulSync",
+    "tagline": "Trouvez votre partenaire de vie idéal"
+  },
+  "nav": {
+    "howItWorks": "Comment ça marche",
+    "features": "Fonctionnalités",
+    "successStories": "Témoignages",
+    "pricing": "Tarifs",
+    "faq": "FAQ",
+    "signIn": "Connexion",
+    "registerFree": "Inscription gratuite",
+    "myDashboard": "Mon tableau de bord"
+  },
+  "hero": {
+    "badge": "Plus de 50 000 couples heureux nous font confiance",
+    "title": "Trouvez votre",
+    "titleHighlight": "Partenaire de vie",
+    "subtitle": "La plateforme matrimoniale la plus fiable. Rejoignez des milliers de profils vérifiés et trouvez votre âme sœur grâce à notre système de matching avancé.",
+    "quickSearch": {
+      "title": "Recherche rapide",
+      "lookingFor": "Je recherche",
+      "bride": "Une épouse",
+      "groom": "Un époux",
+      "ageFrom": "Âge de",
+      "ageTo": "Âge à",
+      "religion": "Religion",
+      "any": "Toutes",
+      "buddhist": "Bouddhiste",
+      "hindu": "Hindou",
+      "christian": "Chrétien",
+      "muslim": "Musulman",
+      "other": "Autre",
+      "searchProfiles": "Rechercher des profils"
+    },
+    "viewMyMatches": "Voir mes correspondances",
+    "trustBadges": {
+      "verifiedProfiles": "Profils vérifiés",
+      "privacy": "100% Confidentialité",
+      "support": "Support 24/7"
+    }
+  },
+  "stats": {
+    "registeredMembers": "Membres inscrits",
+    "successfulMatches": "Unions réussies",
+    "verifiedProfiles": "Profils vérifiés",
+    "userRating": "Note des utilisateurs"
+  },
+  "howItWorks": {
+    "title": "Comment ça marche",
+    "subtitle": "Des étapes simples pour trouver votre partenaire idéal",
+    "step1": {
+      "title": "Inscription",
+      "description": "Créez votre profil gratuit avec vos informations et préférences"
+    },
+    "step2": {
+      "title": "Vérification",
+      "description": "Complétez la vérification pour obtenir un badge de confiance"
+    },
+    "step3": {
+      "title": "Trouvez des correspondances",
+      "description": "Parcourez les profils et obtenez des suggestions par IA"
+    },
+    "step4": {
+      "title": "Connectez-vous",
+      "description": "Envoyez des intérêts, discutez en toute sécurité et rencontrez votre âme sœur"
+    }
+  },
+  "features": {
+    "title": "Pourquoi choisir SoulSync ?",
+    "subtitle": "Des fonctionnalités conçues pour vous aider à trouver votre partenaire de vie idéal",
+    "verified": {
+      "title": "Profils 100% vérifiés",
+      "description": "Chaque profil passe par notre processus de vérification rigoureux incluant la vérification d'identité et de photos."
+    },
+    "aiMatching": {
+      "title": "Matching par IA",
+      "description": "Notre algorithme intelligent analyse plus de 50 facteurs de compatibilité pour vous suggérer vos meilleures correspondances."
+    },
+    "privacy": {
+      "title": "Confidentialité et sécurité",
+      "description": "Vos données sont protégées par un cryptage de niveau bancaire. Vous contrôlez qui voit votre profil."
+    },
+    "horoscope": {
+      "title": "Compatibilité astrologique",
+      "description": "Obtenez une analyse détaillée de compatibilité horoscopique basée sur l'astrologie traditionnelle."
+    },
+    "messaging": {
+      "title": "Messagerie sécurisée",
+      "description": "Discutez en privé avec vos correspondances. Les messages sont cryptés de bout en bout."
+    },
+    "support": {
+      "title": "Support client 24/7",
+      "description": "Notre équipe de support dédiée est disponible 24h/24 pour vous aider."
+    }
+  },
+  "testimonials": {
+    "title": "Témoignages de réussite",
+    "subtitle": "De vrais couples qui ont trouvé l'amour grâce à SoulSync",
+    "story1": {
+      "text": "Nous nous sommes trouvés sur SoulSync en 2 mois. L'algorithme de matching a suggéré mon mari et c'était une correspondance parfaite. Hautement recommandé !",
+      "names": "Nirmala & Kasun",
+      "date": "Mariés - Janvier 2024"
+    },
+    "story2": {
+      "text": "Après avoir essayé plusieurs sites matrimoniaux, SoulSync s'est démarqué par ses profils authentiques et son excellent matching horoscopique. Nous nous sommes fiancés en 3 mois !",
+      "names": "Sachini & Pramod",
+      "date": "Mariés - Mars 2024"
+    },
+    "story3": {
+      "text": "Le support client était exceptionnel. Ils nous ont aidés à chaque étape. Les deux familles étaient très satisfaites du service professionnel.",
+      "names": "Dilini & Ravindu",
+      "date": "Mariés - Novembre 2024"
+    }
+  },
+  "pricing": {
+    "title": "Tarification simple et transparente",
+    "subtitle": "Commencez gratuitement, passez à la version supérieure quand vous avez besoin de plus de fonctionnalités",
+    "currency": "EUR",
+    "perMonth": "par mois",
+    "foreverFree": "Gratuit pour toujours",
+    "mostPopular": "LE PLUS POPULAIRE",
+    "getStarted": "Commencer",
+    "getPremium": "Obtenir Premium",
+    "getVip": "Obtenir VIP",
+    "free": {
+      "name": "Gratuit",
+      "price": "0",
+      "features": {
+        "createProfile": "Créer un profil",
+        "browseProfiles": "Parcourir les profils",
+        "matchesPerDay": "5 correspondances par jour",
+        "sendInterests": "Envoyer 3 intérêts"
+      }
+    },
+    "premium": {
+      "name": "Premium",
+      "price": "15",
+      "features": {
+        "everythingInFree": "Tout ce qui est gratuit",
+        "unlimitedMatches": "Correspondances illimitées",
+        "seeWhoLiked": "Voir qui vous a aimé",
+        "chatWithMatches": "Discuter avec vos correspondances",
+        "advancedFilters": "Filtres de recherche avancés"
+      }
+    },
+    "vip": {
+      "name": "VIP",
+      "price": "30",
+      "features": {
+        "everythingInPremium": "Tout ce qui est Premium",
+        "priorityVisibility": "Visibilité prioritaire du profil",
+        "videoCalls": "Appels vidéo",
+        "dedicatedSupport": "Support dédié",
+        "profileBoost": "Boost de profil hebdomadaire"
+      }
+    }
+  },
+  "faq": {
+    "title": "Questions fréquemment posées",
+    "subtitle": "Trouvez des réponses aux questions courantes sur SoulSync",
+    "q1": {
+      "question": "Comment créer un profil ?",
+      "answer": "Cliquez sur le bouton \"Inscription gratuite\", remplissez vos informations de base, téléchargez vos photos et complétez les informations de votre profil. Le processus ne prend que 5 minutes."
+    },
+    "q2": {
+      "question": "Mes informations sont-elles sécurisées et privées ?",
+      "answer": "Oui, absolument. Nous utilisons un cryptage de niveau bancaire pour protéger vos données. Vous avez un contrôle total sur vos paramètres de confidentialité et pouvez choisir quelles informations afficher sur votre profil."
+    },
+    "q3": {
+      "question": "Comment fonctionne l'algorithme de matching ?",
+      "answer": "Notre algorithme alimenté par l'IA analyse plus de 50 facteurs de compatibilité, notamment l'éducation, la profession, les intérêts, les valeurs et les préférences pour vous suggérer vos meilleures correspondances."
+    },
+    "q4": {
+      "question": "Puis-je obtenir un remboursement si je ne suis pas satisfait ?",
+      "answer": "Oui, nous offrons une garantie de remboursement de 7 jours pour tous les abonnements premium. Si vous n'êtes pas satisfait, contactez notre équipe de support pour un remboursement complet."
+    },
+    "q5": {
+      "question": "Comment vérifier mon profil ?",
+      "answer": "Allez dans les paramètres de votre profil et cliquez sur \"Vérifier le profil\". Vous devrez télécharger une pièce d'identité valide et prendre un selfie. La vérification est généralement terminée dans les 24 heures."
+    }
+  },
+  "cta": {
+    "title": "Prêt à trouver votre partenaire de vie ?",
+    "subtitle": "Rejoignez des milliers de couples heureux qui ont trouvé l'amour sur SoulSync",
+    "findMatches": "Trouver des correspondances"
+  },
+  "footer": {
+    "tagline": "Plateforme matrimoniale de confiance aidant des milliers de personnes à trouver leur partenaire de vie idéal.",
+    "phone": "+33 1 23 45 67 89",
+    "email": "support@soulsync.com",
+    "quickLinks": {
+      "title": "Liens rapides",
+      "register": "S'inscrire",
+      "signIn": "Connexion",
+      "pricing": "Tarifs",
+      "faq": "FAQ"
+    },
+    "support": {
+      "title": "Support",
+      "helpCenter": "Centre d'aide",
+      "safetyTips": "Conseils de sécurité",
+      "contactUs": "Nous contacter",
+      "reportIssue": "Signaler un problème"
+    },
+    "legal": {
+      "title": "Mentions légales",
+      "privacyPolicy": "Politique de confidentialité",
+      "termsOfService": "Conditions d'utilisation",
+      "cookiePolicy": "Politique des cookies",
+      "refundPolicy": "Politique de remboursement"
+    },
+    "copyright": "SoulSync Matrimony. Tous droits réservés."
+  },
+  "layout": {
+    "dashboard": "Tableau de bord",
+    "profile": "Profil",
+    "matches": "Correspondances",
+    "chat": "Messages",
+    "search": "Recherche",
+    "subscription": "Abonnement",
+    "notifications": "Notifications",
+    "settings": "Paramètres",
+    "logout": "Déconnexion"
+  }
+}

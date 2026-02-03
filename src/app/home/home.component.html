@@ -1,46 +1,51 @@
-<ng-container *transloco="let t">
 <!-- Navigation -->
 <nav class="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex items-center justify-between h-16 lg:h-20">
       <!-- Logo -->
-      <a routerLink="/" class="flex items-center gap-2">
-        <div class="w-9 h-9 rounded-lg bg-primary-600 flex items-center justify-center">
-          <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-          </svg>
-        </div>
-        <span class="font-romantic text-xl font-semibold text-gray-900">{{ t('common.appName') }}</span>
-      </a>
+      <ng-container *transloco="let t">
+        <a routerLink="/" class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-lg bg-primary-600 flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+          </div>
+          <span class="font-romantic text-xl font-semibold text-gray-900">{{ t('common.appName') }}</span>
+        </a>
+      </ng-container>
 
       <!-- Desktop Navigation -->
-      <div class="hidden lg:flex items-center gap-8">
-        <a (click)="scrollToSection('how-it-works')" class="text-gray-600 hover:text-primary-600 font-medium cursor-pointer transition-colors">{{ t('nav.howItWorks') }}</a>
-        <a (click)="scrollToSection('features')" class="text-gray-600 hover:text-primary-600 font-medium cursor-pointer transition-colors">{{ t('nav.features') }}</a>
-        <a (click)="scrollToSection('testimonials')" class="text-gray-600 hover:text-primary-600 font-medium cursor-pointer transition-colors">{{ t('nav.successStories') }}</a>
-        <a (click)="scrollToSection('pricing')" class="text-gray-600 hover:text-primary-600 font-medium cursor-pointer transition-colors">{{ t('nav.pricing') }}</a>
-        <a (click)="scrollToSection('faq')" class="text-gray-600 hover:text-primary-600 font-medium cursor-pointer transition-colors">{{ t('nav.faq') }}</a>
-      </div>
+      <ng-container *transloco="let t">
+        <div class="hidden lg:flex items-center gap-8">
+          <a (click)="scrollToSection('how-it-works')" class="text-gray-600 hover:text-primary-600 font-medium cursor-pointer transition-colors">{{ t('nav.howItWorks') }}</a>
+          <a (click)="scrollToSection('features')" class="text-gray-600 hover:text-primary-600 font-medium cursor-pointer transition-colors">{{ t('nav.features') }}</a>
+          <a (click)="scrollToSection('testimonials')" class="text-gray-600 hover:text-primary-600 font-medium cursor-pointer transition-colors">{{ t('nav.successStories') }}</a>
+          <a (click)="scrollToSection('pricing')" class="text-gray-600 hover:text-primary-600 font-medium cursor-pointer transition-colors">{{ t('nav.pricing') }}</a>
+          <a (click)="scrollToSection('faq')" class="text-gray-600 hover:text-primary-600 font-medium cursor-pointer transition-colors">{{ t('nav.faq') }}</a>
+        </div>
+      </ng-container>
 
       <!-- Auth Buttons & Language Switcher -->
       <div class="flex items-center gap-3">
-        <!-- Language Switcher -->
+        <!-- Language Switcher - OUTSIDE transloco to prevent directive accumulation -->
         <div class="hidden sm:block">
           <app-language-switcher></app-language-switcher>
         </div>
 
-        <ng-container *ngIf="!(isAuthenticated$ | async)">
-          <a routerLink="/auth/login" class="hidden sm:block text-gray-700 hover:text-primary-600 font-medium transition-colors">
-            {{ t('nav.signIn') }}
-          </a>
-          <a routerLink="/auth/register" class="px-5 py-2.5 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors">
-            {{ t('nav.registerFree') }}
-          </a>
-        </ng-container>
-        <ng-container *ngIf="isAuthenticated$ | async">
-          <a routerLink="/app/dashboard" class="px-5 py-2.5 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors">
-            {{ t('nav.myDashboard') }}
-          </a>
+        <ng-container *transloco="let t">
+          <ng-container *ngIf="!(isAuthenticated())">
+            <a routerLink="/auth/login" class="hidden sm:block text-gray-700 hover:text-primary-600 font-medium transition-colors">
+              {{ t('nav.signIn') }}
+            </a>
+            <a routerLink="/auth/register" class="px-5 py-2.5 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors">
+              {{ t('nav.registerFree') }}
+            </a>
+          </ng-container>
+          <ng-container *ngIf="isAuthenticated()">
+            <a routerLink="/app/dashboard" class="px-5 py-2.5 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors">
+              {{ t('nav.myDashboard') }}
+            </a>
+          </ng-container>
         </ng-container>
 
         <!-- Mobile Menu Button -->
@@ -57,25 +62,30 @@
   <!-- Mobile Menu -->
   <div *ngIf="isMobileMenuOpen" class="lg:hidden bg-white border-t border-gray-100">
     <div class="px-4 py-4 space-y-3">
-      <a (click)="scrollToSection('how-it-works'); toggleMobileMenu()" class="block text-gray-600 hover:text-primary-600 font-medium cursor-pointer">{{ t('nav.howItWorks') }}</a>
-      <a (click)="scrollToSection('features'); toggleMobileMenu()" class="block text-gray-600 hover:text-primary-600 font-medium cursor-pointer">{{ t('nav.features') }}</a>
-      <a (click)="scrollToSection('testimonials'); toggleMobileMenu()" class="block text-gray-600 hover:text-primary-600 font-medium cursor-pointer">{{ t('nav.successStories') }}</a>
-      <a (click)="scrollToSection('pricing'); toggleMobileMenu()" class="block text-gray-600 hover:text-primary-600 font-medium cursor-pointer">{{ t('nav.pricing') }}</a>
-      <a (click)="scrollToSection('faq'); toggleMobileMenu()" class="block text-gray-600 hover:text-primary-600 font-medium cursor-pointer">{{ t('nav.faq') }}</a>
+      <ng-container *transloco="let t">
+        <a (click)="scrollToSection('how-it-works'); toggleMobileMenu()" class="block text-gray-600 hover:text-primary-600 font-medium cursor-pointer">{{ t('nav.howItWorks') }}</a>
+        <a (click)="scrollToSection('features'); toggleMobileMenu()" class="block text-gray-600 hover:text-primary-600 font-medium cursor-pointer">{{ t('nav.features') }}</a>
+        <a (click)="scrollToSection('testimonials'); toggleMobileMenu()" class="block text-gray-600 hover:text-primary-600 font-medium cursor-pointer">{{ t('nav.successStories') }}</a>
+        <a (click)="scrollToSection('pricing'); toggleMobileMenu()" class="block text-gray-600 hover:text-primary-600 font-medium cursor-pointer">{{ t('nav.pricing') }}</a>
+        <a (click)="scrollToSection('faq'); toggleMobileMenu()" class="block text-gray-600 hover:text-primary-600 font-medium cursor-pointer">{{ t('nav.faq') }}</a>
+      </ng-container>
       <hr class="border-gray-200">
-      <!-- Mobile Language Switcher -->
+      <!-- Mobile Language Switcher - OUTSIDE transloco to prevent directive accumulation -->
       <div class="py-2">
         <app-language-switcher></app-language-switcher>
       </div>
-      <ng-container *ngIf="!(isAuthenticated$ | async)">
-        <a routerLink="/auth/login" class="block text-gray-600 hover:text-primary-600 font-medium">{{ t('nav.signIn') }}</a>
-        <a routerLink="/auth/register" class="block w-full text-center px-5 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700">{{ t('nav.registerFree') }}</a>
+      <ng-container *transloco="let t">
+        <ng-container *ngIf="!(isAuthenticated())">
+          <a routerLink="/auth/login" class="block text-gray-600 hover:text-primary-600 font-medium">{{ t('nav.signIn') }}</a>
+          <a routerLink="/auth/register" class="block w-full text-center px-5 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700">{{ t('nav.registerFree') }}</a>
+        </ng-container>
       </ng-container>
     </div>
   </div>
 </nav>
 
 <!-- Hero Section with Search -->
+<ng-container *transloco="let t">
 <section class="pt-20 lg:pt-24 bg-gradient-to-b from-gray-50 to-white">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
     <div class="grid lg:grid-cols-2 gap-12 items-center">
@@ -96,7 +106,7 @@
         </p>
 
         <!-- Quick Search Box -->
-        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8" *ngIf="!(isAuthenticated$ | async)">
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8" *ngIf="!(isAuthenticated())">
           <h3 class="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wide">{{ t('hero.quickSearch.title') }}</h3>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div>
@@ -152,7 +162,7 @@
         </div>
 
         <!-- For authenticated users -->
-        <div class="flex flex-col sm:flex-row gap-4" *ngIf="isAuthenticated$ | async">
+        <div class="flex flex-col sm:flex-row gap-4" *ngIf="isAuthenticated()">
           <a routerLink="/app/matches" class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors">
             <span>{{ t('hero.viewMyMatches') }}</span>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -231,8 +241,13 @@
     </div>
   </div>
 </section>
+</ng-container>
+
+<!-- Top Live Profiles Section -->
+<app-top-live-profiles></app-top-live-profiles>
 
 <!-- How It Works Section -->
+<ng-container *transloco="let t">
 <section id="how-it-works" class="py-16 lg:py-24 bg-white">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-12">
@@ -266,8 +281,10 @@
     </div>
   </div>
 </section>
+</ng-container>
 
 <!-- Features Section -->
+<ng-container *transloco="let t">
 <section id="features" class="py-16 lg:py-24 bg-gray-50">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-12">
@@ -320,8 +337,10 @@
     </div>
   </div>
 </section>
+</ng-container>
 
 <!-- Testimonials Section -->
+<ng-container *transloco="let t">
 <section id="testimonials" class="py-16 lg:py-24 bg-white">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-12">
@@ -383,8 +402,10 @@
     </div>
   </div>
 </section>
+</ng-container>
 
 <!-- Pricing Section -->
+<ng-container *transloco="let t">
 <section id="pricing" class="py-16 lg:py-24 bg-gray-50">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-12">
@@ -449,8 +470,10 @@
     </div>
   </div>
 </section>
+</ng-container>
 
 <!-- FAQ Section -->
+<ng-container *transloco="let t">
 <section id="faq" class="py-16 lg:py-24 bg-white">
   <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-12">
@@ -496,20 +519,22 @@
     </div>
   </div>
 </section>
+</ng-container>
 
 <!-- CTA Section -->
+<ng-container *transloco="let t">
 <section class="py-16 lg:py-20 bg-primary-600">
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
     <h2 class="text-3xl lg:text-4xl font-bold text-white mb-4">{{ t('cta.title') }}</h2>
     <p class="text-lg text-primary-100 mb-8">{{ t('cta.subtitle') }}</p>
-    <div class="flex flex-col sm:flex-row gap-4 justify-center" *ngIf="!(isAuthenticated$ | async)">
+    <div class="flex flex-col sm:flex-row gap-4 justify-center" *ngIf="!(isAuthenticated())">
       <a routerLink="/auth/register" class="inline-flex items-center justify-center gap-2 px-8 py-3 bg-white text-primary-600 font-medium rounded-lg hover:bg-primary-50 transition-colors">
         <span>{{ t('nav.registerFree') }}</span>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
       </a>
       <a routerLink="/auth/login" class="inline-flex items-center justify-center px-8 py-3 border-2 border-white text-white font-medium rounded-lg hover:bg-white/10 transition-colors">{{ t('nav.signIn') }}</a>
     </div>
-    <div *ngIf="isAuthenticated$ | async">
+    <div *ngIf="isAuthenticated()">
       <a routerLink="/app/matches" class="inline-flex items-center justify-center gap-2 px-8 py-3 bg-white text-primary-600 font-medium rounded-lg hover:bg-primary-50 transition-colors">
         <span>{{ t('cta.findMatches') }}</span>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
@@ -517,8 +542,10 @@
     </div>
   </div>
 </section>
+</ng-container>
 
 <!-- Footer -->
+<ng-container *transloco="let t">
 <footer class="bg-gray-900 text-white">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="py-12 grid grid-cols-2 md:grid-cols-4 gap-8">

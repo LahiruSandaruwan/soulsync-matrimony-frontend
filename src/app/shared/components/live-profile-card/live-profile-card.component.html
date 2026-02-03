@@ -1,0 +1,54 @@
+<div class="live-profile-card" (click)="onCardClick()">
+  <!-- Profile Avatar -->
+  <div class="avatar-container">
+    <img
+      [src]="getPhotoUrl()"
+      [alt]="profile.first_name"
+      class="avatar-image"
+      (error)="onImageError($event)"
+    >
+    <span *ngIf="profile.is_online" class="online-indicator"></span>
+  </div>
+
+  <!-- Profile Info -->
+  <div class="profile-info">
+    <h4 class="profile-name">{{ profile.first_name }}</h4>
+
+    <p class="profile-location">
+      <svg class="icon" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+      </svg>
+      {{ getLocation() }}
+    </p>
+
+    <div class="profile-details">
+      <span *ngIf="profile.age" class="detail-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+        </svg>
+        {{ profile.age }} Years
+      </span>
+      <span *ngIf="profile.height_cm" class="detail-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"/>
+        </svg>
+        {{ getHeight() }}
+      </span>
+    </div>
+
+    <div class="profile-details">
+      <span *ngIf="profile.occupation" class="detail-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/>
+        </svg>
+        {{ profile.occupation }}
+      </span>
+      <span *ngIf="profile.religion" class="detail-item">
+        <svg class="icon" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+        </svg>
+        {{ profile.religion }}
+      </span>
+    </div>
+  </div>
+</div>

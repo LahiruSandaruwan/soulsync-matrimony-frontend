@@ -22,6 +22,9 @@ export interface SubscriptionPlan {
   type: 'free' | 'basic' | 'premium' | 'platinum';
   price_usd: number;
   price_lkr: number;
+  price_monthly?: number;
+  price_quarterly?: number;
+  price_yearly?: number;
   duration_months: number;
   features: string[];
   limits: {
@@ -29,6 +32,7 @@ export interface SubscriptionPlan {
     messages_per_day?: number;
     photo_uploads?: number;
   };
+  popular?: boolean;
 }
 
 export interface Subscription {
@@ -52,7 +56,9 @@ export interface PaymentIntent {
 export interface PaymentRequest {
   plan_id: number;
   payment_method_id?: string;
-  currency: 'USD' | 'LKR';
+  currency: string;
+  country_code?: string;
+  duration?: 'monthly' | 'quarterly' | 'yearly';
   auto_renewal?: boolean;
 }
 
@@ -78,13 +84,19 @@ export class PaymentService {
   ) {}
 
   // Get subscription plans
-  getSubscriptionPlans(): Observable<SubscriptionPlan[]> {
-    return this.apiService.get<SubscriptionPlan[]>('/subscription/plans')
+  getSubscriptionPlans(countryCode?: string): Observable<SubscriptionPlan[]> {
+    const endpoint = countryCode
+      ? `/subscription/plans?country=${countryCode}`
+      : '/subscription/plans';
+
+    return this.apiService.get<SubscriptionPlan[]>(endpoint)
       .pipe(
         map(response => {
           if (response.success) {
-            this.plansSubject.next(response.data);
-            return response.data;
+            // Handle new response format with plans array
+            const plans = (response.data as any)?.plans || response.data;
+            this.plansSubject.next(plans);
+            return plans;
           } else {
             throw new Error(response.message);
           }

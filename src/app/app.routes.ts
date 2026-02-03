@@ -157,6 +157,10 @@ export const routes: Routes = [
         loadComponent: () => import('./admin/content-management/content-management.component').then(m => m.ContentManagementComponent)
       },
       {
+        path: 'pricing',
+        loadComponent: () => import('./admin/pricing-management/pricing-management.component').then(m => m.PricingManagementComponent)
+      },
+      {
         path: 'settings',
         loadComponent: () => import('./admin/settings/settings.component').then(m => m.SettingsComponent)
       },

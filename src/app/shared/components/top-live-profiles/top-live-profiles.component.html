@@ -1,0 +1,31 @@
+<section class="top-live-profiles" *ngIf="profiles.length > 0 || loading">
+  <div class="section-header">
+    <h2 class="section-title">Top Live Profiles</h2>
+    <p class="section-subtitle">Recently active members looking for their match</p>
+  </div>
+
+  <!-- Loading Skeleton -->
+  <div class="profiles-scroll" *ngIf="loading">
+    <div *ngFor="let i of skeletonItems" class="skeleton-card">
+      <div class="skeleton-avatar"></div>
+      <div class="skeleton-name"></div>
+      <div class="skeleton-location"></div>
+      <div class="skeleton-details"></div>
+    </div>
+  </div>
+
+  <!-- Profiles -->
+  <div class="profiles-scroll" *ngIf="!loading && profiles.length > 0">
+    <app-live-profile-card
+      *ngFor="let profile of profiles"
+      [profile]="profile"
+      (viewProfile)="onViewProfile($event)">
+    </app-live-profile-card>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-state" *ngIf="!loading && error">
+    <p>{{ error }}</p>
+    <button (click)="loadLiveProfiles()" class="retry-btn">Try Again</button>
+  </div>
+</section>

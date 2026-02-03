@@ -1,11 +1,19 @@
 import { Injectable } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
+import { Observable, throwError, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { ApiService } from './api.service';
+import { LiveProfile } from '../../shared/components/live-profile-card/live-profile-card.component';
 
 @Injectable({ providedIn: 'root' })
 export class BrowseService {
   constructor(private api: ApiService) {}
+
+  getLiveProfiles(limit: number = 5): Observable<LiveProfile[]> {
+    return this.api.get<any>('/browse/live', { limit }).pipe(
+      map(res => (res.success ? (res.data || []) : [])),
+      catchError(() => of([]))
+    );
+  }
 
   getAll(params?: any): Observable<any[]> {
     return this.api.get<any>('/browse', params).pipe(

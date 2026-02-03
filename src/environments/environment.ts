@@ -71,7 +71,7 @@ export const environment = {
 
   // Notifications
   notifications: {
-    enablePush: true,
+    enablePush: false,
     vapidPublicKey: 'BN1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef'
   },
   
@@ -84,8 +84,8 @@ export const environment = {
 
   // Performance settings
   performance: {
-    enablePWA: true,
-    enableServiceWorker: true,
+    enablePWA: false,
+    enableServiceWorker: false,
     enableImageOptimization: true,
     enableLazyLoading: true,
     enableCaching: true,

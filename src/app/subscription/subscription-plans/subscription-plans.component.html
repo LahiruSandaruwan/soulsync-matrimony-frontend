@@ -45,21 +45,62 @@
       </div>
     </div>
 
-    <!-- Currency Toggle -->
-    <div class="currency-toggle">
-      <span>Currency:</span>
-      <button 
-        (click)="onToggleCurrency()" 
-        class="currency-btn"
-        [class.active]="currency === 'USD'">
-        USD
-      </button>
-      <button 
-        (click)="onToggleCurrency()" 
-        class="currency-btn"
-        [class.active]="currency === 'LKR'">
-        LKR
-      </button>
+    <!-- Country & Currency Selector -->
+    <div class="pricing-controls">
+      <!-- Country Selector -->
+      <div class="country-selector">
+        <label for="country-select">Your Location:</label>
+        <select
+          id="country-select"
+          [(ngModel)]="selectedCountryCode"
+          (ngModelChange)="onCountryChange($event)"
+          class="country-dropdown">
+          <option *ngFor="let country of supportedCountries" [value]="country.countryCode">
+            {{ country.countryName }} ({{ country.currencySymbol }})
+          </option>
+        </select>
+        <button
+          *ngIf="countryInfo?.detectedBy === 'manual'"
+          (click)="onResetToAutoDetect()"
+          class="btn-reset-location"
+          title="Reset to auto-detected location">
+          Auto-detect
+        </button>
+      </div>
+
+      <!-- Duration Selector -->
+      <div class="duration-selector">
+        <span class="duration-label">Billing Period:</span>
+        <div class="duration-options">
+          <button
+            (click)="onDurationChange('monthly')"
+            class="duration-btn"
+            [class.active]="selectedDuration === 'monthly'">
+            Monthly
+          </button>
+          <button
+            (click)="onDurationChange('quarterly')"
+            class="duration-btn"
+            [class.active]="selectedDuration === 'quarterly'">
+            Quarterly
+            <span class="discount-badge" *ngIf="plans[0]?.price_quarterly">Save ~10%</span>
+          </button>
+          <button
+            (click)="onDurationChange('yearly')"
+            class="duration-btn"
+            [class.active]="selectedDuration === 'yearly'">
+            Yearly
+            <span class="discount-badge" *ngIf="plans[0]?.price_yearly">Save ~20%</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Currency Display -->
+      <div class="currency-info">
+        <span class="currency-note">
+          Prices shown in {{ currency }} ({{ currencySymbol }})
+        </span>
+      </div>
     </div>
 
     <!-- Plans Grid -->
@@ -85,12 +126,18 @@
           <h3 class="plan-name">{{ plan.name }}</h3>
           <div class="plan-price">
             <span class="price-amount">
-              {{ getCurrencySymbol() }}{{ getPlanPrice(plan) }}
+              {{ getCurrencySymbol() }}{{ getPlanPrice(plan) | number:'1.2-2' }}
             </span>
-            <span class="price-period">/month</span>
+            <span class="price-period">/{{ selectedDuration === 'monthly' ? 'month' : selectedDuration === 'quarterly' ? 'quarter' : 'year' }}</span>
           </div>
-          <p class="plan-description">
-            {{ plan.duration_months }} month{{ plan.duration_months > 1 ? 's' : '' }} subscription
+          <p class="plan-description" *ngIf="selectedDuration !== 'monthly' && getSavingsPercentage(plan) > 0">
+            <span class="savings-text">Save {{ getSavingsPercentage(plan) }}%</span>
+            <span class="monthly-equivalent">
+              ({{ getCurrencySymbol() }}{{ getMonthlyEquivalent(plan) | number:'1.2-2' }}/mo)
+            </span>
+          </p>
+          <p class="plan-description" *ngIf="selectedDuration === 'monthly'">
+            Billed monthly
           </p>
         </div>
 
@@ -263,19 +310,37 @@
       <div class="payment-methods">
         <h4>Choose Payment Method</h4>
         <div class="payment-options">
-          <button 
+          <button
+            *ngIf="isPaymentMethodAvailable('stripe')"
             (click)="onProcessPayment('stripe')"
             [disabled]="processingPayment"
             class="payment-option">
             <span class="payment-icon">💳</span>
             Credit/Debit Card
           </button>
-          <button 
+          <button
+            *ngIf="isPaymentMethodAvailable('paypal')"
             (click)="onProcessPayment('paypal')"
             [disabled]="processingPayment"
             class="payment-option">
             <span class="payment-icon">📱</span>
             PayPal
+          </button>
+          <button
+            *ngIf="isPaymentMethodAvailable('payhere')"
+            (click)="onProcessPayment('payhere')"
+            [disabled]="processingPayment"
+            class="payment-option">
+            <span class="payment-icon">🏦</span>
+            PayHere (Sri Lanka)
+          </button>
+          <button
+            *ngIf="isPaymentMethodAvailable('webxpay')"
+            (click)="onProcessPayment('webxpay')"
+            [disabled]="processingPayment"
+            class="payment-option">
+            <span class="payment-icon">💰</span>
+            WebXPay
           </button>
         </div>
       </div>
