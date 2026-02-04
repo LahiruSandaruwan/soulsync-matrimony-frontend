@@ -192,7 +192,7 @@ export class ImageOptimizationService {
    * Load image with lazy loading support
    */
   loadImage(img: HTMLImageElement): void {
-    const src = img.dataset.src || img.src;
+    const src = img.dataset['src'] || img.src;
     if (!src) return;
 
     // Add to loading set
@@ -206,7 +206,7 @@ export class ImageOptimizationService {
       img.src = src;
       img.classList.remove('lazy');
       img.classList.add('loaded');
-      
+
       // Remove from loading set
       const updatedLoading = this.loadingImages.value;
       updatedLoading.delete(src);
@@ -214,10 +214,10 @@ export class ImageOptimizationService {
     };
     tempImg.onerror = () => {
       // Fallback to original image
-      img.src = img.dataset.originalSrc || src;
+      img.src = img.dataset['originalSrc'] || src;
       img.classList.remove('lazy');
       img.classList.add('error');
-      
+
       // Remove from loading set
       const updatedLoading = this.loadingImages.value;
       updatedLoading.delete(src);

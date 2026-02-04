@@ -66,7 +66,7 @@
           
           <!-- User Avatar -->
           <div class="user-avatar">
-            <img [src]="getOtherParticipant(conversation).profile?.primary_photo || 'assets/images/default-avatar.png'" 
+            <img [src]="getOtherParticipant(conversation).profile?.primary_photo || 'assets/images/default-avatar.svg'" 
                  [alt]="getOtherParticipant(conversation).first_name">
             <div class="online-indicator" [class.online]="getOtherParticipant(conversation).is_online"></div>
           </div>

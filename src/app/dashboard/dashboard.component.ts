@@ -119,7 +119,28 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private processData(data: any): void {
-    this.userProfile = data.userProfile?.data || null;
+    // Transform API response to match expected interface
+    // API returns { data: { user: {...}, profile_completion: ... } }
+    const apiData = data.userProfile?.data;
+    const apiUser = apiData?.user || apiData;
+    if (apiUser) {
+      this.userProfile = {
+        id: apiUser.id,
+        name: apiUser.name || `${apiUser.first_name || apiUser.firstName || ''} ${apiUser.last_name || apiUser.lastName || ''}`.trim(),
+        firstName: apiUser.firstName || apiUser.first_name || '',
+        lastName: apiUser.lastName || apiUser.last_name || '',
+        age: apiUser.age || 0,
+        profilePictureUrl: apiUser.profilePictureUrl || apiUser.profile_picture_url || null,
+        completeness: apiUser.completeness || apiUser.profile_completion || apiData?.profile_completion || 0,
+        location: apiUser.location || apiUser.current_city || '',
+        occupation: apiUser.occupation || '',
+        lastActive: apiUser.lastActive || apiUser.last_active_at || '',
+        isOnline: apiUser.isOnline ?? apiUser.is_online ?? false,
+      };
+    } else {
+      this.userProfile = null;
+    }
+
     this.matches = data.matches?.data?.data || [];
     this.chatConversations = data.chatConversations?.data?.data || [];
     this.notifications = data.notifications?.data || null;

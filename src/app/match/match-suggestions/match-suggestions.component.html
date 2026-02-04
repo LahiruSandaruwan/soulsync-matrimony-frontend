@@ -109,7 +109,7 @@
 
       <!-- User Photos -->
       <div class="user-photos">
-        <img [src]="currentSuggestion.user.profile?.primary_photo || 'assets/images/default-avatar.png'" 
+        <img [src]="currentSuggestion.user.profile?.primary_photo || 'assets/images/default-avatar.svg'" 
              [alt]="currentSuggestion.user.first_name"
              class="primary-photo">
       </div>
@@ -209,13 +209,13 @@
 
       <div class="match-users">
         <div class="user-avatar">
-          <img [src]="currentUser?.profile?.primary_photo || 'assets/images/default-avatar.png'"
+          <img [src]="currentUser?.profile?.primary_photo || 'assets/images/default-avatar.svg'"
                [alt]="currentUser?.first_name">
         </div>
         <div class="match-heart">💕</div>
         <div class="user-avatar">
           <img
-            [src]="selectedMatch?.user?.profile?.primary_photo || 'assets/images/default-avatar.png'"
+            [src]="selectedMatch?.user?.profile?.primary_photo || 'assets/images/default-avatar.svg'"
             [alt]="selectedMatch?.user?.first_name || 'User'">
         </div>
       </div>

@@ -6,11 +6,11 @@
       class="photo-item relative group cursor-pointer"
       (click)="onPhotoClick(photo)"
     >
-      <img 
-        [src]="photo.file_path" 
+      <img
+        [src]="photo.file_path"
         [alt]="'Photo ' + photo.id"
         class="w-full h-32 md:h-40 object-cover rounded-lg"
-        (error)="$event.target.src='assets/images/default-photo.png'"
+        (error)="onImageError($event)"
       >
       
       <!-- Status Badge -->

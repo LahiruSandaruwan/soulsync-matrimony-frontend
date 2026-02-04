@@ -10,7 +10,7 @@
     <!-- Avatar (for other users' messages) -->
     <div *ngIf="!isOwnMessage()" class="avatar mr-2">
       <img 
-        [src]="message.sender.profile_photo || 'assets/images/default-avatar.png'"
+        [src]="message.sender.profile_photo || 'assets/images/default-avatar.svg'"
         [alt]="message.sender.first_name"
         class="w-8 h-8 rounded-full object-cover"
       >
@@ -88,7 +88,7 @@
     <!-- Avatar (for own messages) -->
     <div *ngIf="isOwnMessage()" class="avatar ml-2">
       <img 
-        [src]="message.sender.profile_photo || 'assets/images/default-avatar.png'"
+        [src]="message.sender.profile_photo || 'assets/images/default-avatar.svg'"
         [alt]="message.sender.first_name"
         class="w-8 h-8 rounded-full object-cover"
       >

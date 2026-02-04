@@ -132,6 +132,6 @@ export class NotificationItemComponent {
   }
 
   getAvatarSrc(): string {
-    return this.notification.data?.profile_photo || 'assets/images/default-avatar.png';
+    return this.notification.data?.profile_photo || 'assets/images/default-avatar.svg';
   }
 } 

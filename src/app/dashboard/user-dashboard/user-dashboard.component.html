@@ -137,7 +137,7 @@
                (click)="onViewConversation(message.conversation_id)"
                [class.unread]="!message.is_read">
             <div class="message-avatar">
-              <img [src]="message.sender?.profile?.primary_photo || 'assets/images/default-avatar.png'" 
+              <img [src]="message.sender?.profile?.primary_photo || 'assets/images/default-avatar.svg'" 
                    [alt]="message.sender?.first_name">
             </div>
             <div class="message-content">

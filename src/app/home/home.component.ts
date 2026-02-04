@@ -5,12 +5,13 @@ import { TranslocoModule } from '@jsverse/transloco';
 import { AuthService } from '../core/services/auth.service';
 import { LanguageSwitcherComponent } from '../shared/components/language-switcher/language-switcher.component';
 import { TopLiveProfilesComponent } from '../shared/components/top-live-profiles/top-live-profiles.component';
+import { SuccessStoriesCarouselComponent } from '../shared/components/success-stories-carousel/success-stories-carousel.component';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslocoModule, LanguageSwitcherComponent, TopLiveProfilesComponent],
+  imports: [CommonModule, RouterModule, TranslocoModule, LanguageSwitcherComponent, TopLiveProfilesComponent, SuccessStoriesCarouselComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })

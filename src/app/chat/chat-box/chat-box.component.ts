@@ -394,7 +394,7 @@ export class ChatBoxComponent implements OnInit, OnDestroy, AfterViewChecked {
   onImageError(event: any): void {
     const target = event.target as HTMLImageElement;
     if (target) {
-      target.src = 'assets/images/default-avatar.png';
+      target.src = 'assets/images/default-avatar.svg';
     }
   }
 

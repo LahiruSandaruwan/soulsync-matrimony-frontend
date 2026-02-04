@@ -48,7 +48,7 @@ export class BrowseListComponent implements OnInit, OnDestroy {
    * @param event Error event
    */
   onImageError(event: any): void {
-    event.target.src = '/assets/images/default-avatar.png';
+    event.target.src = '/assets/images/default-avatar.svg';
   }
 
   /**

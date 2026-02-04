@@ -62,7 +62,7 @@
         <!-- Profile Image -->
         <div class="profile-image-container">
           <img 
-            [src]="user.profile_photo || '/assets/images/default-avatar.png'" 
+            [src]="user.profile_photo || '/assets/images/default-avatar.svg'" 
             [alt]="'Profile photo of ' + user.first_name"
             class="profile-image"
             (error)="onImageError($event)"

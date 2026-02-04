@@ -10,6 +10,16 @@ export const routes: Routes = [
     loadComponent: () => import('./home/home.component').then(m => m.HomeComponent)
   },
 
+  // Public Success Stories Routes
+  {
+    path: 'success-stories',
+    loadComponent: () => import('./success-stories/success-stories-list/success-stories-list.component').then(m => m.SuccessStoriesListComponent)
+  },
+  {
+    path: 'success-stories/:id',
+    loadComponent: () => import('./success-stories/success-story-detail/success-story-detail.component').then(m => m.SuccessStoryDetailComponent)
+  },
+
   // Auth Routes
   {
     path: 'auth',
@@ -120,6 +130,10 @@ export const routes: Routes = [
         loadComponent: () => import('./notifications/notification/notification.component').then(m => m.NotificationComponent)
       },
       {
+        path: 'submit-story',
+        loadComponent: () => import('./success-stories/success-story-submit/success-story-submit.component').then(m => m.SuccessStorySubmitComponent)
+      },
+      {
         path: 'video-call/:callId',
         loadComponent: () => import('./chat/video-call/video-call.component').then(m => m.VideoCallComponent),
         canActivate: [FeatureFlagsGuard],
@@ -163,6 +177,10 @@ export const routes: Routes = [
       {
         path: 'settings',
         loadComponent: () => import('./admin/settings/settings.component').then(m => m.SettingsComponent)
+      },
+      {
+        path: 'success-stories',
+        loadComponent: () => import('./admin/success-stories-management/success-stories-management.component').then(m => m.SuccessStoriesManagementComponent)
       },
       {
         path: '',

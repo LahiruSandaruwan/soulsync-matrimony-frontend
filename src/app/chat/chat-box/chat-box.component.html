@@ -26,7 +26,7 @@
         </button>
         <div class="user-info" *ngIf="otherUser">
           <div class="user-avatar">
-            <img [src]="otherUser.profile?.primary_photo || 'assets/images/default-avatar.png'" 
+            <img [src]="otherUser.profile?.primary_photo || 'assets/images/default-avatar.svg'" 
                  [alt]="otherUser.first_name">
             <div class="online-indicator" [class.online]="otherUser.is_online"></div>
           </div>

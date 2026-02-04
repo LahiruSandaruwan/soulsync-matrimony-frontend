@@ -294,7 +294,7 @@ export class LikeDislikeComponent implements OnInit, OnDestroy {
 
   getPrimaryPhoto(): string {
     if (!this.profile?.user.photos || this.profile.user.photos.length === 0) {
-      return '/assets/images/default-avatar.png';
+      return '/assets/images/default-avatar.svg';
     }
     
     const primaryPhoto = this.profile.user.photos.find((photo: any) => photo.is_primary);
@@ -325,6 +325,6 @@ export class LikeDislikeComponent implements OnInit, OnDestroy {
   }
 
   onImageError(event: any): void {
-    event.target.src = '/assets/images/default-avatar.png';
+    event.target.src = '/assets/images/default-avatar.svg';
   }
 } 

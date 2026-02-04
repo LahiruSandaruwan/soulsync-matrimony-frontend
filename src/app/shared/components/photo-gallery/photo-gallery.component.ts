@@ -21,6 +21,7 @@ export class PhotoGalleryComponent {
   @Input() photos: Photo[] = [];
   @Input() showActions: boolean = false;
   @Input() maxPhotos: number = 6;
+  @Input() startIndex: number = 0;
   
   @Output() photoClick = new EventEmitter<Photo>();
   @Output() setPrimary = new EventEmitter<number>();
@@ -78,6 +79,17 @@ export class PhotoGalleryComponent {
         return 'bg-red-500';
       default:
         return 'bg-gray-500';
+    }
+  }
+
+  trackByPhotoId(index: number, photo: Photo): number {
+    return photo.id;
+  }
+
+  onImageError(event: Event): void {
+    const target = event.target as HTMLImageElement;
+    if (target) {
+      target.src = 'assets/images/default-avatar.svg';
     }
   }
 } 

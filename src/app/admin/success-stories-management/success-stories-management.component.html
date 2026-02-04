@@ -1,0 +1,270 @@
+<div class="success-stories-admin">
+  <!-- Header -->
+  <div class="page-header">
+    <h1>Success Stories Management</h1>
+    <p>Review and manage user-submitted success stories</p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid" *ngIf="stats">
+    <div class="stat-card">
+      <span class="stat-value">{{ stats.total }}</span>
+      <span class="stat-label">Total Stories</span>
+    </div>
+    <div class="stat-card pending">
+      <span class="stat-value">{{ stats.pending }}</span>
+      <span class="stat-label">Pending Review</span>
+    </div>
+    <div class="stat-card approved">
+      <span class="stat-value">{{ stats.approved }}</span>
+      <span class="stat-label">Published</span>
+    </div>
+    <div class="stat-card featured">
+      <span class="stat-value">{{ stats.featured }}</span>
+      <span class="stat-label">Featured</span>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-bar">
+    <div class="search-box">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (keyup.enter)="onSearch()"
+        placeholder="Search by title or submitter...">
+    </div>
+
+    <div class="filter-group">
+      <select [(ngModel)]="statusFilter" (change)="onFilterChange()">
+        <option value="all">All Status</option>
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+        <option value="draft">Draft</option>
+      </select>
+
+      <select [(ngModel)]="featuredFilter" (change)="onFilterChange()">
+        <option value="all">All Stories</option>
+        <option value="featured">Featured Only</option>
+        <option value="not_featured">Not Featured</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Bulk Actions -->
+  <div class="bulk-actions" *ngIf="selectedIds.size > 0">
+    <span>{{ selectedIds.size }} selected</span>
+    <button class="btn btn-success" (click)="bulkApprove()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      Approve Selected
+    </button>
+    <button class="btn btn-danger" (click)="bulkReject()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+      Reject Selected
+    </button>
+  </div>
+
+  <!-- Error -->
+  <div class="alert alert-error" *ngIf="error">{{ error }}</div>
+
+  <!-- Loading -->
+  <div class="loading" *ngIf="loading">
+    <div class="spinner"></div>
+    Loading stories...
+  </div>
+
+  <!-- Stories Table -->
+  <div class="table-container" *ngIf="!loading && stories.length > 0">
+    <table class="stories-table">
+      <thead>
+        <tr>
+          <th class="checkbox-col">
+            <input type="checkbox" [checked]="allSelected" (change)="toggleSelectAll()">
+          </th>
+          <th>Story</th>
+          <th>Submitted By</th>
+          <th>Status</th>
+          <th>Views</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let story of stories" [class.selected]="isSelected(story.id)">
+          <td class="checkbox-col">
+            <input type="checkbox" [checked]="isSelected(story.id)" (change)="toggleSelection(story.id)">
+          </td>
+          <td class="story-cell">
+            <div class="story-info">
+              <div class="story-cover" *ngIf="story.cover_photo">
+                <img [src]="story.cover_photo" [alt]="story.title">
+              </div>
+              <div class="story-cover placeholder" *ngIf="!story.cover_photo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+              </div>
+              <div class="story-details">
+                <h4>{{ story.title }}</h4>
+                <p *ngIf="story.couple_user2">with {{ story.couple_user2.name }}</p>
+                <span class="featured-badge" *ngIf="story.featured">Featured</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="submitter-info" *ngIf="story.submitted_by">
+              <span class="name">{{ story.submitted_by.name }}</span>
+              <span class="email">{{ story.submitted_by.email }}</span>
+            </div>
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(story.status)">
+              {{ story.status | titlecase }}
+            </span>
+          </td>
+          <td>{{ story.view_count }}</td>
+          <td>{{ story.created_at }}</td>
+          <td class="actions-cell">
+            <button class="action-btn view" (click)="openModal('view', story)" title="View">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+            <button
+              class="action-btn approve"
+              *ngIf="story.status === 'pending'"
+              (click)="openModal('approve', story)"
+              title="Approve">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </button>
+            <button
+              class="action-btn reject"
+              *ngIf="story.status === 'pending'"
+              (click)="openModal('reject', story)"
+              title="Reject">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+            <button
+              class="action-btn feature"
+              *ngIf="story.status === 'approved'"
+              (click)="toggleFeatured(story)"
+              [title]="story.featured ? 'Remove Featured' : 'Set Featured'"
+              [class.active]="story.featured">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" [attr.fill]="story.featured ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+            </button>
+            <button class="action-btn delete" (click)="deleteStory(story)" title="Delete">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && stories.length === 0">
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+    <p>No success stories found</p>
+  </div>
+
+  <!-- Pagination -->
+  <app-pagination
+    *ngIf="!loading && lastPage > 1"
+    [currentPage]="currentPage"
+    [totalPages]="lastPage"
+    (pageChange)="onPageChange($event)">
+  </app-pagination>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closeModal()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+
+    <ng-container *ngIf="selectedStory">
+      <!-- View Mode -->
+      <ng-container *ngIf="modalMode === 'view'">
+        <h2>{{ selectedStory.title }}</h2>
+        <div class="modal-meta">
+          <span>By {{ selectedStory.submitted_by?.name }}</span>
+          <span class="status-badge" [ngClass]="getStatusClass(selectedStory.status)">
+            {{ selectedStory.status | titlecase }}
+          </span>
+        </div>
+        <div class="modal-body">
+          <p>{{ selectedStory.description }}</p>
+          <div class="story-details" *ngIf="selectedStory.how_they_met">
+            <h4>How They Met</h4>
+            <p>{{ selectedStory.how_they_met }}</p>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Approve Mode -->
+      <ng-container *ngIf="modalMode === 'approve'">
+        <h2>Approve Story</h2>
+        <p class="modal-subtitle">Approve "{{ selectedStory.title }}"?</p>
+        <div class="form-group">
+          <label>Notes (Optional)</label>
+          <textarea [(ngModel)]="actionNotes" rows="3" placeholder="Add notes for internal use..."></textarea>
+        </div>
+        <div class="form-group checkbox-group">
+          <label>
+            <input type="checkbox" [(ngModel)]="featureOnApprove">
+            Feature this story on homepage
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button class="btn btn-success" (click)="approveStory()">Approve</button>
+        </div>
+      </ng-container>
+
+      <!-- Reject Mode -->
+      <ng-container *ngIf="modalMode === 'reject'">
+        <h2>Reject Story</h2>
+        <p class="modal-subtitle">Reject "{{ selectedStory.title }}"?</p>
+        <div class="form-group">
+          <label>Rejection Reason *</label>
+          <textarea [(ngModel)]="rejectReason" rows="3" placeholder="Explain why this story is being rejected..." required></textarea>
+        </div>
+        <div class="form-group">
+          <label>Internal Notes (Optional)</label>
+          <textarea [(ngModel)]="actionNotes" rows="2" placeholder="Add notes for internal use..."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button class="btn btn-danger" (click)="rejectStory()" [disabled]="!rejectReason">Reject</button>
+        </div>
+      </ng-container>
+    </ng-container>
+  </div>
+</div>

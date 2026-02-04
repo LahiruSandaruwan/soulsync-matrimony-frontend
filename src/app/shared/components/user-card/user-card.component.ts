@@ -57,7 +57,7 @@ export class UserCardComponent {
 
   getPrimaryPhoto(): string {
     const primaryPhoto = this.user.photos?.find(photo => photo.is_primary);
-    return primaryPhoto?.file_path || 'assets/images/default-avatar.png';
+    return primaryPhoto?.file_path || 'assets/images/default-avatar.svg';
   }
 
   getAge(): number {
@@ -74,7 +74,7 @@ export class UserCardComponent {
   onImageError(event: any): void {
     const target = event.target as HTMLImageElement;
     if (target) {
-      target.src = 'assets/images/default-avatar.png';
+      target.src = 'assets/images/default-avatar.svg';
     }
   }
 } 

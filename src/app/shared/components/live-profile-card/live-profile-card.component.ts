@@ -30,7 +30,7 @@ export class LiveProfileCardComponent {
   }
 
   getPhotoUrl(): string {
-    return this.profile.photo_url || 'assets/images/default-avatar.png';
+    return this.profile.photo_url || 'assets/images/default-avatar.svg';
   }
 
   getLocation(): string {
@@ -47,8 +47,8 @@ export class LiveProfileCardComponent {
 
   onImageError(event: Event): void {
     const target = event.target as HTMLImageElement;
-    if (target) {
-      target.src = 'assets/images/default-avatar.png';
+    if (target && !target.src.includes('default-avatar')) {
+      target.src = 'assets/images/default-avatar.svg';
     }
   }
 }

@@ -1,0 +1,146 @@
+<div class="success-stories-page">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1 class="hero-title">Success Stories</h1>
+      <p class="hero-subtitle">
+        Real stories from real couples who found their soulmate on SoulSync Matrimony.
+        Be inspired by their beautiful journeys.
+      </p>
+    </div>
+  </section>
+
+  <div class="container">
+    <!-- Stats Bar -->
+    <div class="stats-bar" *ngIf="!loading && totalStories > 0">
+      <span class="stat">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+        {{ totalStories }} Couples Found Love
+      </span>
+      <a routerLink="/app/submit-story" class="share-cta">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        Share Your Story
+      </a>
+    </div>
+
+    <!-- Loading Skeleton -->
+    <div class="stories-grid" *ngIf="loading">
+      <div *ngFor="let i of skeletonItems" class="story-card skeleton">
+        <div class="skeleton-image"></div>
+        <div class="skeleton-content">
+          <div class="skeleton-title"></div>
+          <div class="skeleton-names"></div>
+          <div class="skeleton-description"></div>
+          <div class="skeleton-footer"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stories Grid -->
+    <div class="stories-grid" *ngIf="!loading && stories.length > 0">
+      <div
+        *ngFor="let story of stories"
+        class="story-card"
+        [class.featured]="story.featured"
+        (click)="viewStory(story.id)">
+
+        <!-- Featured Badge -->
+        <div class="featured-badge" *ngIf="story.featured">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          Featured
+        </div>
+
+        <!-- Cover Image -->
+        <div class="card-image">
+          <app-optimized-image
+            *ngIf="story.cover_photo"
+            [src]="story.cover_photo"
+            [alt]="story.title"
+            [width]="400"
+            [height]="250"
+            objectFit="cover">
+          </app-optimized-image>
+          <div class="no-image" *ngIf="!story.cover_photo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Card Content -->
+        <div class="card-content">
+          <h3 class="story-title">{{ story.title }}</h3>
+          <p class="couple-names">{{ getCoupleNames(story) }}</p>
+          <p class="story-excerpt">{{ story.description }}</p>
+
+          <div class="card-footer">
+            <div class="meta-group">
+              <span class="story-meta" *ngIf="story.story_location">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+                {{ story.story_location }}
+              </span>
+              <span class="story-meta" *ngIf="story.marriage_date">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                {{ story.marriage_date }}
+              </span>
+            </div>
+            <span class="view-count">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              {{ story.view_count }}
+            </span>
+          </div>
+
+          <button class="read-more-btn">
+            Read Their Story
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!loading && stories.length === 0 && !error">
+      <div class="empty-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+      </div>
+      <h3>No Success Stories Yet</h3>
+      <p>Be the first to share your beautiful love story!</p>
+      <a routerLink="/app/submit-story" class="submit-btn">Share Your Story</a>
+    </div>
+
+    <!-- Error State -->
+    <div class="error-state" *ngIf="!loading && error">
+      <p>{{ error }}</p>
+      <button (click)="loadStories()" class="retry-btn">Try Again</button>
+    </div>
+
+    <!-- Pagination -->
+    <app-pagination
+      *ngIf="!loading && lastPage > 1"
+      [currentPage]="currentPage"
+      [totalPages]="lastPage"
+      (pageChange)="onPageChange($event)">
+    </app-pagination>
+  </div>
+</div>
