@@ -6,12 +6,25 @@ import { AuthService } from '../core/services/auth.service';
 import { LanguageSwitcherComponent } from '../shared/components/language-switcher/language-switcher.component';
 import { TopLiveProfilesComponent } from '../shared/components/top-live-profiles/top-live-profiles.component';
 import { SuccessStoriesCarouselComponent } from '../shared/components/success-stories-carousel/success-stories-carousel.component';
+import { TrustBadgesComponent } from '../shared/components/trust-badges/trust-badges.component';
+import { RecentlyJoinedComponent } from '../shared/components/recently-joined/recently-joined.component';
+import { SearchByCategoryComponent } from '../shared/components/search-by-category/search-by-category.component';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, TranslocoModule, LanguageSwitcherComponent, TopLiveProfilesComponent, SuccessStoriesCarouselComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    TranslocoModule,
+    LanguageSwitcherComponent,
+    TopLiveProfilesComponent,
+    SuccessStoriesCarouselComponent,
+    TrustBadgesComponent,
+    RecentlyJoinedComponent,
+    SearchByCategoryComponent
+  ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
