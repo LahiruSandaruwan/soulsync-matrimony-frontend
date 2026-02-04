@@ -1,8 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { Subject, takeUntil, forkJoin, catchError, of } from 'rxjs';
+import { Subject, takeUntil, forkJoin, catchError, of, map } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
+import { AdminSettingsService } from '../../core/services/admin-settings.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
 
 interface AdminStats {
@@ -71,7 +72,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   currentUser: any = null;
 
   constructor(
-    private authService: AuthService
+    private authService: AuthService,
+    private adminService: AdminSettingsService
   ) {}
 
   ngOnInit(): void {
@@ -130,70 +132,99 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   private loadStats(): any {
-    // Mock data - replace with actual API call
-    return of({
-      totalUsers: 1250,
-      activeUsers: 890,
-      premiumUsers: 320,
-      totalMatches: 2150,
-      totalConversations: 1890,
-      totalReports: 45,
-      pendingReports: 12,
-      revenueThisMonth: 12500,
-      revenueLastMonth: 11800,
-      growthRate: 5.9
-    });
+    return this.adminService.getDashboardStats().pipe(
+      map((data: any) => ({
+        totalUsers: data.total_users || 0,
+        activeUsers: data.active_users || 0,
+        premiumUsers: data.premium_users || 0,
+        totalMatches: data.total_matches || 0,
+        totalConversations: data.total_messages || 0,
+        totalReports: data.pending_reports || 0,
+        pendingReports: data.pending_reports || 0,
+        revenueThisMonth: data.monthly_revenue || 0,
+        revenueLastMonth: (data.monthly_revenue || 0) / (1 + (data.revenue_growth_rate || 0) / 100),
+        growthRate: data.user_growth_rate || 0
+      })),
+      catchError(() => of(this.stats))
+    );
   }
 
   private loadRecentActivity(): any {
-    // Mock data - replace with actual API call
-    return of([
-      {
-        id: 1,
-        type: 'user_registration',
-        description: 'New user registered',
-        user: { name: 'John Doe', email: 'john@example.com' },
-        created_at: new Date().toISOString()
-      },
-      {
-        id: 2,
-        type: 'match_created',
-        description: 'New match created',
-        user: { name: 'Jane Smith', email: 'jane@example.com' },
-        created_at: new Date(Date.now() - 3600000).toISOString()
-      },
-      {
-        id: 3,
-        type: 'report_submitted',
-        description: 'User report submitted',
-        user: { name: 'Bob Wilson', email: 'bob@example.com' },
-        created_at: new Date(Date.now() - 7200000).toISOString()
-      }
-    ]);
+    return this.adminService.getDetailedStats(7).pipe(
+      map((data: any) => {
+        const activities: RecentActivity[] = [];
+
+        // Convert recent users to activity items
+        if (data.recent_activity?.recent_users) {
+          data.recent_activity.recent_users.forEach((user: any, index: number) => {
+            activities.push({
+              id: index + 1,
+              type: 'user_registration',
+              description: `${user.first_name} ${user.last_name} registered`,
+              user: { name: `${user.first_name} ${user.last_name}` },
+              created_at: user.created_at
+            });
+          });
+        }
+
+        // Convert recent matches to activity items
+        if (data.recent_activity?.recent_matches) {
+          data.recent_activity.recent_matches.forEach((match: any, index: number) => {
+            activities.push({
+              id: 100 + index,
+              type: 'match_created',
+              description: `${match.user1} matched with ${match.user2}`,
+              user: { name: match.user1 },
+              created_at: match.matched_at
+            });
+          });
+        }
+
+        // Convert recent reports to activity items
+        if (data.recent_activity?.recent_reports) {
+          data.recent_activity.recent_reports.forEach((report: any, index: number) => {
+            activities.push({
+              id: 200 + index,
+              type: 'report_submitted',
+              description: `${report.reporter} reported ${report.reported_user}: ${report.reason}`,
+              user: { name: report.reporter },
+              created_at: report.created_at
+            });
+          });
+        }
+
+        // Sort by date and return top 10
+        return activities
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .slice(0, 10);
+      }),
+      catchError(() => of([]))
+    );
   }
 
   private loadTopUsers(): any {
-    // Mock data - replace with actual API call
-    return of([
-      {
-        id: 1,
-        name: 'Alice Johnson',
-        email: 'alice@example.com',
-        profile_completion: 95,
-        matches_count: 25,
-        last_active: new Date().toISOString(),
-        subscription_status: 'premium'
-      },
-      {
-        id: 2,
-        name: 'Charlie Brown',
-        email: 'charlie@example.com',
-        profile_completion: 88,
-        matches_count: 18,
-        last_active: new Date(Date.now() - 86400000).toISOString(),
-        subscription_status: 'basic'
-      }
-    ]);
+    return this.adminService.getDetailedStats(30).pipe(
+      map((data: any) => {
+        const topUsers: TopUsers[] = [];
+
+        if (data.top_metrics?.most_active_users) {
+          data.top_metrics.most_active_users.forEach((user: any) => {
+            topUsers.push({
+              id: user.id,
+              name: `${user.first_name} ${user.last_name}`,
+              email: '',
+              profile_completion: 100,
+              matches_count: user.sent_messages_count || 0,
+              last_active: new Date().toISOString(),
+              subscription_status: 'active'
+            });
+          });
+        }
+
+        return topUsers;
+      }),
+      catchError(() => of([]))
+    );
   }
 
   getActivityIcon(type: string): string {

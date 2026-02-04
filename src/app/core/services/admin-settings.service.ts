@@ -83,6 +83,32 @@ export class AdminSettingsService {
   refreshPublicConfig(): Observable<any> {
     return this.publicConfigService.refreshConfig();
   }
+
+  /**
+   * Get admin dashboard overview stats
+   */
+  getDashboardStats(): Observable<any> {
+    return this.api.get<any>('/admin/dashboard').pipe(
+      map(res => {
+        if (res.success) return res.data;
+        throw new Error(res.message);
+      }),
+      catchError(err => throwError(() => err))
+    );
+  }
+
+  /**
+   * Get detailed admin statistics
+   */
+  getDetailedStats(period: number = 30): Observable<any> {
+    return this.api.get<any>('/admin/stats', { period }).pipe(
+      map(res => {
+        if (res.success) return res.data;
+        throw new Error(res.message);
+      }),
+      catchError(err => throwError(() => err))
+    );
+  }
 }
 
 
