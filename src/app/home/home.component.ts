@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TranslocoModule } from '@jsverse/transloco';
 import { AuthService } from '../core/services/auth.service';
+import { GeolocationService } from '../core/services/geolocation.service';
 import { LanguageSwitcherComponent } from '../shared/components/language-switcher/language-switcher.component';
 import { TopLiveProfilesComponent } from '../shared/components/top-live-profiles/top-live-profiles.component';
 import { SuccessStoriesCarouselComponent } from '../shared/components/success-stories-carousel/success-stories-carousel.component';
@@ -36,8 +37,14 @@ export class HomeComponent implements OnInit, OnDestroy {
   private isBrowser: boolean;
   private authSub?: Subscription;
 
+  // Pricing data from API
+  plans: any[] = [];
+  currencySymbol = 'LKR';
+  loadingPlans = true;
+
   constructor(
     private authService: AuthService,
+    private geolocationService: GeolocationService,
     @Inject(PLATFORM_ID) platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
@@ -58,6 +65,40 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.isBrowser) {
       this.isScrolled = window.scrollY > 50;
     }
+    // Load pricing plans from API
+    this.loadPlans();
+  }
+
+  private loadPlans(): void {
+    // Force fresh country detection instead of using cached localStorage value
+    this.geolocationService.detectCountry().subscribe({
+      next: () => {
+        // Now fetch plans with freshly detected country
+        this.geolocationService.getPricingForCountry().subscribe({
+          next: (pricing) => {
+            this.plans = pricing.plans || [];
+            this.currencySymbol = pricing.currencySymbol || 'Rs.';
+            this.loadingPlans = false;
+          },
+          error: () => {
+            this.loadingPlans = false;
+          }
+        });
+      },
+      error: () => {
+        // If detection fails, still try to get plans with default
+        this.geolocationService.getPricingForCountry().subscribe({
+          next: (pricing) => {
+            this.plans = pricing.plans || [];
+            this.currencySymbol = pricing.currencySymbol || 'Rs.';
+            this.loadingPlans = false;
+          },
+          error: () => {
+            this.loadingPlans = false;
+          }
+        });
+      }
+    });
   }
 
   ngOnDestroy(): void {

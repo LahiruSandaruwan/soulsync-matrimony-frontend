@@ -1,42 +1,45 @@
 // ============================================
-// Celestial Romance Theme - Notifications
+// Rose Petal Light Theme - Notifications
 // ============================================
 
 // Theme Variables
-$cosmos-deep: #0f0a1e;
-$cosmos-mid: #1a1333;
-$nebula-pink: #ff6b9d;
-$nebula-rose: #ff8fa3;
-$aurora-purple: #c77dff;
-$aurora-violet: #9d4edd;
-$stardust: #e8e0ff;
-$moonlight: #f4f0ff;
-$starlight: rgba(255, 255, 255, 0.7);
+$white: #ffffff;
+$gray-50: #f9fafb;
+$gray-100: #f3f4f6;
+$gray-200: #e5e7eb;
+$gray-300: #d1d5db;
+$gray-400: #9ca3af;
+$gray-500: #6b7280;
+$gray-600: #4b5563;
+$gray-700: #374151;
+$gray-800: #1f2937;
+$gray-900: #111827;
 
-// Glass morphism
-$glass-bg: rgba(255, 255, 255, 0.03);
-$glass-bg-hover: rgba(255, 255, 255, 0.06);
-$glass-border: rgba(255, 255, 255, 0.08);
-$glass-border-hover: rgba(255, 255, 255, 0.15);
-
-// Gradients
-$gradient-primary: linear-gradient(135deg, $nebula-pink 0%, $aurora-purple 100%);
-$gradient-glow: linear-gradient(135deg, rgba($nebula-pink, 0.2) 0%, rgba($aurora-purple, 0.2) 100%);
+// Brand colors
+$primary-50: #fdf2f8;
+$primary-100: #fce7f3;
+$primary-200: #fbcfe8;
+$primary-300: #f9a8d4;
+$primary-400: #f472b6;
+$primary-500: #ec4899;
+$primary-600: #db2777;
+$primary-700: #be185d;
 
 // Notification type colors
-$color-match: #ff6b9d;
-$color-message: #60a5fa;
-$color-like: #34d399;
-$color-super-like: #fbbf24;
-$color-view: #a78bfa;
-$color-system: #94a3b8;
+$color-match: #ec4899;
+$color-message: #3b82f6;
+$color-like: #10b981;
+$color-super-like: #f59e0b;
+$color-view: #8b5cf6;
+$color-system: #6b7280;
 
 .notification-container {
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   min-height: calc(100vh - 100px);
+  background: $gray-50;
 
   .loading-container {
     display: flex;
@@ -47,7 +50,7 @@ $color-system: #94a3b8;
     gap: 1rem;
 
     p {
-      color: $starlight;
+      color: $gray-500;
       font-size: 0.875rem;
     }
   }
@@ -61,30 +64,28 @@ $color-system: #94a3b8;
 
     .error-message {
       text-align: center;
-      background: $glass-bg;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      background: $white;
       padding: 2rem;
       border-radius: 1rem;
-      border: 1px solid rgba($nebula-pink, 0.3);
+      border: 1px solid $gray-200;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       max-width: 400px;
 
       h3 {
-        color: $nebula-pink;
+        color: $primary-600;
         margin-bottom: 0.5rem;
         font-size: 1.125rem;
         font-weight: 600;
-        font-family: 'Cormorant Garamond', serif;
       }
 
       p {
-        color: $starlight;
+        color: $gray-600;
         margin-bottom: 1rem;
         font-size: 0.875rem;
       }
 
       .btn-primary {
-        background: $gradient-primary;
+        background: $primary-500;
         color: white;
         border: none;
         padding: 0.75rem 1.5rem;
@@ -92,19 +93,17 @@ $color-system: #94a3b8;
         font-size: 0.875rem;
         font-weight: 500;
         cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba($nebula-pink, 0.3);
+        transition: all 0.2s ease;
 
         &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba($nebula-pink, 0.4);
+          background: $primary-600;
         }
       }
     }
   }
 
   .notification-content {
-    animation: fadeIn 0.5s ease-out;
+    animation: fadeIn 0.3s ease-out;
 
     .notification-header {
       display: flex;
@@ -112,22 +111,20 @@ $color-system: #94a3b8;
       align-items: flex-start;
       margin-bottom: 2rem;
       padding-bottom: 1.5rem;
-      border-bottom: 1px solid $glass-border;
+      border-bottom: 1px solid $gray-200;
 
       .header-info {
         h1 {
-          font-size: 2.25rem;
-          font-weight: 600;
-          font-family: 'Cormorant Garamond', serif;
-          background: $gradient-primary;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
+          font-size: 2rem;
+          font-weight: 700;
+          color: $primary-600;
           margin: 0 0 0.5rem 0;
+          font-family: 'Cormorant Garamond', Georgia, serif;
+          font-style: italic;
         }
 
         p {
-          color: $starlight;
+          color: $gray-500;
           font-size: 0.875rem;
           margin: 0;
         }
@@ -139,38 +136,36 @@ $color-system: #94a3b8;
         align-items: center;
 
         .btn-secondary {
-          background: $glass-bg;
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-          color: $stardust;
-          border: 1px solid $glass-border;
+          background: $white;
+          color: $gray-700;
+          border: 1px solid $gray-300;
           padding: 0.5rem 1rem;
           border-radius: 0.5rem;
           font-size: 0.875rem;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
 
           &:hover {
-            background: $glass-bg-hover;
-            border-color: $glass-border-hover;
-            color: $moonlight;
+            background: $gray-50;
+            border-color: $primary-300;
+            color: $primary-600;
           }
         }
 
         .btn-refresh {
-          background: $glass-bg;
-          border: 1px solid $glass-border;
-          color: $starlight;
+          background: $white;
+          border: 1px solid $gray-300;
+          color: $gray-500;
           padding: 0.5rem;
           border-radius: 0.5rem;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
 
           &:hover {
-            background: $glass-bg-hover;
-            border-color: $glass-border-hover;
-            color: $moonlight;
+            background: $gray-50;
+            border-color: $primary-300;
+            color: $primary-600;
             transform: rotate(180deg);
           }
         }
@@ -183,52 +178,51 @@ $color-system: #94a3b8;
       margin-bottom: 2rem;
       overflow-x: auto;
       padding-bottom: 0.5rem;
-      scrollbar-width: thin;
-      scrollbar-color: rgba($aurora-purple, 0.3) transparent;
 
       &::-webkit-scrollbar {
         height: 4px;
       }
 
       &::-webkit-scrollbar-track {
-        background: transparent;
+        background: $gray-100;
+        border-radius: 4px;
       }
 
       &::-webkit-scrollbar-thumb {
-        background: rgba($aurora-purple, 0.3);
+        background: $gray-300;
         border-radius: 4px;
       }
 
       .filter-tab {
-        background: $glass-bg;
-        border: 1px solid $glass-border;
+        background: $white;
+        border: 1px solid $gray-200;
         padding: 0.75rem 1rem;
         font-size: 0.875rem;
         font-weight: 500;
-        color: $starlight;
+        color: $gray-600;
         cursor: pointer;
         border-radius: 0.5rem;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
         white-space: nowrap;
         display: flex;
         align-items: center;
         gap: 0.5rem;
 
         &:hover {
-          color: $stardust;
-          background: $glass-bg-hover;
-          border-color: $glass-border-hover;
+          color: $primary-600;
+          background: $primary-50;
+          border-color: $primary-200;
         }
 
         &.active {
-          background: $gradient-glow;
-          border-color: rgba($nebula-pink, 0.4);
-          color: $moonlight;
+          background: $primary-500;
+          border-color: $primary-500;
+          color: white;
         }
 
         .count {
-          background: rgba(255, 255, 255, 0.1);
-          color: $starlight;
+          background: $gray-100;
+          color: $gray-600;
           padding: 0.125rem 0.5rem;
           border-radius: 1rem;
           font-size: 0.75rem;
@@ -237,8 +231,18 @@ $color-system: #94a3b8;
           text-align: center;
 
           &.unread {
-            background: $gradient-primary;
+            background: $primary-500;
             color: white;
+          }
+        }
+
+        &.active .count {
+          background: rgba(255, 255, 255, 0.2);
+          color: white;
+
+          &.unread {
+            background: white;
+            color: $primary-600;
           }
         }
       }
@@ -248,33 +252,33 @@ $color-system: #94a3b8;
       .empty-state {
         text-align: center;
         padding: 4rem 2rem;
-        background: $glass-bg;
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
+        background: $white;
         border-radius: 1rem;
-        border: 1px solid $glass-border;
-        animation: fadeIn 0.5s ease-out;
+        border: 1px solid $gray-200;
+        animation: fadeIn 0.3s ease-out;
 
         .empty-icon {
-          color: $aurora-purple;
+          color: $primary-300;
           margin-bottom: 1.5rem;
-          opacity: 0.7;
 
           svg {
-            stroke: $aurora-purple;
+            stroke: $primary-400;
+            width: 64px;
+            height: 64px;
           }
         }
 
         h3 {
           font-size: 1.5rem;
           font-weight: 600;
-          font-family: 'Cormorant Garamond', serif;
-          color: $stardust;
+          color: $primary-600;
           margin: 0 0 0.75rem 0;
+          font-family: 'Cormorant Garamond', Georgia, serif;
+          font-style: italic;
         }
 
         p {
-          color: $starlight;
+          color: $gray-500;
           font-size: 0.875rem;
           margin: 0;
           max-width: 300px;
@@ -286,71 +290,61 @@ $color-system: #94a3b8;
         display: flex;
         gap: 1rem;
         padding: 1.5rem;
-        background: $glass-bg;
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid $glass-border;
+        background: $white;
+        border: 1px solid $gray-200;
         border-radius: 1rem;
         margin-bottom: 1rem;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
         animation: slideInUp 0.3s ease-out;
 
         &:hover {
-          background: $glass-bg-hover;
-          border-color: $glass-border-hover;
-          transform: translateY(-2px);
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+          border-color: $primary-200;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
         &.unread {
-          border-left: 4px solid $aurora-purple;
-          background: rgba($aurora-purple, 0.05);
+          border-left: 4px solid $primary-500;
+          background: $primary-50;
         }
 
         &.notification-match {
-          border-left-color: $color-match;
-
           &.unread {
+            border-left-color: $color-match;
             background: rgba($color-match, 0.05);
           }
         }
 
         &.notification-message {
-          border-left-color: $color-message;
-
           &.unread {
+            border-left-color: $color-message;
             background: rgba($color-message, 0.05);
           }
         }
 
         &.notification-like {
-          border-left-color: $color-like;
-
           &.unread {
+            border-left-color: $color-like;
             background: rgba($color-like, 0.05);
           }
         }
 
         &.notification-super-like {
-          border-left-color: $color-super-like;
-
           &.unread {
+            border-left-color: $color-super-like;
             background: rgba($color-super-like, 0.05);
           }
         }
 
         &.notification-view {
-          border-left-color: $color-view;
-
           &.unread {
+            border-left-color: $color-view;
             background: rgba($color-view, 0.05);
           }
         }
 
         &.notification-system {
-          border-left-color: $color-system;
-
           &.unread {
+            border-left-color: $color-system;
             background: rgba($color-system, 0.05);
           }
         }
@@ -366,8 +360,8 @@ $color-system: #94a3b8;
             justify-content: center;
             width: 3rem;
             height: 3rem;
-            background: $glass-bg-hover;
-            border: 1px solid $glass-border;
+            background: $primary-50;
+            border: 1px solid $primary-100;
             border-radius: 50%;
           }
 
@@ -377,9 +371,9 @@ $color-system: #94a3b8;
             right: 0;
             width: 0.75rem;
             height: 0.75rem;
-            background: $gradient-primary;
+            background: $primary-500;
             border-radius: 50%;
-            border: 2px solid $cosmos-mid;
+            border: 2px solid $white;
             animation: pulse 2s ease-in-out infinite;
           }
         }
@@ -399,7 +393,7 @@ $color-system: #94a3b8;
             .notification-title {
               font-size: 1rem;
               font-weight: 600;
-              color: $stardust;
+              color: $gray-800;
               margin: 0;
               line-height: 1.4;
             }
@@ -410,31 +404,31 @@ $color-system: #94a3b8;
               flex-shrink: 0;
 
               .btn-action {
-                background: $glass-bg;
-                border: 1px solid $glass-border;
-                color: $starlight;
+                background: $white;
+                border: 1px solid $gray-200;
+                color: $gray-500;
                 padding: 0.375rem;
                 border-radius: 0.375rem;
                 cursor: pointer;
                 transition: all 0.2s ease;
 
                 &:hover {
-                  background: $glass-bg-hover;
-                  border-color: $glass-border-hover;
-                  color: $moonlight;
+                  background: $gray-50;
+                  border-color: $gray-300;
+                  color: $gray-700;
                 }
 
                 &.btn-delete:hover {
-                  background: rgba($nebula-pink, 0.2);
-                  border-color: rgba($nebula-pink, 0.4);
-                  color: $nebula-pink;
+                  background: rgba($primary-500, 0.1);
+                  border-color: $primary-300;
+                  color: $primary-600;
                 }
               }
             }
           }
 
           .notification-message {
-            color: $starlight;
+            color: $gray-600;
             font-size: 0.875rem;
             line-height: 1.5;
             margin: 0 0 0.75rem 0;
@@ -446,14 +440,14 @@ $color-system: #94a3b8;
             align-items: center;
 
             .notification-time {
-              color: rgba(255, 255, 255, 0.5);
+              color: $gray-400;
               font-size: 0.75rem;
             }
 
             .notification-type {
-              background: $glass-bg;
-              border: 1px solid $glass-border;
-              color: $starlight;
+              background: $gray-100;
+              border: 1px solid $gray-200;
+              color: $gray-600;
               padding: 0.125rem 0.5rem;
               border-radius: 0.25rem;
               font-size: 0.75rem;
@@ -470,25 +464,23 @@ $color-system: #94a3b8;
         margin-top: 2rem;
 
         .btn-load-more {
-          background: $glass-bg;
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-          color: $stardust;
-          border: 1px solid $glass-border;
+          background: $white;
+          color: $gray-700;
+          border: 1px solid $gray-300;
           padding: 0.75rem 2rem;
           border-radius: 0.5rem;
           font-size: 0.875rem;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.3s ease;
+          transition: all 0.2s ease;
           display: inline-flex;
           align-items: center;
           gap: 0.5rem;
 
           &:hover:not(:disabled) {
-            background: $gradient-glow;
-            border-color: rgba($nebula-pink, 0.4);
-            color: $moonlight;
+            background: $primary-50;
+            border-color: $primary-300;
+            color: $primary-600;
           }
 
           &:disabled {
@@ -511,8 +503,7 @@ $color-system: #94a3b8;
   display: flex;
   align-items: center;
   gap: 1rem;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   animation: slideInRight 0.3s ease-out;
   z-index: 1000;
 
@@ -538,15 +529,15 @@ $color-system: #94a3b8;
   }
 
   &.success {
-    background: rgba($color-like, 0.2);
-    border: 1px solid rgba($color-like, 0.4);
-    color: $color-like;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #059669;
   }
 
   &.error {
-    background: rgba($nebula-pink, 0.2);
-    border: 1px solid rgba($nebula-pink, 0.4);
-    color: $nebula-pink;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
   }
 }
 
@@ -563,7 +554,7 @@ $color-system: #94a3b8;
 @keyframes slideInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;

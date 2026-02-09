@@ -37,7 +37,7 @@ export class ProfileEditComponent implements OnInit, OnDestroy {
   ];
   
   bodyTypes = ['slim', 'average', 'athletic', 'heavy'];
-  complexions = ['very_fair', 'fair', 'wheatish', 'brown', 'dark'];
+  complexions = ['very_fair', 'fair', 'wheatish', 'brown', 'dark', 'very_dark'];
   bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
   familyTypes = ['nuclear', 'joint'];
   familyStatuses = ['middle_class', 'upper_middle_class', 'rich', 'affluent'];

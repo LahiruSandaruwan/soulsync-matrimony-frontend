@@ -125,29 +125,38 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (profile: UserProfile) => {
-          this.userProfile = profile;
+          // API returns nested structure: { id, first_name, completion_percentage, profile: { current_city, ... } }
+          // Flatten the nested profile data for easier access
+          const nestedProfile = (profile as any).profile;
+          if (nestedProfile) {
+            // Merge nested profile fields into the main profile object
+            this.userProfile = { ...profile, ...nestedProfile } as UserProfile;
+          } else {
+            this.userProfile = profile;
+          }
+
           // For own profile, merge with current user data
           if (this.currentUser) {
             this.user = {
               id: this.currentUser.id,
-              first_name: this.currentUser.first_name || 'User',
-              last_name: this.currentUser.last_name || '',
-              date_of_birth: this.currentUser.date_of_birth || '1990-01-01',
-              profile
+              first_name: this.currentUser.first_name || (profile as any).first_name || 'User',
+              last_name: this.currentUser.last_name || (profile as any).last_name || '',
+              date_of_birth: this.currentUser.date_of_birth || (profile as any).date_of_birth || '1990-01-01',
+              profile: this.userProfile
             } as any;
           } else {
             this.user = {
-              id: profile.user_id,
+              id: (profile as any).id || profile.user_id,
               first_name: (profile as any).first_name || 'User',
               last_name: (profile as any).last_name || '',
               date_of_birth: (profile as any).date_of_birth || '1990-01-01',
-              profile
+              profile: this.userProfile
             } as any;
           }
           this.loading = false;
           this.loadOwnPhotos();
-          // Calculate profile completion
-          this.completionPercentage = profile.completion_percentage || 0;
+          // Calculate profile completion - available at top level
+          this.completionPercentage = (profile as any).completion_percentage || 0;
         },
         error: (error: any) => {
           this.error = error.message || 'Failed to load your profile';
@@ -386,10 +395,18 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
 
   getLocation(): string {
     const parts = [];
-    if (this.userProfile?.current_city) parts.push(this.userProfile.current_city);
-    if (this.userProfile?.current_state) parts.push(this.userProfile.current_state);
-    if (this.userProfile?.current_country) parts.push(this.userProfile.current_country);
-    
+    // Handle both flat structure (after flattening) and nested structure (fallback)
+    const profile = this.userProfile as any;
+    const nestedProfile = profile?.profile;
+
+    const city = profile?.current_city || nestedProfile?.current_city;
+    const state = profile?.current_state || nestedProfile?.current_state;
+    const country = profile?.current_country || nestedProfile?.current_country;
+
+    if (city) parts.push(city);
+    if (state) parts.push(state);
+    if (country) parts.push(country);
+
     return parts.length > 0 ? parts.join(', ') : 'Location not specified';
   }
 

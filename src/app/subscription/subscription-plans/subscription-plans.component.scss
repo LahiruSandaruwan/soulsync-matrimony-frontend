@@ -1,27 +1,42 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// SUBSCRIPTION PLANS - "Celestial Romance" Theme
+// SUBSCRIPTION PLANS - "Rose Petal" Light Theme
 // ═══════════════════════════════════════════════════════════════════════════
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
 
 // ─── Design Tokens ───────────────────────────────────────────────────────────
-$cosmos-deep: #0f0a1e;
-$cosmos-mid: #1a1333;
-$cosmos-light: #2d2248;
-$nebula-pink: #ff6b9d;
-$nebula-coral: #ff8a7a;
-$nebula-gold: #ffd76b;
-$stardust: #e8e0ff;
-$moonlight: #f4f0ff;
-$aurora-cyan: #7df3e1;
-$aurora-purple: #c77dff;
-$success: #6ee7b7;
-$warning: #fcd34d;
-$danger: #fca5a5;
-$glass-bg: rgba(255, 255, 255, 0.03);
-$glass-border: rgba(255, 255, 255, 0.08);
-$font-display: 'Cormorant Garamond', Georgia, serif;
-$font-body: 'Outfit', -apple-system, sans-serif;
+$cream-white: #FFFBF7;
+$warm-gray-50: #faf8f6;
+$warm-gray-100: #f5f3f0;
+$warm-gray-200: #e8e5e1;
+$warm-gray-300: #d4d0ca;
+$warm-gray-400: #a8a29e;
+$warm-gray-500: #78746e;
+$warm-gray-600: #5c5955;
+$warm-gray-700: #45433f;
+$warm-gray-800: #2d2b28;
+
+$rose-50: #fff1f2;
+$rose-100: #ffe4e6;
+$rose-200: #fecdd3;
+$rose-300: #fda4af;
+$rose-400: #fb7185;
+$rose-500: #f43f5e;
+$pink-400: #f472b6;
+$pink-500: #ec4899;
+$pink-600: #db2777;
+$gold-400: #fbbf24;
+$gold-500: #f59e0b;
+
+$success: #10b981;
+$success-light: #d1fae5;
+$warning: #f59e0b;
+$warning-light: #fef3c7;
+$danger: #ef4444;
+$danger-light: #fee2e2;
+
+$font-display: 'DM Serif Display', Georgia, serif;
+$font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 
 // ─── Animations ──────────────────────────────────────────────────────────────
 @keyframes slide-up {
@@ -39,17 +54,13 @@ $font-body: 'Outfit', -apple-system, sans-serif;
   50% { transform: translateY(-8px); }
 }
 
-@keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(255, 107, 157, 0.3); }
-  50% { box-shadow: 0 0 40px rgba(255, 107, 157, 0.5); }
-}
-
 // ─── Base Container ──────────────────────────────────────────────────────────
 .subscription-plans-container {
   min-height: calc(100vh - 80px);
   padding: 2rem;
   font-family: $font-body;
-  color: $stardust;
+  color: $warm-gray-700;
+  background: linear-gradient(180deg, $cream-white 0%, $warm-gray-50 100%);
 }
 
 // ─── Loading State ───────────────────────────────────────────────────────────
@@ -66,8 +77,7 @@ $font-body: 'Outfit', -apple-system, sans-serif;
     font-family: $font-display;
     font-size: 1.25rem;
     font-style: italic;
-    color: $stardust;
-    opacity: 0.8;
+    color: $warm-gray-500;
   }
 }
 
@@ -81,10 +91,9 @@ $font-body: 'Outfit', -apple-system, sans-serif;
   .error-message {
     text-align: center;
     padding: 2rem;
-    background: linear-gradient(135deg, rgba(252, 165, 165, 0.15), rgba(252, 165, 165, 0.05));
-    border: 1px solid rgba(252, 165, 165, 0.3);
+    background: $danger-light;
+    border: 1px solid rgba(239, 68, 68, 0.3);
     border-radius: 1rem;
-    backdrop-filter: blur(10px);
 
     p {
       color: $danger;
@@ -94,8 +103,8 @@ $font-body: 'Outfit', -apple-system, sans-serif;
 
     .btn-retry {
       padding: 0.75rem 1.5rem;
-      background: rgba(252, 165, 165, 0.2);
-      border: 1px solid rgba(252, 165, 165, 0.4);
+      background: #ffffff;
+      border: 1px solid rgba(239, 68, 68, 0.4);
       border-radius: 0.5rem;
       color: $danger;
       font-family: $font-body;
@@ -104,7 +113,7 @@ $font-body: 'Outfit', -apple-system, sans-serif;
       transition: all 0.3s ease;
 
       &:hover {
-        background: rgba(252, 165, 165, 0.3);
+        background: $danger-light;
       }
     }
   }
@@ -112,12 +121,11 @@ $font-body: 'Outfit', -apple-system, sans-serif;
 
 // ─── Success Message ─────────────────────────────────────────────────────────
 .success-message {
-  background: linear-gradient(135deg, rgba(110, 231, 183, 0.15), rgba(110, 231, 183, 0.05));
-  border: 1px solid rgba(110, 231, 183, 0.3);
+  background: $success-light;
+  border: 1px solid rgba(16, 185, 129, 0.3);
   border-radius: 1rem;
   padding: 1rem 1.5rem;
   margin-bottom: 2rem;
-  backdrop-filter: blur(10px);
 
   p {
     color: $success;
@@ -138,18 +146,18 @@ $font-body: 'Outfit', -apple-system, sans-serif;
   text-align: center;
   margin-bottom: 3rem;
   padding: 2rem;
-  background: $glass-bg;
-  border: 1px solid $glass-border;
+  background: #ffffff;
+  border: 1px solid $warm-gray-200;
   border-radius: 1.5rem;
-  backdrop-filter: blur(20px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   animation: slide-up 0.6s ease-out;
 
   h1 {
     font-family: $font-display;
     font-size: clamp(2rem, 5vw, 3rem);
-    font-weight: 700;
+    font-weight: 400;
     margin-bottom: 0.5rem;
-    background: linear-gradient(135deg, $nebula-pink, $aurora-purple);
+    background: linear-gradient(135deg, $pink-500, $rose-500);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -157,14 +165,13 @@ $font-body: 'Outfit', -apple-system, sans-serif;
 
   p {
     font-size: 1.1rem;
-    color: $stardust;
-    opacity: 0.8;
+    color: $warm-gray-500;
     margin-bottom: 2rem;
   }
 
   .current-subscription {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid $glass-border;
+    background: $warm-gray-50;
+    border: 1px solid $warm-gray-200;
     border-radius: 1rem;
     padding: 1.5rem;
     display: flex;
@@ -182,35 +189,34 @@ $font-body: 'Outfit', -apple-system, sans-serif;
         margin-right: 1rem;
 
         &.active {
-          background: rgba(110, 231, 183, 0.2);
+          background: $success-light;
           color: $success;
-          border: 1px solid rgba(110, 231, 183, 0.4);
+          border: 1px solid rgba(16, 185, 129, 0.4);
         }
 
         &.cancelled {
-          background: rgba(252, 211, 77, 0.2);
+          background: $warning-light;
           color: $warning;
-          border: 1px solid rgba(252, 211, 77, 0.4);
+          border: 1px solid rgba(245, 158, 11, 0.4);
         }
 
         &.expired {
-          background: rgba(252, 165, 165, 0.2);
+          background: $danger-light;
           color: $danger;
-          border: 1px solid rgba(252, 165, 165, 0.4);
+          border: 1px solid rgba(239, 68, 68, 0.4);
         }
       }
 
       .days-remaining {
-        color: $stardust;
-        opacity: 0.7;
+        color: $warm-gray-500;
         font-size: 0.875rem;
       }
     }
 
     .btn-cancel-subscription {
-      background: rgba(252, 165, 165, 0.2);
+      background: $danger-light;
       color: $danger;
-      border: 1px solid rgba(252, 165, 165, 0.4);
+      border: 1px solid rgba(239, 68, 68, 0.4);
       padding: 0.5rem 1rem;
       border-radius: 0.5rem;
       font-family: $font-body;
@@ -219,7 +225,7 @@ $font-body: 'Outfit', -apple-system, sans-serif;
       transition: all 0.3s ease;
 
       &:hover {
-        background: rgba(252, 165, 165, 0.3);
+        background: rgba(239, 68, 68, 0.15);
       }
     }
   }
@@ -234,10 +240,10 @@ $font-body: 'Outfit', -apple-system, sans-serif;
   gap: 2rem;
   margin-bottom: 2.5rem;
   padding: 1.5rem;
-  background: $glass-bg;
-  border: 1px solid $glass-border;
+  background: #ffffff;
+  border: 1px solid $warm-gray-200;
   border-radius: 1rem;
-  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -251,15 +257,15 @@ $font-body: 'Outfit', -apple-system, sans-serif;
   gap: 0.75rem;
 
   label {
-    color: $stardust;
+    color: $warm-gray-700;
     font-weight: 500;
     white-space: nowrap;
   }
 
   .country-dropdown {
-    background: $cosmos-mid;
-    color: $stardust;
-    border: 1px solid $glass-border;
+    background: $warm-gray-50;
+    color: $warm-gray-700;
+    border: 1px solid $warm-gray-200;
     padding: 0.625rem 1rem;
     border-radius: 0.5rem;
     font-family: $font-body;
@@ -269,22 +275,22 @@ $font-body: 'Outfit', -apple-system, sans-serif;
     transition: all 0.3s ease;
 
     &:hover, &:focus {
-      border-color: $aurora-purple;
+      border-color: $pink-400;
       outline: none;
-      box-shadow: 0 0 0 2px rgba(199, 125, 255, 0.2);
+      box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.1);
     }
 
     option {
-      background: $cosmos-mid;
-      color: $stardust;
+      background: #ffffff;
+      color: $warm-gray-700;
     }
   }
 
   .btn-reset-location {
     padding: 0.5rem 0.75rem;
     background: transparent;
-    color: $aurora-cyan;
-    border: 1px solid $aurora-cyan;
+    color: $pink-500;
+    border: 1px solid $pink-400;
     border-radius: 0.375rem;
     font-size: 0.75rem;
     font-weight: 500;
@@ -292,7 +298,7 @@ $font-body: 'Outfit', -apple-system, sans-serif;
     transition: all 0.2s ease;
 
     &:hover {
-      background: rgba(125, 243, 225, 0.1);
+      background: $rose-50;
     }
   }
 }
@@ -303,7 +309,7 @@ $font-body: 'Outfit', -apple-system, sans-serif;
   gap: 0.75rem;
 
   .duration-label {
-    color: $stardust;
+    color: $warm-gray-700;
     font-weight: 500;
     white-space: nowrap;
   }
@@ -311,7 +317,7 @@ $font-body: 'Outfit', -apple-system, sans-serif;
   .duration-options {
     display: flex;
     gap: 0.25rem;
-    background: rgba(0, 0, 0, 0.2);
+    background: $warm-gray-100;
     padding: 0.25rem;
     border-radius: 0.5rem;
   }
@@ -319,7 +325,7 @@ $font-body: 'Outfit', -apple-system, sans-serif;
   .duration-btn {
     position: relative;
     background: transparent;
-    color: $stardust;
+    color: $warm-gray-600;
     border: none;
     padding: 0.625rem 1rem;
     border-radius: 0.375rem;
@@ -330,20 +336,20 @@ $font-body: 'Outfit', -apple-system, sans-serif;
     transition: all 0.3s ease;
 
     &.active {
-      background: linear-gradient(135deg, $nebula-pink, $aurora-purple);
+      background: linear-gradient(135deg, $pink-500, $rose-500);
       color: white;
     }
 
     &:hover:not(.active) {
-      background: rgba(255, 255, 255, 0.08);
+      background: $warm-gray-200;
     }
 
     .discount-badge {
       position: absolute;
       top: -8px;
       right: -8px;
-      background: $nebula-gold;
-      color: $cosmos-deep;
+      background: $gold-400;
+      color: $warm-gray-800;
       font-size: 0.625rem;
       font-weight: 700;
       padding: 0.125rem 0.375rem;
@@ -355,7 +361,7 @@ $font-body: 'Outfit', -apple-system, sans-serif;
 
 .currency-info {
   .currency-note {
-    color: rgba($stardust, 0.7);
+    color: $warm-gray-400;
     font-size: 0.8125rem;
     font-style: italic;
   }
@@ -367,15 +373,15 @@ $font-body: 'Outfit', -apple-system, sans-serif;
   margin-bottom: 2rem;
 
   span {
-    color: $stardust;
+    color: $warm-gray-700;
     margin-right: 1rem;
     font-weight: 500;
   }
 
   .currency-btn {
-    background: $glass-bg;
-    color: $stardust;
-    border: 1px solid $glass-border;
+    background: #ffffff;
+    color: $warm-gray-600;
+    border: 1px solid $warm-gray-200;
     padding: 0.5rem 1.25rem;
     border-radius: 0.5rem;
     cursor: pointer;
@@ -386,14 +392,14 @@ $font-body: 'Outfit', -apple-system, sans-serif;
     transition: all 0.3s ease;
 
     &.active {
-      background: linear-gradient(135deg, $nebula-pink, $aurora-purple);
+      background: linear-gradient(135deg, $pink-500, $rose-500);
       color: white;
       border-color: transparent;
     }
 
     &:hover:not(.active) {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: $aurora-purple;
+      background: $rose-50;
+      border-color: $rose-200;
     }
   }
 }
@@ -401,7 +407,7 @@ $font-body: 'Outfit', -apple-system, sans-serif;
 // Savings text styles
 .savings-text {
   display: inline-block;
-  background: linear-gradient(135deg, $aurora-cyan, $success);
+  background: linear-gradient(135deg, $success, $pink-500);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -410,7 +416,7 @@ $font-body: 'Outfit', -apple-system, sans-serif;
 }
 
 .monthly-equivalent {
-  color: rgba($stardust, 0.7);
+  color: $warm-gray-400;
   font-size: 0.875rem;
 }
 
@@ -423,12 +429,12 @@ $font-body: 'Outfit', -apple-system, sans-serif;
 }
 
 .plan-card {
-  background: $glass-bg;
-  border: 1px solid $glass-border;
+  background: #ffffff;
+  border: 1px solid $warm-gray-200;
   border-radius: 1.5rem;
   padding: 2rem;
   position: relative;
-  backdrop-filter: blur(20px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   animation: slide-up 0.6s ease-out backwards;
 
@@ -438,19 +444,19 @@ $font-body: 'Outfit', -apple-system, sans-serif;
 
   &:hover {
     transform: translateY(-8px);
-    border-color: $aurora-purple;
-    box-shadow: 0 20px 60px rgba(199, 125, 255, 0.15);
+    border-color: $rose-300;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
   }
 
   &.current-plan {
-    border-color: $nebula-pink;
-    background: linear-gradient(135deg, rgba(255, 107, 157, 0.1), rgba(199, 125, 255, 0.05));
+    border-color: $pink-400;
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.05), rgba(244, 63, 94, 0.02));
   }
 
   &.popular {
-    border-color: $nebula-gold;
+    border-color: $gold-400;
     transform: scale(1.02);
-    animation: glow-pulse 3s ease-in-out infinite;
+    box-shadow: 0 8px 24px rgba(251, 191, 36, 0.2);
 
     &:hover {
       transform: scale(1.02) translateY(-8px);
@@ -462,15 +468,15 @@ $font-body: 'Outfit', -apple-system, sans-serif;
     top: -14px;
     left: 50%;
     transform: translateX(-50%);
-    background: linear-gradient(135deg, $nebula-gold, $nebula-coral);
-    color: $cosmos-deep;
+    background: linear-gradient(135deg, $gold-400, $gold-500);
+    color: $warm-gray-800;
     padding: 0.5rem 1.5rem;
     border-radius: 2rem;
     font-size: 0.8rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    box-shadow: 0 4px 20px rgba(255, 215, 107, 0.4);
+    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
   }
 
   .current-badge {
@@ -478,7 +484,7 @@ $font-body: 'Outfit', -apple-system, sans-serif;
     top: -14px;
     left: 50%;
     transform: translateX(-50%);
-    background: linear-gradient(135deg, $nebula-pink, $aurora-purple);
+    background: linear-gradient(135deg, $pink-500, $rose-500);
     color: white;
     padding: 0.5rem 1.5rem;
     border-radius: 2rem;
@@ -486,20 +492,20 @@ $font-body: 'Outfit', -apple-system, sans-serif;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    box-shadow: 0 4px 20px rgba(255, 107, 157, 0.4);
+    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
   }
 
   .plan-header {
     text-align: center;
     margin-bottom: 2rem;
     padding-bottom: 1.5rem;
-    border-bottom: 1px solid $glass-border;
+    border-bottom: 1px solid $warm-gray-200;
 
     .plan-name {
       font-family: $font-display;
       font-size: 1.75rem;
-      font-weight: 600;
-      color: $moonlight;
+      font-weight: 400;
+      color: $warm-gray-800;
       margin-bottom: 1rem;
     }
 
@@ -509,20 +515,18 @@ $font-body: 'Outfit', -apple-system, sans-serif;
       .price-amount {
         font-family: $font-display;
         font-size: 3rem;
-        font-weight: 700;
-        color: $nebula-pink;
+        font-weight: 400;
+        color: $pink-500;
       }
 
       .price-period {
-        color: $stardust;
-        opacity: 0.7;
+        color: $warm-gray-500;
         font-size: 1rem;
       }
     }
 
     .plan-description {
-      color: $stardust;
-      opacity: 0.6;
+      color: $warm-gray-400;
       font-size: 0.9rem;
     }
   }
@@ -533,8 +537,8 @@ $font-body: 'Outfit', -apple-system, sans-serif;
     h4 {
       font-family: $font-display;
       font-size: 1.1rem;
-      font-weight: 600;
-      color: $moonlight;
+      font-weight: 400;
+      color: $warm-gray-800;
       margin-bottom: 1rem;
     }
 
@@ -547,7 +551,7 @@ $font-body: 'Outfit', -apple-system, sans-serif;
         display: flex;
         align-items: center;
         margin-bottom: 0.75rem;
-        color: $stardust;
+        color: $warm-gray-600;
         font-size: 0.9rem;
 
         .feature-icon {
@@ -566,8 +570,8 @@ $font-body: 'Outfit', -apple-system, sans-serif;
     h4 {
       font-family: $font-display;
       font-size: 1.1rem;
-      font-weight: 600;
-      color: $moonlight;
+      font-weight: 400;
+      color: $warm-gray-800;
       margin-bottom: 1rem;
     }
 
@@ -577,20 +581,19 @@ $font-body: 'Outfit', -apple-system, sans-serif;
         justify-content: space-between;
         align-items: center;
         padding: 0.5rem 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        border-bottom: 1px solid $warm-gray-100;
 
         &:last-child {
           border-bottom: none;
         }
 
         .limit-label {
-          color: $stardust;
-          opacity: 0.7;
+          color: $warm-gray-500;
           font-size: 0.875rem;
         }
 
         .limit-value {
-          color: $moonlight;
+          color: $warm-gray-800;
           font-weight: 600;
           font-size: 0.875rem;
         }
@@ -614,37 +617,36 @@ $font-body: 'Outfit', -apple-system, sans-serif;
     }
 
     .btn-select-plan {
-      background: linear-gradient(135deg, $nebula-pink, $aurora-purple);
+      background: linear-gradient(135deg, $pink-500, $rose-500);
       color: white;
 
       &:hover:not(:disabled) {
         transform: translateY(-2px);
-        box-shadow: 0 10px 30px rgba(255, 107, 157, 0.4);
+        box-shadow: 0 8px 24px rgba(236, 72, 153, 0.35);
       }
 
       &:disabled {
-        background: rgba(255, 255, 255, 0.1);
-        color: $stardust;
-        opacity: 0.5;
+        background: $warm-gray-200;
+        color: $warm-gray-400;
         cursor: not-allowed;
       }
     }
 
     .btn-current-plan {
-      background: rgba(110, 231, 183, 0.2);
+      background: $success-light;
       color: $success;
-      border: 1px solid rgba(110, 231, 183, 0.4);
+      border: 1px solid rgba(16, 185, 129, 0.4);
       cursor: default;
     }
 
     .btn-upgrade-plan {
-      background: linear-gradient(135deg, $nebula-gold, $nebula-coral);
-      color: $cosmos-deep;
+      background: linear-gradient(135deg, $gold-400, $gold-500);
+      color: $warm-gray-800;
       margin-top: 0.75rem;
 
       &:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 30px rgba(255, 215, 107, 0.4);
+        box-shadow: 0 8px 24px rgba(251, 191, 36, 0.35);
       }
     }
   }
@@ -658,18 +660,18 @@ $font-body: 'Outfit', -apple-system, sans-serif;
   h2 {
     font-family: $font-display;
     font-size: 2rem;
-    font-weight: 700;
+    font-weight: 400;
     text-align: center;
-    color: $moonlight;
+    color: $warm-gray-800;
     margin-bottom: 2rem;
   }
 
   .comparison-table {
     overflow-x: auto;
-    background: $glass-bg;
-    border: 1px solid $glass-border;
+    background: #ffffff;
+    border: 1px solid $warm-gray-200;
     border-radius: 1rem;
-    backdrop-filter: blur(20px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 
     table {
       width: 100%;
@@ -678,12 +680,12 @@ $font-body: 'Outfit', -apple-system, sans-serif;
       th, td {
         padding: 1rem 1.5rem;
         text-align: center;
-        border-bottom: 1px solid $glass-border;
+        border-bottom: 1px solid $warm-gray-100;
       }
 
       th {
-        background: rgba(0, 0, 0, 0.2);
-        color: $moonlight;
+        background: $warm-gray-50;
+        color: $warm-gray-800;
         font-weight: 600;
         font-size: 0.9rem;
 
@@ -693,7 +695,7 @@ $font-body: 'Outfit', -apple-system, sans-serif;
       }
 
       td {
-        color: $stardust;
+        color: $warm-gray-600;
         font-size: 0.9rem;
 
         &:first-child {
@@ -706,7 +708,7 @@ $font-body: 'Outfit', -apple-system, sans-serif;
         transition: background 0.2s ease;
 
         &:hover {
-          background: rgba(255, 255, 255, 0.02);
+          background: $warm-gray-50;
         }
 
         &:last-child td {
@@ -721,8 +723,7 @@ $font-body: 'Outfit', -apple-system, sans-serif;
       }
 
       .feature-not-included {
-        color: $stardust;
-        opacity: 0.3;
+        color: $warm-gray-300;
         font-size: 1.25rem;
       }
     }
@@ -736,9 +737,9 @@ $font-body: 'Outfit', -apple-system, sans-serif;
   h2 {
     font-family: $font-display;
     font-size: 2rem;
-    font-weight: 700;
+    font-weight: 400;
     text-align: center;
-    color: $moonlight;
+    color: $warm-gray-800;
     margin-bottom: 2rem;
   }
 
@@ -747,29 +748,29 @@ $font-body: 'Outfit', -apple-system, sans-serif;
     margin: 0 auto;
 
     .faq-item {
-      background: $glass-bg;
-      border: 1px solid $glass-border;
+      background: #ffffff;
+      border: 1px solid $warm-gray-200;
       border-radius: 1rem;
       padding: 1.5rem;
       margin-bottom: 1rem;
-      backdrop-filter: blur(20px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
       transition: all 0.3s ease;
 
       &:hover {
-        border-color: $aurora-purple;
+        border-color: $rose-200;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
       }
 
       h3 {
         font-family: $font-display;
         font-size: 1.1rem;
-        font-weight: 600;
-        color: $moonlight;
+        font-weight: 400;
+        color: $warm-gray-800;
         margin-bottom: 0.75rem;
       }
 
       p {
-        color: $stardust;
-        opacity: 0.8;
+        color: $warm-gray-500;
         font-size: 0.95rem;
         line-height: 1.6;
         margin: 0;
@@ -781,8 +782,8 @@ $font-body: 'Outfit', -apple-system, sans-serif;
 // ─── Payment Modal ───────────────────────────────────────────────────────────
 .payment-modal-content {
   .selected-plan-summary {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid $glass-border;
+    background: $warm-gray-50;
+    border: 1px solid $warm-gray-200;
     border-radius: 1rem;
     padding: 1.5rem;
     margin-bottom: 2rem;
@@ -790,16 +791,16 @@ $font-body: 'Outfit', -apple-system, sans-serif;
     h3 {
       font-family: $font-display;
       font-size: 1.25rem;
-      font-weight: 600;
-      color: $moonlight;
+      font-weight: 400;
+      color: $warm-gray-800;
       margin-bottom: 0.5rem;
     }
 
     .plan-price {
       font-family: $font-display;
       font-size: 1.75rem;
-      font-weight: 700;
-      color: $nebula-pink;
+      font-weight: 400;
+      color: $pink-500;
       margin-bottom: 1rem;
     }
 
@@ -809,7 +810,7 @@ $font-body: 'Outfit', -apple-system, sans-serif;
       margin: 0;
 
       li {
-        color: $stardust;
+        color: $warm-gray-600;
         font-size: 0.9rem;
         margin-bottom: 0.5rem;
 
@@ -827,8 +828,8 @@ $font-body: 'Outfit', -apple-system, sans-serif;
     h4 {
       font-family: $font-display;
       font-size: 1.1rem;
-      font-weight: 600;
-      color: $moonlight;
+      font-weight: 400;
+      color: $warm-gray-800;
       margin-bottom: 1rem;
     }
 
@@ -840,10 +841,10 @@ $font-body: 'Outfit', -apple-system, sans-serif;
         display: flex;
         align-items: center;
         padding: 1rem 1.5rem;
-        background: $glass-bg;
-        border: 1px solid $glass-border;
+        background: #ffffff;
+        border: 1px solid $warm-gray-200;
         border-radius: 0.75rem;
-        color: $stardust;
+        color: $warm-gray-700;
         font-family: $font-body;
         font-size: 1rem;
         font-weight: 500;
@@ -851,8 +852,8 @@ $font-body: 'Outfit', -apple-system, sans-serif;
         transition: all 0.3s ease;
 
         &:hover:not(:disabled) {
-          border-color: $aurora-purple;
-          background: rgba(255, 255, 255, 0.05);
+          border-color: $rose-300;
+          background: $rose-50;
         }
 
         &:disabled {
@@ -874,8 +875,8 @@ $font-body: 'Outfit', -apple-system, sans-serif;
 
     .stripe-card-element {
       padding: 1rem;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid $glass-border;
+      background: $warm-gray-50;
+      border: 1px solid $warm-gray-200;
       border-radius: 0.5rem;
       margin-bottom: 1rem;
     }
@@ -883,7 +884,7 @@ $font-body: 'Outfit', -apple-system, sans-serif;
     .btn-primary {
       width: 100%;
       padding: 1rem;
-      background: linear-gradient(135deg, $nebula-pink, $aurora-purple);
+      background: linear-gradient(135deg, $pink-500, $rose-500);
       border: none;
       border-radius: 0.75rem;
       color: white;
@@ -895,7 +896,7 @@ $font-body: 'Outfit', -apple-system, sans-serif;
 
       &:hover:not(:disabled) {
         transform: translateY(-2px);
-        box-shadow: 0 10px 30px rgba(255, 107, 157, 0.4);
+        box-shadow: 0 8px 24px rgba(236, 72, 153, 0.35);
       }
 
       &:disabled {
@@ -966,7 +967,7 @@ $font-body: 'Outfit', -apple-system, sans-serif;
 .btn-select-plan:focus,
 .btn-upgrade-plan:focus,
 .payment-option:focus {
-  outline: 2px solid $aurora-purple;
+  outline: 2px solid $pink-400;
   outline-offset: 2px;
 }
 

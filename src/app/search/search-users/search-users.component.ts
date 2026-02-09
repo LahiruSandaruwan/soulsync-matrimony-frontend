@@ -259,47 +259,55 @@ interface SearchResult {
     </div>
   `,
   styles: [`
-    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
 
     :host {
-      --cosmos-deep: #0f0a1e;
-      --cosmos-mid: #1a1333;
-      --cosmos-light: #2d2248;
-      --nebula-pink: #ff6b9d;
-      --nebula-coral: #ff8a7a;
-      --nebula-gold: #ffd76b;
-      --stardust: #e8e0ff;
-      --moonlight: #f4f0ff;
-      --aurora-cyan: #7df3e1;
-      --aurora-purple: #c77dff;
-      --success: #6ee7b7;
-      --glass-bg: rgba(255, 255, 255, 0.03);
-      --glass-border: rgba(255, 255, 255, 0.08);
-      --font-display: 'Cormorant Garamond', Georgia, serif;
-      --font-body: 'Outfit', -apple-system, sans-serif;
+      --cream-white: #FFFBF7;
+      --warm-gray-50: #faf8f6;
+      --warm-gray-100: #f5f3f0;
+      --warm-gray-200: #e8e5e1;
+      --warm-gray-300: #d4d0ca;
+      --warm-gray-400: #a8a29e;
+      --warm-gray-500: #78746e;
+      --warm-gray-600: #5c5955;
+      --warm-gray-700: #45433f;
+      --warm-gray-800: #2d2b28;
+      --rose-50: #fff1f2;
+      --rose-100: #ffe4e6;
+      --rose-200: #fecdd3;
+      --rose-300: #fda4af;
+      --rose-400: #fb7185;
+      --rose-500: #f43f5e;
+      --pink-400: #f472b6;
+      --pink-500: #ec4899;
+      --pink-600: #db2777;
+      --success: #10b981;
+      --font-display: 'DM Serif Display', Georgia, serif;
+      --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
     .search-page {
       min-height: calc(100vh - 80px);
       padding: 2rem;
       font-family: var(--font-body);
-      color: var(--stardust);
+      color: var(--warm-gray-700);
+      background: linear-gradient(180deg, var(--cream-white) 0%, var(--warm-gray-50) 100%);
     }
 
     .search-header {
       margin-bottom: 2rem;
       padding: 1.5rem 2rem;
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
+      background: #ffffff;
+      border: 1px solid var(--warm-gray-200);
       border-radius: 1.5rem;
-      backdrop-filter: blur(20px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
 
     .search-header h1 {
       font-family: var(--font-display);
       font-size: clamp(1.75rem, 4vw, 2.5rem);
-      font-weight: 600;
-      color: var(--moonlight);
+      font-weight: 400;
+      color: var(--warm-gray-800);
       margin: 0 0 0.5rem 0;
       display: flex;
       align-items: center;
@@ -312,17 +320,16 @@ interface SearchResult {
 
     .search-header p {
       font-size: 0.95rem;
-      color: var(--stardust);
-      opacity: 0.7;
+      color: var(--warm-gray-500);
       margin: 0;
     }
 
     .search-form-card {
       padding: 2rem;
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
+      background: #ffffff;
+      border: 1px solid var(--warm-gray-200);
       border-radius: 1.5rem;
-      backdrop-filter: blur(20px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
       margin-bottom: 2rem;
     }
 
@@ -345,8 +352,8 @@ interface SearchResult {
 
     .filter-label {
       font-size: 0.85rem;
-      font-weight: 500;
-      color: var(--stardust);
+      font-weight: 600;
+      color: var(--warm-gray-600);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
@@ -354,31 +361,31 @@ interface SearchResult {
     .filter-input,
     .filter-select {
       padding: 0.75rem 1rem;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--glass-border);
+      background: var(--warm-gray-50);
+      border: 1px solid var(--warm-gray-200);
       border-radius: 0.75rem;
-      color: var(--moonlight);
+      color: var(--warm-gray-700);
       font-family: var(--font-body);
       font-size: 0.95rem;
       transition: all 0.3s ease;
     }
 
     .filter-input::placeholder {
-      color: var(--stardust);
-      opacity: 0.5;
+      color: var(--warm-gray-400);
     }
 
     .filter-input:focus,
     .filter-select:focus {
       outline: none;
-      border-color: var(--aurora-purple);
-      box-shadow: 0 0 0 3px rgba(199, 125, 255, 0.15);
+      border-color: var(--pink-400);
+      box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
+      background: #ffffff;
     }
 
     .filter-select {
       cursor: pointer;
       appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23e8e0ff'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2378746e'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 0.75rem center;
       background-size: 1.25rem;
@@ -386,8 +393,8 @@ interface SearchResult {
     }
 
     .filter-select option {
-      background: var(--cosmos-mid);
-      color: var(--moonlight);
+      background: #ffffff;
+      color: var(--warm-gray-700);
       padding: 0.5rem;
     }
 
@@ -403,8 +410,7 @@ interface SearchResult {
     }
 
     .range-separator {
-      color: var(--stardust);
-      opacity: 0.6;
+      color: var(--warm-gray-500);
     }
 
     .form-actions {
@@ -412,7 +418,7 @@ interface SearchResult {
       justify-content: space-between;
       align-items: center;
       padding-top: 1.5rem;
-      border-top: 1px solid var(--glass-border);
+      border-top: 1px solid var(--warm-gray-200);
       margin-top: 1.5rem;
     }
 
@@ -421,10 +427,10 @@ interface SearchResult {
       align-items: center;
       gap: 0.5rem;
       padding: 0.75rem 1.5rem;
-      background: transparent;
-      border: 1px solid var(--glass-border);
+      background: #ffffff;
+      border: 1px solid var(--warm-gray-200);
       border-radius: 0.75rem;
-      color: var(--stardust);
+      color: var(--warm-gray-600);
       font-family: var(--font-body);
       font-weight: 500;
       cursor: pointer;
@@ -432,8 +438,9 @@ interface SearchResult {
     }
 
     .btn-reset:hover {
-      background: rgba(255, 255, 255, 0.05);
-      border-color: var(--aurora-purple);
+      background: var(--rose-50);
+      border-color: var(--rose-200);
+      color: var(--pink-600);
     }
 
     .btn-search {
@@ -441,7 +448,7 @@ interface SearchResult {
       align-items: center;
       gap: 0.5rem;
       padding: 0.75rem 2rem;
-      background: linear-gradient(135deg, var(--nebula-pink), var(--aurora-purple));
+      background: linear-gradient(135deg, var(--pink-500), var(--rose-500));
       border: none;
       border-radius: 0.75rem;
       color: white;
@@ -453,7 +460,7 @@ interface SearchResult {
 
     .btn-search:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 10px 30px rgba(255, 107, 157, 0.4);
+      box-shadow: 0 10px 30px rgba(236, 72, 153, 0.35);
     }
 
     .btn-search:disabled {
@@ -494,8 +501,8 @@ interface SearchResult {
     .results-header h2 {
       font-family: var(--font-display);
       font-size: 1.5rem;
-      font-weight: 600;
-      color: var(--moonlight);
+      font-weight: 400;
+      color: var(--warm-gray-800);
       margin: 0;
     }
 
@@ -506,10 +513,10 @@ interface SearchResult {
 
     .sort-btn {
       padding: 0.5rem 1rem;
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
+      background: #ffffff;
+      border: 1px solid var(--warm-gray-200);
       border-radius: 0.5rem;
-      color: var(--stardust);
+      color: var(--warm-gray-600);
       font-family: var(--font-body);
       font-size: 0.85rem;
       cursor: pointer;
@@ -518,9 +525,9 @@ interface SearchResult {
 
     .sort-btn:hover,
     .sort-btn.active {
-      background: rgba(199, 125, 255, 0.15);
-      border-color: var(--aurora-purple);
-      color: var(--moonlight);
+      background: var(--rose-50);
+      border-color: var(--rose-200);
+      color: var(--pink-600);
     }
 
     .results-grid {
@@ -530,22 +537,23 @@ interface SearchResult {
     }
 
     .result-card {
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
+      background: #ffffff;
+      border: 1px solid var(--warm-gray-200);
       border-radius: 1rem;
       overflow: hidden;
       transition: all 0.3s ease;
     }
 
     .result-card:hover {
-      border-color: var(--aurora-purple);
+      border-color: var(--rose-300);
       transform: translateY(-4px);
-      box-shadow: 0 20px 40px rgba(199, 125, 255, 0.15);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
     }
 
     .compatibility-info {
       padding: 1rem;
-      background: rgba(0, 0, 0, 0.2);
+      background: var(--warm-gray-50);
+      border-top: 1px solid var(--warm-gray-100);
     }
 
     .score-row {
@@ -557,19 +565,18 @@ interface SearchResult {
 
     .score-label {
       font-size: 0.85rem;
-      color: var(--stardust);
-      opacity: 0.7;
+      color: var(--warm-gray-500);
     }
 
     .score-value {
       font-size: 0.9rem;
       font-weight: 600;
-      color: var(--nebula-pink);
+      color: var(--pink-500);
     }
 
     .score-bar {
       height: 6px;
-      background: rgba(255, 255, 255, 0.1);
+      background: var(--warm-gray-200);
       border-radius: 3px;
       overflow: hidden;
       margin-bottom: 0.75rem;
@@ -577,15 +584,14 @@ interface SearchResult {
 
     .score-fill {
       height: 100%;
-      background: linear-gradient(90deg, var(--nebula-pink), var(--aurora-purple));
+      background: linear-gradient(90deg, var(--pink-500), var(--rose-400));
       border-radius: 3px;
       transition: width 0.5s ease;
     }
 
     .distance-info {
       font-size: 0.85rem;
-      color: var(--stardust);
-      opacity: 0.7;
+      color: var(--warm-gray-500);
     }
 
     .matching-factors {
@@ -594,8 +600,7 @@ interface SearchResult {
 
     .factors-label {
       font-size: 0.75rem;
-      color: var(--stardust);
-      opacity: 0.6;
+      color: var(--warm-gray-500);
       margin: 0 0 0.5rem 0;
     }
 
@@ -607,11 +612,11 @@ interface SearchResult {
 
     .factor-tag {
       padding: 0.25rem 0.5rem;
-      background: rgba(199, 125, 255, 0.15);
-      border: 1px solid rgba(199, 125, 255, 0.3);
+      background: var(--rose-50);
+      border: 1px solid var(--rose-200);
       border-radius: 0.25rem;
       font-size: 0.7rem;
-      color: var(--aurora-purple);
+      color: var(--pink-600);
     }
 
     .load-more {
@@ -624,10 +629,10 @@ interface SearchResult {
       align-items: center;
       gap: 0.5rem;
       padding: 0.75rem 2rem;
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
+      background: #ffffff;
+      border: 1px solid var(--warm-gray-200);
       border-radius: 0.75rem;
-      color: var(--stardust);
+      color: var(--warm-gray-600);
       font-family: var(--font-body);
       font-weight: 500;
       cursor: pointer;
@@ -635,8 +640,9 @@ interface SearchResult {
     }
 
     .btn-load-more:hover:not(:disabled) {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: var(--aurora-purple);
+      background: var(--rose-50);
+      border-color: var(--rose-200);
+      color: var(--pink-600);
     }
 
     .btn-load-more:disabled {
@@ -647,30 +653,28 @@ interface SearchResult {
     .empty-state {
       text-align: center;
       padding: 4rem 2rem;
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
+      background: #ffffff;
+      border: 1px solid var(--warm-gray-200);
       border-radius: 1.5rem;
-      backdrop-filter: blur(20px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
 
     .empty-icon {
       font-size: 4rem;
       margin-bottom: 1rem;
-      filter: drop-shadow(0 0 20px var(--nebula-pink));
     }
 
     .empty-state h3 {
       font-family: var(--font-display);
       font-size: 1.5rem;
-      font-weight: 600;
-      color: var(--moonlight);
+      font-weight: 400;
+      color: var(--warm-gray-800);
       margin: 0 0 0.5rem 0;
     }
 
     .empty-state p {
       font-size: 1rem;
-      color: var(--stardust);
-      opacity: 0.7;
+      color: var(--warm-gray-500);
       margin: 0 0 1.5rem 0;
     }
 

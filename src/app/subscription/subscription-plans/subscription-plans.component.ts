@@ -257,8 +257,8 @@ export class SubscriptionPlansComponent implements OnInit, OnDestroy, AfterViewI
             price_yearly: plan.prices?.yearly || 0,
             duration_months: 1,
             features: plan.features || [],
-            limits: {},
-            popular: plan.isPopular || false
+            limits: plan.limits || {},
+            popular: plan.popular || false
           }));
 
           this.loading = false;

@@ -1,125 +1,74 @@
-// ============================================
-// SoulSync Profile View - Celestial Romance Theme
-// ============================================
+// ═══════════════════════════════════════════════════════════════════════════
+// SOULSYNC PROFILE VIEW - Rose Petal Light Theme
+// Clean, elegant profile display for matrimonial platform
+// ═══════════════════════════════════════════════════════════════════════════
 
-// Import Fonts
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600;700&display=swap');
 
-// Design Tokens
-$font-display: 'Cormorant Garamond', Georgia, serif;
-$font-body: 'Outfit', system-ui, sans-serif;
+// ─── Design Tokens ───────────────────────────────────────────────────────────
+$font-display: 'DM Serif Display', Georgia, serif;
+$font-body: 'DM Sans', system-ui, -apple-system, sans-serif;
 
-// Celestial Color Palette
-$cosmic-void: #0a0a0f;
-$cosmic-deep: #0d0d14;
-$cosmic-surface: #12121a;
-$cosmic-elevated: #1a1a24;
+// Color Palette
+$cream-white: #FFFBF7;
+$soft-white: #FFFFFF;
+$warm-gray-50: #FAF9F7;
+$warm-gray-100: #F5F3F0;
+$warm-gray-200: #E8E5E1;
+$warm-gray-300: #D4D0CA;
+$warm-gray-400: #A8A29E;
+$warm-gray-500: #78716C;
+$warm-gray-600: #57534E;
+$warm-gray-700: #44403C;
+$warm-gray-800: #292524;
+$warm-gray-900: #1C1917;
 
-$nebula-purple: #6b21a8;
-$nebula-violet: #7c3aed;
-$nebula-rose: #db2777;
-$nebula-pink: #ec4899;
-$nebula-coral: #f97316;
+// Rose Accents
+$rose-50: #FFF1F2;
+$rose-100: #FFE4E6;
+$rose-200: #FECDD3;
+$rose-300: #FDA4AF;
+$rose-400: #FB7185;
+$rose-500: #F43F5E;
+$rose-primary: #EC4899;
+$rose-dark: #DB2777;
 
-$stardust-gold: #fbbf24;
-$stardust-silver: #94a3b8;
-$stardust-white: #f8fafc;
+// Secondary Accents
+$gold-soft: #F59E0B;
+$emerald-soft: #10B981;
+$sky-soft: #0EA5E9;
+$violet-soft: #8B5CF6;
 
-$aurora-teal: #14b8a6;
-$aurora-cyan: #06b6d4;
-$aurora-blue: #3b82f6;
+// Shadows
+$shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+$shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
+$shadow-xl: 0 16px 40px rgba(0, 0, 0, 0.1);
+$shadow-rose: 0 4px 20px rgba(236, 72, 153, 0.15);
 
-// Gradients
-$gradient-cosmic: linear-gradient(135deg, $nebula-purple 0%, $nebula-rose 50%, $nebula-coral 100%);
-$gradient-aurora: linear-gradient(135deg, $aurora-teal 0%, $aurora-cyan 50%, $aurora-blue 100%);
-$gradient-stardust: linear-gradient(135deg, $stardust-gold 0%, $nebula-pink 100%);
-$gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-
-// Glassmorphism
-@mixin glass-card {
-  background: rgba(18, 18, 26, 0.8);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-}
-
-@mixin glass-hover {
-  &:hover {
-    border-color: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 8px 32px rgba(107, 33, 168, 0.2);
-    transform: translateY(-2px);
-  }
-}
-
-// ============================================
-// Main Container
-// ============================================
+// ─── Main Container ──────────────────────────────────────────────────────────
 .profile-container {
   min-height: 100vh;
-  position: relative;
+  background: linear-gradient(180deg, $cream-white 0%, $warm-gray-50 100%);
   font-family: $font-body;
-  color: $stardust-white;
-  overflow-x: hidden;
-  background: $cosmic-void;
+  color: $warm-gray-800;
+  position: relative;
 }
 
-// ============================================
-// Cosmic Background
-// ============================================
+// Remove the cosmic background entirely for light theme
 .cosmic-bg {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background: radial-gradient(ellipse at 20% 20%, rgba(107, 33, 168, 0.15) 0%, transparent 50%),
-              radial-gradient(ellipse at 80% 80%, rgba(219, 39, 119, 0.1) 0%, transparent 50%),
-              radial-gradient(ellipse at 50% 50%, rgba(14, 165, 233, 0.08) 0%, transparent 60%);
-  pointer-events: none;
-
-  .stars {
-    position: absolute;
-    inset: 0;
-    background-image:
-      radial-gradient(2px 2px at 20px 30px, rgba(255, 255, 255, 0.8), transparent),
-      radial-gradient(2px 2px at 40px 70px, rgba(255, 255, 255, 0.5), transparent),
-      radial-gradient(1px 1px at 90px 40px, rgba(255, 255, 255, 0.6), transparent),
-      radial-gradient(2px 2px at 130px 80px, rgba(255, 255, 255, 0.4), transparent),
-      radial-gradient(1px 1px at 160px 120px, rgba(255, 255, 255, 0.7), transparent);
-    background-repeat: repeat;
-    background-size: 200px 200px;
-    animation: twinkle 8s ease-in-out infinite alternate;
-  }
-
-  .nebula {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at 30% 70%, rgba(236, 72, 153, 0.08) 0%, transparent 40%),
-                radial-gradient(ellipse at 70% 30%, rgba(124, 58, 237, 0.08) 0%, transparent 40%);
-    animation: nebula-drift 20s ease-in-out infinite alternate;
-  }
+  display: none;
 }
 
-@keyframes twinkle {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
-}
-
-@keyframes nebula-drift {
-  0% { transform: translate(0, 0) rotate(0deg); }
-  100% { transform: translate(20px, -20px) rotate(2deg); }
-}
-
-// ============================================
-// Loading State
-// ============================================
+// ─── Loading State ───────────────────────────────────────────────────────────
 .loading-overlay {
-  position: absolute;
+  position: fixed;
   inset: 0;
   z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: $cosmic-void;
+  background: $cream-white;
 
   .loading-content {
     text-align: center;
@@ -127,8 +76,8 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
 
   .cosmic-loader {
     position: relative;
-    width: 120px;
-    height: 120px;
+    width: 80px;
+    height: 80px;
     margin: 0 auto 24px;
 
     .orbit {
@@ -138,13 +87,13 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
       border-radius: 50%;
 
       &.orbit-1 {
-        border-top-color: $nebula-purple;
+        border-top-color: $rose-primary;
         animation: orbit 2s linear infinite;
       }
 
       &.orbit-2 {
-        inset: 15px;
-        border-right-color: $nebula-rose;
+        inset: 12px;
+        border-right-color: $rose-400;
         animation: orbit 1.5s linear infinite reverse;
       }
     }
@@ -154,16 +103,15 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 32px;
+      font-size: 28px;
       animation: pulse-glow 1.5s ease-in-out infinite;
     }
   }
 
   .loading-text {
-    font-family: $font-display;
-    font-size: 20px;
-    color: $stardust-silver;
-    letter-spacing: 2px;
+    font-size: 15px;
+    color: $warm-gray-500;
+    letter-spacing: 0.5px;
   }
 }
 
@@ -173,13 +121,11 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
 }
 
 @keyframes pulse-glow {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); filter: brightness(1); }
-  50% { transform: translate(-50%, -50%) scale(1.1); filter: brightness(1.3); }
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.1); }
 }
 
-// ============================================
-// Error State
-// ============================================
+// ─── Error State ─────────────────────────────────────────────────────────────
 .error-container {
   position: relative;
   z-index: 10;
@@ -190,30 +136,29 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
   padding: 24px;
 
   .error-card {
-    @include glass-card;
+    background: $soft-white;
+    border: 1px solid $warm-gray-200;
+    border-radius: 20px;
     padding: 48px;
     text-align: center;
     max-width: 400px;
+    box-shadow: $shadow-lg;
 
     .error-icon {
-      font-size: 64px;
+      font-size: 56px;
       margin-bottom: 24px;
-      animation: pulse-glow 2s ease-in-out infinite;
     }
 
     h2 {
       font-family: $font-display;
-      font-size: 28px;
-      font-weight: 600;
+      font-size: 1.75rem;
+      font-weight: 400;
       margin-bottom: 12px;
-      background: $gradient-cosmic;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      color: $warm-gray-900;
     }
 
     p {
-      color: $stardust-silver;
+      color: $warm-gray-500;
       margin-bottom: 32px;
       line-height: 1.6;
     }
@@ -225,7 +170,7 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
   align-items: center;
   gap: 8px;
   padding: 14px 32px;
-  background: $gradient-cosmic;
+  background: linear-gradient(135deg, $rose-primary, $rose-dark);
   color: white;
   border: none;
   border-radius: 12px;
@@ -237,13 +182,11 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(107, 33, 168, 0.4);
+    box-shadow: $shadow-rose;
   }
 }
 
-// ============================================
-// Toast Messages
-// ============================================
+// ─── Toast Messages ──────────────────────────────────────────────────────────
 .toast-message {
   position: fixed;
   top: 24px;
@@ -257,11 +200,12 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
   border-radius: 12px;
   font-weight: 500;
   animation: slideDown 0.3s ease;
+  box-shadow: $shadow-lg;
 
   &.success-toast {
-    background: rgba(20, 184, 166, 0.2);
-    border: 1px solid rgba(20, 184, 166, 0.3);
-    color: $aurora-teal;
+    background: #D1FAE5;
+    border: 1px solid #A7F3D0;
+    color: #065F46;
   }
 
   .toast-icon {
@@ -274,13 +218,11 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
   to { transform: translateX(-50%) translateY(0); opacity: 1; }
 }
 
-// ============================================
-// Profile Content
-// ============================================
+// ─── Profile Content ─────────────────────────────────────────────────────────
 .profile-content {
   position: relative;
   z-index: 10;
-  max-width: 1200px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 24px;
 
@@ -289,9 +231,7 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
   }
 }
 
-// ============================================
-// Header
-// ============================================
+// ─── Header ──────────────────────────────────────────────────────────────────
 .profile-header {
   display: flex;
   justify-content: space-between;
@@ -303,18 +243,18 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
     align-items: center;
     gap: 8px;
     padding: 10px 16px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: $soft-white;
+    border: 1px solid $warm-gray-200;
     border-radius: 10px;
-    color: $stardust-white;
+    color: $warm-gray-700;
     font-family: $font-body;
     font-size: 14px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.2);
+      background: $warm-gray-50;
+      border-color: $warm-gray-300;
     }
 
     svg {
@@ -329,15 +269,17 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
 
   .btn-report {
     padding: 10px;
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.2);
+    background: $soft-white;
+    border: 1px solid $warm-gray-200;
     border-radius: 10px;
-    color: #ef4444;
+    color: $warm-gray-500;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
 
     &:hover {
-      background: rgba(239, 68, 68, 0.2);
+      background: #FEE2E2;
+      border-color: #FECACA;
+      color: #DC2626;
     }
   }
 
@@ -346,7 +288,7 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
     align-items: center;
     gap: 8px;
     padding: 10px 16px;
-    background: $gradient-cosmic;
+    background: linear-gradient(135deg, $rose-primary, $rose-dark);
     border: none;
     border-radius: 10px;
     color: white;
@@ -359,18 +301,19 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(107, 33, 168, 0.3);
+      box-shadow: $shadow-rose;
     }
   }
 }
 
-// ============================================
-// Main Profile Card
-// ============================================
+// ─── Main Profile Card ───────────────────────────────────────────────────────
 .profile-card-main {
-  @include glass-card;
+  background: $soft-white;
+  border: 1px solid $warm-gray-200;
+  border-radius: 24px;
   overflow: hidden;
   margin-bottom: 32px;
+  box-shadow: $shadow-md;
 
   @media (min-width: 768px) {
     display: grid;
@@ -378,9 +321,10 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
   }
 }
 
-// Photo Gallery Section
+// ─── Photo Gallery Section ───────────────────────────────────────────────────
 .photo-gallery-section {
   position: relative;
+  background: $warm-gray-50;
 
   .main-photo-container {
     position: relative;
@@ -409,8 +353,8 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, rgba(107, 33, 168, 0.2) 0%, rgba(219, 39, 119, 0.15) 50%, rgba(249, 115, 22, 0.1) 100%);
-      border: 2px dashed rgba(255, 255, 255, 0.15);
+      background: linear-gradient(135deg, $rose-50 0%, $warm-gray-50 100%);
+      border: 2px dashed $warm-gray-300;
 
       .placeholder-content {
         text-align: center;
@@ -421,13 +365,13 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
         margin-bottom: 20px;
 
         svg {
-          stroke: rgba(255, 255, 255, 0.4);
+          stroke: $warm-gray-400;
         }
       }
 
       .placeholder-text {
         font-size: 16px;
-        color: rgba(255, 255, 255, 0.6);
+        color: $warm-gray-500;
         margin-bottom: 20px;
       }
 
@@ -436,7 +380,7 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
         align-items: center;
         gap: 8px;
         padding: 12px 24px;
-        background: $gradient-cosmic;
+        background: linear-gradient(135deg, $rose-primary, $rose-dark);
         border-radius: 10px;
         color: white;
         text-decoration: none;
@@ -446,7 +390,7 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
 
         &:hover {
           transform: translateY(-2px);
-          box-shadow: 0 4px 16px rgba(107, 33, 168, 0.4);
+          box-shadow: $shadow-rose;
         }
       }
     }
@@ -463,26 +407,26 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
 
     .nav-btn {
       pointer-events: all;
-      width: 48px;
-      height: 48px;
+      width: 44px;
+      height: 44px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: $soft-white;
+      border: 1px solid $warm-gray-200;
       border-radius: 50%;
-      color: white;
+      color: $warm-gray-700;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
+      box-shadow: $shadow-md;
 
       &:hover:not(:disabled) {
-        background: rgba(0, 0, 0, 0.7);
-        transform: scale(1.1);
+        background: $warm-gray-50;
+        transform: scale(1.05);
       }
 
       &:disabled {
-        opacity: 0.3;
+        opacity: 0.4;
         cursor: not-allowed;
       }
     }
@@ -494,11 +438,13 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
     left: 50%;
     transform: translateX(-50%);
     padding: 8px 16px;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(10px);
+    background: $soft-white;
+    border: 1px solid $warm-gray-200;
     border-radius: 20px;
     font-size: 13px;
-    color: white;
+    color: $warm-gray-600;
+    font-weight: 500;
+    box-shadow: $shadow-sm;
   }
 
   .online-status {
@@ -509,25 +455,28 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
     align-items: center;
     gap: 6px;
     padding: 6px 12px;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(10px);
+    background: $soft-white;
+    border: 1px solid $warm-gray-200;
     border-radius: 20px;
     font-size: 12px;
-    color: $stardust-silver;
+    color: $warm-gray-500;
+    box-shadow: $shadow-sm;
 
     .status-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: $stardust-silver;
+      background: $warm-gray-400;
     }
 
     &.online {
-      color: $aurora-teal;
+      color: $emerald-soft;
+      border-color: #A7F3D0;
+      background: #ECFDF5;
 
       .status-dot {
-        background: $aurora-teal;
-        box-shadow: 0 0 8px $aurora-teal;
+        background: $emerald-soft;
+        box-shadow: 0 0 8px $emerald-soft;
       }
     }
   }
@@ -538,18 +487,19 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
   gap: 8px;
   padding: 16px;
   overflow-x: auto;
-  background: rgba(0, 0, 0, 0.3);
+  background: $soft-white;
+  border-top: 1px solid $warm-gray-100;
 
   &::-webkit-scrollbar {
     height: 4px;
   }
 
   &::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
+    background: $warm-gray-100;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
+    background: $warm-gray-300;
     border-radius: 2px;
   }
 
@@ -561,7 +511,9 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
     overflow: hidden;
     border: 2px solid transparent;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
+    background: none;
+    padding: 0;
 
     img {
       width: 100%;
@@ -570,17 +522,17 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
     }
 
     &.active {
-      border-color: $nebula-violet;
-      box-shadow: 0 0 12px rgba(124, 58, 237, 0.4);
+      border-color: $rose-primary;
+      box-shadow: 0 0 0 2px rgba($rose-primary, 0.2);
     }
 
     &:hover:not(.active) {
-      border-color: rgba(255, 255, 255, 0.3);
+      border-color: $warm-gray-300;
     }
   }
 }
 
-// Profile Info Section
+// ─── Profile Info Section ────────────────────────────────────────────────────
 .profile-info-section {
   padding: 32px;
   display: flex;
@@ -597,23 +549,21 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
 
   .profile-name {
     font-family: $font-display;
-    font-size: 36px;
-    font-weight: 600;
+    font-size: 2rem;
+    font-weight: 400;
     margin: 0 0 8px;
-    background: $gradient-cosmic;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: $rose-dark;
 
     @media (max-width: 767px) {
-      font-size: 28px;
+      font-size: 1.75rem;
     }
   }
 
   .profile-tagline {
     font-size: 18px;
-    color: $stardust-silver;
+    color: $warm-gray-600;
     margin: 0 0 12px;
+    font-weight: 500;
   }
 
   .profile-location {
@@ -621,16 +571,16 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
     align-items: center;
     gap: 8px;
     font-size: 15px;
-    color: rgba(255, 255, 255, 0.7);
+    color: $warm-gray-500;
     margin: 0;
 
     svg {
-      stroke: $nebula-rose;
+      stroke: $rose-primary;
     }
   }
 }
 
-// Compatibility/Completion Badge
+// ─── Compatibility/Completion Badge ──────────────────────────────────────────
 .compatibility-badge,
 .completion-badge {
   display: flex;
@@ -638,9 +588,9 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
   gap: 16px;
   margin-bottom: 32px;
   padding: 16px;
-  background: rgba(255, 255, 255, 0.05);
+  background: $warm-gray-50;
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid $warm-gray-200;
 }
 
 .score-ring,
@@ -656,7 +606,7 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
 
     .circle-bg {
       fill: none;
-      stroke: rgba(255, 255, 255, 0.15);
+      stroke: $warm-gray-200;
       stroke-width: 4;
     }
 
@@ -676,40 +626,26 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
     transform: translate(-50%, -50%);
     font-size: 15px;
     font-weight: 700;
-    color: $stardust-white;
+    color: $warm-gray-800;
   }
 }
 
 .score-ring svg .circle-fill {
-  stroke: $aurora-teal;
+  stroke: $emerald-soft;
 }
 
 .completion-ring svg .circle-fill {
-  stroke: $stardust-gold;
-}
-
-// Ensure the ring is visible even at 0%
-.completion-badge,
-.compatibility-badge {
-  .completion-ring,
-  .score-ring {
-    &::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      background: radial-gradient(circle at center, rgba(251, 191, 36, 0.1) 0%, transparent 70%);
-    }
-  }
+  stroke: $gold-soft;
 }
 
 .score-label,
 .completion-label {
   font-size: 14px;
-  color: $stardust-silver;
+  color: $warm-gray-600;
+  font-weight: 500;
 }
 
-// Action Buttons
+// ─── Action Buttons ──────────────────────────────────────────────────────────
 .action-buttons {
   display: flex;
   justify-content: center;
@@ -717,8 +653,8 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
   margin-bottom: 24px;
 
   .btn-action {
-    width: 64px;
-    height: 64px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     border: none;
     display: flex;
@@ -734,43 +670,43 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
   }
 
   .btn-pass {
-    background: rgba(239, 68, 68, 0.2);
-    border: 2px solid rgba(239, 68, 68, 0.3);
-    color: #ef4444;
+    background: $soft-white;
+    border: 2px solid #FECACA;
+    color: #EF4444;
 
     &:hover:not(:disabled) {
-      background: rgba(239, 68, 68, 0.3);
+      background: #FEE2E2;
       transform: scale(1.1);
     }
   }
 
   .btn-superlike {
-    background: rgba(59, 130, 246, 0.2);
-    border: 2px solid rgba(59, 130, 246, 0.3);
-    color: $aurora-blue;
+    background: $soft-white;
+    border: 2px solid #BFDBFE;
+    color: $sky-soft;
 
     &:hover:not(:disabled) {
-      background: rgba(59, 130, 246, 0.3);
+      background: #DBEAFE;
       transform: scale(1.1);
     }
   }
 
   .btn-like {
-    width: 72px;
-    height: 72px;
-    background: $gradient-cosmic;
+    width: 68px;
+    height: 68px;
+    background: linear-gradient(135deg, $rose-primary, $rose-dark);
     border: none;
     color: white;
-    box-shadow: 0 4px 20px rgba(219, 39, 119, 0.4);
+    box-shadow: $shadow-rose;
 
     &:hover:not(:disabled) {
       transform: scale(1.15);
-      box-shadow: 0 8px 32px rgba(219, 39, 119, 0.5);
+      box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
     }
   }
 }
 
-// Message Button
+// ─── Message Button ──────────────────────────────────────────────────────────
 .btn-message {
   width: 100%;
   display: flex;
@@ -778,7 +714,7 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
   justify-content: center;
   gap: 10px;
   padding: 16px;
-  background: $gradient-aurora;
+  background: linear-gradient(135deg, $emerald-soft, #059669);
   border: none;
   border-radius: 12px;
   color: white;
@@ -790,7 +726,7 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
 
   &:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(20, 184, 166, 0.3);
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
   }
 
   &:disabled {
@@ -799,7 +735,7 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
   }
 }
 
-// Own Profile Actions
+// ─── Own Profile Actions ─────────────────────────────────────────────────────
 .own-profile-actions {
   display: flex;
   flex-direction: column;
@@ -822,49 +758,49 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
   }
 
   .btn-edit {
-    background: $gradient-cosmic;
+    background: linear-gradient(135deg, $rose-primary, $rose-dark);
     color: white;
     border: none;
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(107, 33, 168, 0.3);
+      box-shadow: $shadow-rose;
     }
   }
 
   .btn-photos {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: $stardust-white;
+    background: $soft-white;
+    border: 1px solid $warm-gray-200;
+    color: $warm-gray-700;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.2);
+      background: $warm-gray-50;
+      border-color: $warm-gray-300;
     }
   }
 }
 
-// ============================================
-// Profile Details Grid
-// ============================================
+// ─── Profile Details Grid ────────────────────────────────────────────────────
 .profile-details-grid {
   display: grid;
-  gap: 24px;
+  gap: 20px;
 
   @media (min-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
   }
-
-  @media (min-width: 1024px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
 }
 
 .detail-card {
-  @include glass-card;
+  background: $soft-white;
+  border: 1px solid $warm-gray-200;
+  border-radius: 20px;
   padding: 24px;
   transition: all 0.3s ease;
-  @include glass-hover;
+
+  &:hover {
+    box-shadow: $shadow-md;
+    border-color: $warm-gray-300;
+  }
 
   .card-header {
     display: flex;
@@ -872,7 +808,7 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
     gap: 12px;
     margin-bottom: 20px;
     padding-bottom: 16px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid $warm-gray-100;
 
     .card-icon {
       font-size: 24px;
@@ -880,29 +816,31 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
 
     h3 {
       font-family: $font-display;
-      font-size: 20px;
-      font-weight: 600;
+      font-size: 1.25rem;
+      font-weight: 400;
       margin: 0;
-      color: $stardust-white;
+      color: $warm-gray-900;
     }
   }
 
   .card-content {
     p {
-      color: rgba(255, 255, 255, 0.8);
+      color: $warm-gray-700;
       line-height: 1.7;
       margin: 0;
     }
 
     .empty-state {
-      color: $stardust-silver;
+      color: $warm-gray-500;
       font-style: italic;
 
       .link-edit {
         display: inline-block;
         margin-top: 8px;
-        color: $nebula-violet;
+        color: $rose-primary;
         text-decoration: none;
+        font-style: normal;
+        font-weight: 500;
 
         &:hover {
           text-decoration: underline;
@@ -918,13 +856,9 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
   @media (min-width: 768px) {
     grid-column: span 2;
   }
-
-  @media (min-width: 1024px) {
-    grid-column: span 3;
-  }
 }
 
-// Info Grid
+// ─── Info Grid ───────────────────────────────────────────────────────────────
 .info-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -936,35 +870,35 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
     display: block;
     font-size: 12px;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    color: $stardust-silver;
+    letter-spacing: 0.5px;
+    color: $warm-gray-500;
     margin-bottom: 4px;
   }
 
   .info-value {
     display: block;
     font-size: 15px;
-    color: $stardust-white;
+    color: $warm-gray-800;
     text-transform: capitalize;
   }
 
   .lifestyle-badge {
     &[data-type="never"] {
-      color: $aurora-teal;
+      color: $emerald-soft;
     }
 
     &[data-type="vegetarian"],
     &[data-type="vegan"] {
-      color: $aurora-teal;
+      color: $emerald-soft;
     }
 
     &[data-type="regularly"] {
-      color: $nebula-coral;
+      color: #F59E0B;
     }
   }
 }
 
-// Tags
+// ─── Tags ────────────────────────────────────────────────────────────────────
 .tags-list {
   display: flex;
   flex-wrap: wrap;
@@ -979,20 +913,18 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
 }
 
 .language-tag {
-  background: rgba(124, 58, 237, 0.2);
-  border: 1px solid rgba(124, 58, 237, 0.3);
-  color: $nebula-violet;
+  background: #EDE9FE;
+  border: 1px solid #DDD6FE;
+  color: $violet-soft;
 }
 
 .hobby-tag {
-  background: rgba(236, 72, 153, 0.2);
-  border: 1px solid rgba(236, 72, 153, 0.3);
-  color: $nebula-pink;
+  background: $rose-50;
+  border: 1px solid $rose-100;
+  color: $rose-dark;
 }
 
-// ============================================
-// Photo Modal
-// ============================================
+// ─── Photo Modal ─────────────────────────────────────────────────────────────
 .photo-modal {
   position: fixed;
   inset: 0;
@@ -1000,7 +932,7 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.95);
+  background: rgba(0, 0, 0, 0.9);
   backdrop-filter: blur(10px);
   animation: fadeIn 0.3s ease;
 
@@ -1073,7 +1005,7 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
 
     .modal-counter {
       font-size: 16px;
-      color: $stardust-silver;
+      color: rgba(255, 255, 255, 0.7);
     }
   }
 }
@@ -1083,9 +1015,7 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
   to { opacity: 1; }
 }
 
-// ============================================
-// Responsive Adjustments
-// ============================================
+// ─── Responsive Adjustments ──────────────────────────────────────────────────
 @media (max-width: 640px) {
   .profile-content {
     padding: 16px;
@@ -1100,20 +1030,20 @@ $gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 
   }
 
   .profile-main-info .profile-name {
-    font-size: 24px;
+    font-size: 1.5rem;
   }
 
   .action-buttons {
     gap: 12px;
 
     .btn-action {
-      width: 56px;
-      height: 56px;
+      width: 52px;
+      height: 52px;
     }
 
     .btn-like {
-      width: 64px;
-      height: 64px;
+      width: 60px;
+      height: 60px;
     }
   }
 

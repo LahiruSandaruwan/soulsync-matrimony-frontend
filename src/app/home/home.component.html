@@ -361,60 +361,56 @@
       <h2 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">{{ t('pricing.title') }}</h2>
       <p class="text-lg text-gray-600 max-w-2xl mx-auto">{{ t('pricing.subtitle') }}</p>
     </div>
-    <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-      <div class="bg-white rounded-2xl p-6 border border-gray-200">
-        <div class="mb-6">
-          <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ t('pricing.free.name') }}</h3>
-          <div class="flex items-baseline gap-1">
-            <span class="text-sm text-gray-500">{{ t('pricing.currency') }}</span>
-            <span class="text-4xl font-bold text-gray-900">{{ t('pricing.free.price') }}</span>
-          </div>
-          <p class="text-gray-500 text-sm mt-1">{{ t('pricing.foreverFree') }}</p>
+
+    <!-- Loading state -->
+    <div *ngIf="loadingPlans" class="flex justify-center items-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+    </div>
+
+    <!-- Dynamic pricing cards from API -->
+    <div *ngIf="!loadingPlans && plans.length > 0" class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+      <div *ngFor="let plan of plans"
+           class="rounded-2xl p-6 relative"
+           [ngClass]="plan.popular ? 'bg-primary-600' : 'bg-white border border-gray-200'">
+
+        <!-- Most Popular badge -->
+        <div *ngIf="plan.popular" class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-amber-400 text-amber-900 text-xs font-bold rounded-full">
+          {{ t('pricing.mostPopular') }}
         </div>
-        <ul class="space-y-3 mb-6">
-          <li class="flex items-start gap-2"><svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="text-gray-600 text-sm">{{ t('pricing.free.features.createProfile') }}</span></li>
-          <li class="flex items-start gap-2"><svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="text-gray-600 text-sm">{{ t('pricing.free.features.browseProfiles') }}</span></li>
-          <li class="flex items-start gap-2"><svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="text-gray-600 text-sm">{{ t('pricing.free.features.matchesPerDay') }}</span></li>
-          <li class="flex items-start gap-2"><svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="text-gray-600 text-sm">{{ t('pricing.free.features.sendInterests') }}</span></li>
-        </ul>
-        <a routerLink="/auth/register" class="block w-full text-center px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:border-primary-500 hover:text-primary-600 transition-colors">{{ t('pricing.getStarted') }}</a>
-      </div>
-      <div class="bg-primary-600 rounded-2xl p-6 relative">
-        <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-amber-400 text-amber-900 text-xs font-bold rounded-full">{{ t('pricing.mostPopular') }}</div>
+
         <div class="mb-6">
-          <h3 class="text-xl font-semibold text-white mb-2">{{ t('pricing.premium.name') }}</h3>
+          <h3 class="text-xl font-semibold mb-2" [ngClass]="plan.popular ? 'text-white' : 'text-gray-900'">
+            {{ plan.name }}
+          </h3>
           <div class="flex items-baseline gap-1">
-            <span class="text-sm text-primary-200">{{ t('pricing.currency') }}</span>
-            <span class="text-4xl font-bold text-white">{{ t('pricing.premium.price') }}</span>
+            <span class="text-sm" [ngClass]="plan.popular ? 'text-primary-200' : 'text-gray-500'">{{ currencySymbol }}</span>
+            <span class="text-4xl font-bold" [ngClass]="plan.popular ? 'text-white' : 'text-gray-900'">
+              {{ plan.prices?.monthly | number:'1.2-2' }}
+            </span>
           </div>
-          <p class="text-primary-200 text-sm mt-1">{{ t('pricing.perMonth') }}</p>
+          <p class="text-sm mt-1" [ngClass]="plan.popular ? 'text-primary-200' : 'text-gray-500'">
+            {{ plan.type === 'free' ? t('pricing.foreverFree') : t('pricing.perMonth') }}
+          </p>
         </div>
+
         <ul class="space-y-3 mb-6">
-          <li class="flex items-start gap-2"><svg class="w-5 h-5 text-primary-200 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="text-primary-100 text-sm">{{ t('pricing.premium.features.everythingInFree') }}</span></li>
-          <li class="flex items-start gap-2"><svg class="w-5 h-5 text-primary-200 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="text-primary-100 text-sm">{{ t('pricing.premium.features.unlimitedMatches') }}</span></li>
-          <li class="flex items-start gap-2"><svg class="w-5 h-5 text-primary-200 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="text-primary-100 text-sm">{{ t('pricing.premium.features.seeWhoLiked') }}</span></li>
-          <li class="flex items-start gap-2"><svg class="w-5 h-5 text-primary-200 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="text-primary-100 text-sm">{{ t('pricing.premium.features.chatWithMatches') }}</span></li>
-          <li class="flex items-start gap-2"><svg class="w-5 h-5 text-primary-200 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="text-primary-100 text-sm">{{ t('pricing.premium.features.advancedFilters') }}</span></li>
+          <li *ngFor="let feature of plan.features" class="flex items-start gap-2">
+            <svg class="w-5 h-5 mt-0.5 flex-shrink-0"
+                 [ngClass]="plan.popular ? 'text-primary-200' : 'text-green-500'"
+                 fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+            <span class="text-sm" [ngClass]="plan.popular ? 'text-primary-100' : 'text-gray-600'">{{ feature }}</span>
+          </li>
         </ul>
-        <a routerLink="/auth/register" class="block w-full text-center px-6 py-3 bg-white text-primary-600 font-medium rounded-lg hover:bg-primary-50 transition-colors">{{ t('pricing.getPremium') }}</a>
-      </div>
-      <div class="bg-white rounded-2xl p-6 border border-gray-200">
-        <div class="mb-6">
-          <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ t('pricing.vip.name') }}</h3>
-          <div class="flex items-baseline gap-1">
-            <span class="text-sm text-gray-500">{{ t('pricing.currency') }}</span>
-            <span class="text-4xl font-bold text-gray-900">{{ t('pricing.vip.price') }}</span>
-          </div>
-          <p class="text-gray-500 text-sm mt-1">{{ t('pricing.perMonth') }}</p>
-        </div>
-        <ul class="space-y-3 mb-6">
-          <li class="flex items-start gap-2"><svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="text-gray-600 text-sm">{{ t('pricing.vip.features.everythingInPremium') }}</span></li>
-          <li class="flex items-start gap-2"><svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="text-gray-600 text-sm">{{ t('pricing.vip.features.priorityVisibility') }}</span></li>
-          <li class="flex items-start gap-2"><svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="text-gray-600 text-sm">{{ t('pricing.vip.features.videoCalls') }}</span></li>
-          <li class="flex items-start gap-2"><svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="text-gray-600 text-sm">{{ t('pricing.vip.features.dedicatedSupport') }}</span></li>
-          <li class="flex items-start gap-2"><svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span class="text-gray-600 text-sm">{{ t('pricing.vip.features.profileBoost') }}</span></li>
-        </ul>
-        <a routerLink="/auth/register" class="block w-full text-center px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:border-primary-500 hover:text-primary-600 transition-colors">{{ t('pricing.getVip') }}</a>
+
+        <a routerLink="/auth/register"
+           class="block w-full text-center px-6 py-3 font-medium rounded-lg transition-colors"
+           [ngClass]="plan.popular
+             ? 'bg-white text-primary-600 hover:bg-primary-50'
+             : 'border border-gray-300 text-gray-700 hover:border-primary-500 hover:text-primary-600'">
+          {{ plan.type === 'free' ? t('pricing.getStarted') : ('Get ' + plan.name) }}
+        </a>
       </div>
     </div>
   </div>

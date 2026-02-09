@@ -40,13 +40,6 @@
   <div *ngIf="!loading && !error && user" class="profile-content">
     <!-- Header Navigation -->
     <header class="profile-header">
-      <button (click)="onBackToChats()" class="btn-back" aria-label="Go back">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M15 18l-6-6 6-6"/>
-        </svg>
-        <span>Back</span>
-      </button>
-
       <div class="header-actions" *ngIf="!isOwnProfile()">
         <button (click)="onReport()" class="btn-report" aria-label="Report user">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

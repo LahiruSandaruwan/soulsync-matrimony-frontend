@@ -1,24 +1,28 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// SOULSYNC - Top Live Profiles Section (Light Theme)
+// ═══════════════════════════════════════════════════════════════════════════
+
 .top-live-profiles {
-  padding: 32px 0;
-  background: linear-gradient(180deg, #fff 0%, #f9fafb 100%);
+  padding: 40px 0;
+  background: linear-gradient(180deg, #ffffff 0%, #fdf2f8 100%);
 }
 
 .section-header {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
   padding: 0 16px;
 }
 
 .section-title {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #1f2937;
+  color: #1e293b;
   margin: 0 0 8px 0;
 }
 
 .section-subtitle {
   font-size: 0.95rem;
-  color: #6b7280;
+  color: #64748b;
   margin: 0;
 }
 
@@ -30,7 +34,7 @@
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
 
-  // Hide scrollbar for clean look
+  // Light theme scrollbar
   &::-webkit-scrollbar {
     height: 6px;
   }
@@ -41,17 +45,17 @@
   }
 
   &::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
+    background: #ec4899;
     border-radius: 3px;
 
     &:hover {
-      background: #94a3b8;
+      background: #db2777;
     }
   }
 
   // For Firefox
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 #f1f5f9;
+  scrollbar-color: #ec4899 #f1f5f9;
 
   > * {
     scroll-snap-align: start;
@@ -59,35 +63,35 @@
   }
 }
 
-// Skeleton Loading
+// Skeleton Loading - Light Theme
 .skeleton-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: white;
-  border-radius: 12px;
-  padding: 16px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px 16px;
   min-width: 180px;
   max-width: 200px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .skeleton-avatar {
-  width: 100px;
-  height: 100px;
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .skeleton-name {
   width: 80%;
   height: 16px;
   border-radius: 4px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   margin-bottom: 8px;
@@ -97,17 +101,17 @@
   width: 60%;
   height: 12px;
   border-radius: 4px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .skeleton-details {
   width: 90%;
   height: 20px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  border-radius: 6px;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -121,28 +125,29 @@
   }
 }
 
-// Error State
+// Error State - Light Theme
 .error-state {
   text-align: center;
   padding: 32px 16px;
-  color: #6b7280;
+  color: #64748b;
 
   p {
     margin: 0 0 12px 0;
   }
 
   .retry-btn {
-    background: #ec4899;
+    background: linear-gradient(135deg, #ec4899, #f472b6);
     color: white;
     border: none;
-    padding: 8px 20px;
+    padding: 10px 24px;
     border-radius: 8px;
     cursor: pointer;
     font-weight: 500;
-    transition: background 0.2s ease;
+    transition: all 0.3s ease;
 
     &:hover {
-      background: #db2777;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(236, 72, 153, 0.25);
     }
   }
 }
@@ -150,7 +155,7 @@
 // Responsive
 @media (max-width: 768px) {
   .top-live-profiles {
-    padding: 24px 0;
+    padding: 32px 0;
   }
 
   .section-title {

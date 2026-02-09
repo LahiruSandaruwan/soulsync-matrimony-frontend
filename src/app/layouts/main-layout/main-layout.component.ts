@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -13,7 +13,8 @@ import { Subject, takeUntil } from 'rxjs';
   standalone: true,
   imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, TranslocoPipe, ToastContainerComponent, LanguageSwitcherComponent],
   templateUrl: './main-layout.component.html',
-  styleUrls: ['./main-layout.component.scss']
+  styleUrls: ['./main-layout.component.scss'],
+  encapsulation: ViewEncapsulation.None
 })
 export class MainLayoutComponent implements OnInit, OnDestroy {
   isSidebarOpen = true;

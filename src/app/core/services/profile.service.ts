@@ -37,12 +37,15 @@ export class ProfileService {
 
   // Get user profile
   getProfile(): Observable<UserProfile> {
-    return this.apiService.get<UserProfile>('/profile')
+    return this.apiService.get<any>('/profile')
       .pipe(
         map(response => {
           if (response.success) {
-            this.profileSubject.next(response.data);
-            return response.data;
+            // API returns { data: { user: {...}, can_edit: bool } }
+            // Extract the user object which contains the profile data
+            const profileData = response.data?.user || response.data;
+            this.profileSubject.next(profileData);
+            return profileData;
           } else {
             throw new Error(response.message);
           }
